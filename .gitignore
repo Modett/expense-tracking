@@ -1,0 +1,94 @@
+# ======================
+# Node.js
+# ======================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# ======================
+# Build Output
+# ======================
+dist/
+dist-ssr/
+build/
+*.local
+
+# ======================
+# Environment Variables
+# ======================
+.env
+.env.local
+.env.*.local
+.env.production
+
+# ======================
+# IDE
+# ======================
+# VSCode
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# ======================
+# OS
+# ======================
+# MacOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+[Dd]esktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+
+# ======================
+# Prisma
+# ======================
+# Keep migrations but ignore generated files
+
+# ======================
+# Testing
+# ======================
+coverage/
+*.lcov
+.nyc_output/
+
+# ======================
+# Logs
+# ======================
+logs/
+*.log
+pino-*.log
+
+# ======================
+# Temporary Files
+# ======================
+*.tmp
+*.temp
+.cache/
+.parcel-cache/
+
+# ======================
+# Misc
+# ======================
+.claude/
