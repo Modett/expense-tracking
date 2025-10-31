@@ -1,4 +1,5 @@
 import type { IUserRepository } from "../../domain/repositories/IUserRepository.js";
+import type { IUserQueryRepository } from "../../domain/repositories/IUserQueryRepository.js";
 import type { IPasswordHasher } from "./PasswordHasher.js";
 import type { ITokenService, TokenPayload } from "./TokenService.js";
 import { UserDomainService } from "./UserDomainService.js";
@@ -31,6 +32,7 @@ export interface AuthResponse {
 export class AuthService {
   constructor(
     private readonly userRepository: IUserRepository,
+    private readonly userQueryRepository: IUserQueryRepository,
     private readonly passwordHasher: IPasswordHasher,
     private readonly tokenService: ITokenService,
     private readonly userDomainService: UserDomainService
@@ -94,7 +96,7 @@ export class AuthService {
   }
 
   private async findUserById(userId: UserId): Promise<User> {
-    const user = await this.userRepository.findById(userId);
+    const user = await this.userQueryRepository.findById(userId);
     if (!user) {
       throw new Error("User not found");
     }
@@ -102,7 +104,7 @@ export class AuthService {
   }
 
   private async findUserByEmail(email: Email): Promise<User> {
-    const user = await this.userRepository.findByEmail(email);
+    const user = await this.userQueryRepository.findByEmail(email);
     if (!user) {
       throw new Error("Invalid credentials");
     }
