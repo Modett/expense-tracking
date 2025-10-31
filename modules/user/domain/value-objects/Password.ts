@@ -122,7 +122,12 @@ export class Password {
     return new Password(password);
   }
 
-  // Don't expose the actual password in string conversion for security
+  static fromHash(hashedPassword: string): Password {
+    const password = Object.create(Password.prototype);
+    password.value = hashedPassword;
+    return password;
+  }
+
   toString(): string {
     return "[Password]";
   }
