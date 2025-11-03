@@ -29,7 +29,9 @@ export class ChangePasswordCommandHandler {
     }
 
     const plainPassword = Password.create(command.newPassword);
-    const hashedPassword = await this.passwordHasher.hash(plainPassword.getValue());
+    const hashedPassword = await this.passwordHasher.hash(
+      plainPassword.getValue()
+    );
     const passwordVO = Password.fromHash(hashedPassword);
 
     user.changePassword(passwordVO);

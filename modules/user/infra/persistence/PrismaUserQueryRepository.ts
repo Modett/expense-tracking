@@ -16,6 +16,11 @@ import {
 export class PrismaUserQueryRepository implements IUserQueryRepository {
   constructor(private readonly prisma: PrismaClient) {}
 
+  private mapRoleToDatabase(role: string): RoleEnum {
+    // Convert domain role (UPPERCASE) to database role (lowercase)
+    return role.toLowerCase() as RoleEnum;
+  }
+
   async findById(id: UserId): Promise<User | null> {
     const userData = await this.prisma.user.findUnique({
       where: { userId: id.getValue() },
@@ -70,7 +75,7 @@ export class PrismaUserQueryRepository implements IUserQueryRepository {
     offset?: number
   ): Promise<User[]> {
     const usersData = await this.prisma.user.findMany({
-      where: { role: role.getValue() as unknown as RoleEnum },
+      where: { role: this.mapRoleToDatabase(role.getValue()) },
       ...(limit && { take: limit }),
       ...(offset && { skip: offset }),
       orderBy: { createdAt: "desc" },
