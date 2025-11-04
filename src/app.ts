@@ -6,6 +6,7 @@ import fastifySwaggerUi from "@fastify/swagger-ui";
 import { PrismaClient } from "@prisma/client";
 import { config } from "./config/index.js";
 import { registerUserModule } from "../modules/user/module.js";
+import { registerMasterDataModule } from "../modules/master-data/module.js";
 
 export async function buildApp() {
   const fastify = Fastify({
@@ -56,6 +57,7 @@ export async function buildApp() {
         tags: [
           { name: "Auth", description: "Authentication endpoints" },
           { name: "Users", description: "User management endpoints" },
+          { name: "Categories", description: "Category management endpoints" },
         ],
       },
     });
@@ -198,6 +200,9 @@ export async function buildApp() {
     jwtRefreshTokenExpiry: config.jwt.refreshTokenExpiry,
     bcryptSaltRounds: config.bcrypt.saltRounds,
   });
+
+  // Register Master Data Module
+  await registerMasterDataModule(fastify, prisma);
 
   // Graceful shutdown
   const closeGracefully = async (signal: string) => {
