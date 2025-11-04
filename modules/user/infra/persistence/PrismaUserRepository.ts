@@ -6,6 +6,11 @@ import { UserId, Email } from "../../domain/value-objects/index.js";
 export class PrismaUserRepository implements IUserRepository {
   constructor(private readonly prisma: PrismaClient) {}
 
+  private mapRoleToDatabase(role: string): RoleEnum {
+    // Convert domain role (UPPERCASE) to database role (lowercase)
+    return role.toLowerCase() as RoleEnum;
+  }
+
   async save(user: User): Promise<void> {
     await this.prisma.user.create({
       data: {
@@ -13,7 +18,7 @@ export class PrismaUserRepository implements IUserRepository {
         name: user.name.getValue(),
         email: user.email.getValue(),
         password: user.password.getValue(),
-        role: user.role.getValue() as unknown as RoleEnum,
+        role: this.mapRoleToDatabase(user.role.getValue()),
         isActive: user.status.isActive(),
         createdAt: user.createdAt,
         updatedAt: user.updatedAt,
@@ -28,7 +33,7 @@ export class PrismaUserRepository implements IUserRepository {
         name: user.name.getValue(),
         email: user.email.getValue(),
         password: user.password.getValue(),
-        role: user.role.getValue() as unknown as RoleEnum,
+        role: this.mapRoleToDatabase(user.role.getValue()),
         isActive: user.status.isActive(),
         updatedAt: user.updatedAt,
       },
