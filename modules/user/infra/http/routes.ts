@@ -1,15 +1,19 @@
 import type { FastifyInstance } from "fastify";
+import type { PrismaClient } from "@prisma/client";
 import type { AuthController } from "./controllers/AuthController.js";
 import type { UserController } from "./controllers/UserController.js";
-import { authenticate } from "./middleware/authenticate.js";
+import { createAuthenticateMiddleware } from "./middleware/authenticate.js";
 import { authorizeAdmin } from "./middleware/authorize.js";
 import { userSchema, authResponseSchema, errorSchema, messageSchema } from "./schemas/index.js";
 
 export async function registerUserRoutes(
   fastify: FastifyInstance,
   authController: AuthController,
-  userController: UserController
+  userController: UserController,
+  prisma: PrismaClient
 ): Promise<void> {
+  // Create authenticate middleware with blacklist checking
+  const authenticate = createAuthenticateMiddleware(prisma);
 
   // ==================== AUTH ROUTES ====================
 
@@ -95,6 +99,26 @@ export async function registerUserRoutes(
       },
     },
     handler: async (request, reply) => authController.refreshToken(request as any, reply),
+  });
+
+  fastify.post("/auth/logout", {
+    schema: {
+      tags: ["Auth"],
+      summary: "Logout user (requires authentication)",
+      security: [{ bearerAuth: [] }],
+      response: {
+        200: messageSchema,
+        401: errorSchema,
+      },
+    },
+    onRequest: [authenticate],
+    config: {
+      rateLimit: {
+        max: 10,
+        timeWindow: "15 minutes",
+      },
+    },
+    handler: async (request, reply) => authController.logout(request as any, reply),
   });
 
   fastify.put("/auth/change-password", {

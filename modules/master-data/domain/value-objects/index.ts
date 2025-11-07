@@ -13,3 +13,7 @@ export * from "./GSTNumber.js";
 export * from "./Email.js";
 export * from "./Phone.js";
 export * from "./Address.js";
+export * from "./TagId.js";
+export * from "./TagName.js";
+export * from "./TagType.js";
+export * from "./TagStatus.js";

@@ -1,0 +1,1 @@
+// ExpenseDescription Value Object
