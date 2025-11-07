@@ -15,6 +15,7 @@ import {
   registerCategoryRoutes,
   registerDepartmentRoutes,
   registerVendorRoutes,
+  registerTagRoutes,
 } from "./infra/http/routes.js";
 import { PrismaDepartmentRepository } from "./infra/persistence/PrismaDepartmentRepository.js";
 import { PrismaDepartmentQueryRepository } from "./infra/persistence/PrismaDepartmentQueryRepository.js";
@@ -38,6 +39,17 @@ import { DeactivateVendorCommandHandler } from "./application/commands/deactivat
 import { GetVendorByIdQueryHandler } from "./application/queries/get-vendor-by-id/handler.js";
 import { GetAllVendorsQueryHandler } from "./application/queries/get-all-vendors/handler.js";
 import { VendorController } from "./infra/http/controllers/VendorController.js";
+import { PrismaTagRepository } from "./infra/persistence/PrismaTagRepository.js";
+import { PrismaTagQueryRepository } from "./infra/persistence/PrismaTagQueryRepository.js";
+import { TagDomainService } from "./application/services/TagDomainService.js";
+import { CreateTagCommandHandler } from "./application/commands/create-tag/handler.js";
+import { UpdateTagCommandHandler } from "./application/commands/update-tag/handler.js";
+import { DeleteTagCommandHandler } from "./application/commands/delete-tag/handler.js";
+import { ActivateTagCommandHandler } from "./application/commands/activate-tag/handler.js";
+import { DeactivateTagCommandHandler } from "./application/commands/deactivate-tag/handler.js";
+import { GetTagByIdQueryHandler } from "./application/queries/get-tag-by-id/handler.js";
+import { GetAllTagsQueryHandler } from "./application/queries/get-all-tags/handler.js";
+import { TagController } from "./infra/http/controllers/TagController.js";
 
 export async function registerMasterDataModule(
   fastify: FastifyInstance,
@@ -180,4 +192,47 @@ export async function registerMasterDataModule(
   );
 
   await registerVendorRoutes(fastify, vendorController);
+
+  // Tag Module
+  const tagRepository = new PrismaTagRepository(prisma);
+  const tagQueryRepository = new PrismaTagQueryRepository(prisma);
+
+  const tagDomainService = new TagDomainService(tagRepository);
+
+  const createTagHandler = new CreateTagCommandHandler(
+    tagRepository,
+    tagDomainService
+  );
+  const updateTagHandler = new UpdateTagCommandHandler(
+    tagRepository,
+    tagQueryRepository,
+    tagDomainService
+  );
+  const deleteTagHandler = new DeleteTagCommandHandler(
+    tagRepository,
+    tagQueryRepository
+  );
+  const activateTagHandler = new ActivateTagCommandHandler(
+    tagRepository,
+    tagQueryRepository
+  );
+  const deactivateTagHandler = new DeactivateTagCommandHandler(
+    tagRepository,
+    tagQueryRepository
+  );
+
+  const getTagByIdHandler = new GetTagByIdQueryHandler(tagQueryRepository);
+  const getAllTagsHandler = new GetAllTagsQueryHandler(tagQueryRepository);
+
+  const tagController = new TagController(
+    createTagHandler,
+    updateTagHandler,
+    deleteTagHandler,
+    activateTagHandler,
+    deactivateTagHandler,
+    getTagByIdHandler,
+    getAllTagsHandler
+  );
+
+  await registerTagRoutes(fastify, tagController);
 }

@@ -15,6 +15,7 @@ import { RegisterCommandHandler } from "./application/commands/auth/register/han
 import { LoginCommandHandler } from "./application/commands/auth/login/handler.js";
 import { ChangePasswordCommandHandler } from "./application/commands/auth/change-password/handler.js";
 import { RefreshTokenCommandHandler } from "./application/commands/auth/refresh-token/handler.js";
+import { LogoutCommandHandler } from "./application/commands/auth/logout/handler.js";
 import { UpdateProfileCommandHandler } from "./application/commands/user-management/update-profile/handler.js";
 import { UpdateRoleCommandHandler } from "./application/commands/user-management/update-role/handler.js";
 import { ActivateUserCommandHandler } from "./application/commands/user-management/activate-user/handler.js";
@@ -84,6 +85,8 @@ export async function registerUserModule(
     tokenService
   );
 
+  const logoutHandler = new LogoutCommandHandler(prisma);
+
   // Command Handlers - User Management
   const updateProfileHandler = new UpdateProfileCommandHandler(
     userRepository,
@@ -116,7 +119,8 @@ export async function registerUserModule(
     registerHandler,
     loginHandler,
     changePasswordHandler,
-    refreshTokenHandler
+    refreshTokenHandler,
+    logoutHandler
   );
 
   const userController = new UserController(
@@ -130,5 +134,5 @@ export async function registerUserModule(
   );
 
   // Register Routes
-  await registerUserRoutes(fastify, authController, userController);
+  await registerUserRoutes(fastify, authController, userController, prisma);
 }

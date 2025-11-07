@@ -2,6 +2,7 @@ import type { FastifyInstance } from "fastify";
 import type { CategoryController } from "./controllers/CategoryController.js";
 import type { DepartmentController } from "./controllers/DepartmentController.js";
 import type { VendorController } from "./controllers/VendorController.js";
+import type { TagController } from "./controllers/TagController.js";
 import { authenticate } from "../../../user/infra/http/middleware/authenticate.js";
 import { authorizeAdmin } from "../../../user/infra/http/middleware/authorize.js";
 
@@ -788,5 +789,256 @@ export async function registerVendorRoutes(
       onRequest: [authenticate, authorizeAdmin],
     },
     async (request, reply) => vendorController.deactivate(request as any, reply)
+  );
+}
+
+export async function registerTagRoutes(
+  fastify: FastifyInstance,
+  tagController: TagController
+): Promise<void> {
+  fastify.post(
+    "/tags",
+    {
+      schema: {
+        tags: ["Tags"],
+        summary: "Create a new tag (Admin only)",
+        security: [{ bearerAuth: [] }],
+        body: {
+          type: "object",
+          required: ["name", "type"],
+          properties: {
+            name: { type: "string", minLength: 2, maxLength: 100 },
+            type: { type: "string", enum: ["collection", "campaign", "custom", "department"] },
+          },
+        },
+        response: {
+          201: {
+            type: "object",
+            properties: {
+              id: { type: "string" },
+              name: { type: "string" },
+              type: { type: "string" },
+              isActive: { type: "boolean" },
+              createdAt: { type: "string" },
+            },
+          },
+          401: errorSchema,
+          403: errorSchema,
+        },
+      },
+      onRequest: [authenticate, authorizeAdmin],
+    },
+    async (request, reply) => tagController.create(request as any, reply)
+  );
+
+  fastify.get(
+    "/tags",
+    {
+      schema: {
+        tags: ["Tags"],
+        summary: "Get all tags (Authenticated)",
+        security: [{ bearerAuth: [] }],
+        querystring: {
+          type: "object",
+          properties: {
+            limit: { type: "string" },
+            offset: { type: "string" },
+            isActive: { type: "string" },
+            type: { type: "string", enum: ["collection", "campaign", "custom", "department"] },
+            searchTerm: { type: "string" },
+          },
+        },
+        response: {
+          200: {
+            type: "object",
+            properties: {
+              tags: {
+                type: "array",
+                items: {
+                  type: "object",
+                  properties: {
+                    id: { type: "string" },
+                    name: { type: "string" },
+                    type: { type: "string" },
+                    isActive: { type: "boolean" },
+                    createdAt: { type: "string" },
+                    updatedAt: { type: "string" },
+                  },
+                },
+              },
+              total: { type: "number" },
+            },
+          },
+          401: errorSchema,
+        },
+      },
+      onRequest: [authenticate],
+    },
+    async (request, reply) => tagController.getAll(request as any, reply)
+  );
+
+  fastify.get(
+    "/tags/:id",
+    {
+      schema: {
+        tags: ["Tags"],
+        summary: "Get tag by ID (Authenticated)",
+        security: [{ bearerAuth: [] }],
+        params: {
+          type: "object",
+          required: ["id"],
+          properties: {
+            id: { type: "string", format: "uuid" },
+          },
+        },
+        response: {
+          200: {
+            type: "object",
+            properties: {
+              id: { type: "string" },
+              name: { type: "string" },
+              type: { type: "string" },
+              isActive: { type: "boolean" },
+              createdAt: { type: "string" },
+              updatedAt: { type: "string" },
+            },
+          },
+          401: errorSchema,
+          404: errorSchema,
+        },
+      },
+      onRequest: [authenticate],
+    },
+    async (request, reply) => tagController.getById(request as any, reply)
+  );
+
+  fastify.put(
+    "/tags/:id",
+    {
+      schema: {
+        tags: ["Tags"],
+        summary: "Update tag (Admin only)",
+        security: [{ bearerAuth: [] }],
+        params: {
+          type: "object",
+          required: ["id"],
+          properties: {
+            id: { type: "string", format: "uuid" },
+          },
+        },
+        body: {
+          type: "object",
+          required: ["name", "type"],
+          properties: {
+            name: { type: "string", minLength: 2, maxLength: 100 },
+            type: { type: "string", enum: ["collection", "campaign", "custom", "department"] },
+          },
+        },
+        response: {
+          200: {
+            type: "object",
+            properties: {
+              message: { type: "string" },
+            },
+          },
+          401: errorSchema,
+          403: errorSchema,
+          404: errorSchema,
+        },
+      },
+      onRequest: [authenticate, authorizeAdmin],
+    },
+    async (request, reply) => tagController.update(request as any, reply)
+  );
+
+  fastify.delete(
+    "/tags/:id",
+    {
+      schema: {
+        tags: ["Tags"],
+        summary: "Delete tag (Admin only)",
+        security: [{ bearerAuth: [] }],
+        params: {
+          type: "object",
+          required: ["id"],
+          properties: {
+            id: { type: "string", format: "uuid" },
+          },
+        },
+        response: {
+          204: {
+            type: "null",
+            description: "Tag deleted successfully",
+          },
+          401: errorSchema,
+          403: errorSchema,
+          404: errorSchema,
+        },
+      },
+      onRequest: [authenticate, authorizeAdmin],
+    },
+    async (request, reply) => tagController.delete(request as any, reply)
+  );
+
+  fastify.patch(
+    "/tags/:id/activate",
+    {
+      schema: {
+        tags: ["Tags"],
+        summary: "Activate tag (Admin only)",
+        security: [{ bearerAuth: [] }],
+        params: {
+          type: "object",
+          required: ["id"],
+          properties: {
+            id: { type: "string", format: "uuid" },
+          },
+        },
+        response: {
+          200: {
+            type: "object",
+            properties: {
+              message: { type: "string" },
+            },
+          },
+          401: errorSchema,
+          403: errorSchema,
+          404: errorSchema,
+        },
+      },
+      onRequest: [authenticate, authorizeAdmin],
+    },
+    async (request, reply) => tagController.activate(request as any, reply)
+  );
+
+  fastify.patch(
+    "/tags/:id/deactivate",
+    {
+      schema: {
+        tags: ["Tags"],
+        summary: "Deactivate tag (Admin only)",
+        security: [{ bearerAuth: [] }],
+        params: {
+          type: "object",
+          required: ["id"],
+          properties: {
+            id: { type: "string", format: "uuid" },
+          },
+        },
+        response: {
+          200: {
+            type: "object",
+            properties: {
+              message: { type: "string" },
+            },
+          },
+          401: errorSchema,
+          403: errorSchema,
+          404: errorSchema,
+        },
+      },
+      onRequest: [authenticate, authorizeAdmin],
+    },
+    async (request, reply) => tagController.deactivate(request as any, reply)
   );
 }
