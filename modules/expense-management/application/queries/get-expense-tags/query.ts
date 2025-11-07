@@ -1,1 +1,3 @@
-// Get expense tags query
+export class GetExpenseTagsQuery {
+  constructor(public readonly expenseId: string) {}
+}

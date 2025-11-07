@@ -1,1 +1,1 @@
-// Export all application services
+export * from "./ExpenseTagService.js";

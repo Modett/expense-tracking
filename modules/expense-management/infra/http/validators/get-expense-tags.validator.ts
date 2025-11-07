@@ -1,10 +1,7 @@
 import { z } from "zod";
 
-// Validator for getting expense tags
-export const getExpenseTagsValidator = z.object({
-  params: z.object({
-    expenseId: z.string().uuid("Invalid expense ID format"),
-  }),
+export const getExpenseTagsParamsSchema = z.object({
+  expenseId: z.string().uuid(),
 });
 
-export type GetExpenseTagsDto = z.infer<typeof getExpenseTagsValidator>;
+export type GetExpenseTagsParams = z.infer<typeof getExpenseTagsParamsSchema>;

@@ -1,8 +1,7 @@
 import { z } from "zod";
 
-// Validator for expense ID parameter in URL paths
-export const expenseIdParamValidator = z.object({
-  expenseId: z.string().uuid("Invalid expense ID format"),
+export const expenseIdParamSchema = z.object({
+  expenseId: z.string().uuid(),
 });
 
-export type ExpenseIdParamDto = z.infer<typeof expenseIdParamValidator>;
+export type ExpenseIdParam = z.infer<typeof expenseIdParamSchema>;

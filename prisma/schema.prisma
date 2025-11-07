@@ -207,6 +207,8 @@ model ExpenseTag {
   tag     Tag     @relation(fields: [tagId], references: [tagId], onDelete: Cascade)
 
   @@id([expenseId, tagId])
+  @@index([expenseId])
+  @@index([tagId])
   @@map("expense_tags")
 }
 
