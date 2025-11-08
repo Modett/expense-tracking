@@ -1,7 +1,6 @@
 import { z } from "zod";
 
 export const createExpenseBodySchema = z.object({
-  userId: z.string().uuid(),
   vendorId: z.string().uuid(),
   categoryId: z.string().uuid(),
   departmentId: z.string().uuid(),

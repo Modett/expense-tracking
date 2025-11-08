@@ -1,6 +1,28 @@
 import type { FastifyRequest, FastifyReply } from "fastify";
 import { ZodError } from "zod";
 
+// Command imports
+import { CreateExpenseCommandHandler } from "../../../application/commands/create-expense/handler.js";
+import { CreateExpenseCommand } from "../../../application/commands/create-expense/command.js";
+import { UpdateExpenseCommandHandler } from "../../../application/commands/update-expense/handler.js";
+import { UpdateExpenseCommand } from "../../../application/commands/update-expense/command.js";
+import { DeleteExpenseCommandHandler } from "../../../application/commands/delete-expense/handler.js";
+import { DeleteExpenseCommand } from "../../../application/commands/delete-expense/command.js";
+import { SubmitExpenseCommandHandler } from "../../../application/commands/submit-expense/handler.js";
+import { SubmitExpenseCommand } from "../../../application/commands/submit-expense/command.js";
+import { ApproveExpenseCommandHandler } from "../../../application/commands/approve-expense/handler.js";
+import { ApproveExpenseCommand } from "../../../application/commands/approve-expense/command.js";
+import { RejectExpenseCommandHandler } from "../../../application/commands/reject-expense/handler.js";
+import { RejectExpenseCommand } from "../../../application/commands/reject-expense/command.js";
+import { CancelExpenseCommandHandler } from "../../../application/commands/cancel-expense/handler.js";
+import { CancelExpenseCommand } from "../../../application/commands/cancel-expense/command.js";
+
+// Query imports
+import { GetExpenseByIdQueryHandler } from "../../../application/queries/get-expense-by-id/handler.js";
+import { GetExpenseByIdQuery } from "../../../application/queries/get-expense-by-id/query.js";
+import { GetAllExpensesQueryHandler } from "../../../application/queries/get-all-expenses/handler.js";
+import { GetAllExpensesQuery as GetAllExpensesQueryClass } from "../../../application/queries/get-all-expenses/query.js";
+
 // Validators
 import {
   createExpenseBodySchema,
@@ -20,20 +42,31 @@ import {
   getAllExpensesQuerySchema,
   type GetAllExpensesQuery,
 } from "../validators/get-all-expenses.validator.js";
+import {
+  approveExpenseParamsSchema,
+  approveExpenseBodySchema,
+  type ApproveExpenseParams,
+  type ApproveExpenseBody,
+} from "../validators/approve-expense.validator.js";
+import {
+  rejectExpenseParamsSchema,
+  rejectExpenseBodySchema,
+  type RejectExpenseParams,
+  type RejectExpenseBody,
+} from "../validators/reject-expense.validator.js";
 
 export class ExpenseController {
-  constructor() {
-    // TODO: Add command and query handlers when they're implemented
-    // private readonly createExpenseHandler: CreateExpenseCommandHandler,
-    // private readonly updateExpenseHandler: UpdateExpenseCommandHandler,
-    // private readonly deleteExpenseHandler: DeleteExpenseCommandHandler,
-    // private readonly getExpenseByIdHandler: GetExpenseByIdQueryHandler,
-    // private readonly getAllExpensesHandler: GetAllExpensesQueryHandler,
-    // private readonly submitExpenseHandler: SubmitExpenseCommandHandler,
-    // private readonly approveExpenseHandler: ApproveExpenseCommandHandler,
-    // private readonly rejectExpenseHandler: RejectExpenseCommandHandler,
-    // private readonly cancelExpenseHandler: CancelExpenseCommandHandler
-  }
+  constructor(
+    private readonly createExpenseHandler: CreateExpenseCommandHandler,
+    private readonly updateExpenseHandler: UpdateExpenseCommandHandler,
+    private readonly deleteExpenseHandler: DeleteExpenseCommandHandler,
+    private readonly getExpenseByIdHandler: GetExpenseByIdQueryHandler,
+    private readonly getAllExpensesHandler: GetAllExpensesQueryHandler,
+    private readonly submitExpenseHandler: SubmitExpenseCommandHandler,
+    private readonly approveExpenseHandler: ApproveExpenseCommandHandler,
+    private readonly rejectExpenseHandler: RejectExpenseCommandHandler,
+    private readonly cancelExpenseHandler: CancelExpenseCommandHandler
+  ) {}
 
   private handleError(error: unknown, reply: FastifyReply): void {
     if (error instanceof ZodError) {
@@ -61,16 +94,30 @@ export class ExpenseController {
     try {
       const validatedBody = createExpenseBodySchema.parse(request.body);
 
-      // TODO: Implement when CreateExpenseCommandHandler is ready
-      // const command = new CreateExpenseCommand(validatedBody);
-      // const result = await this.createExpenseHandler.handle(command);
+      // Get the authenticated user ID from the JWT token (set by authenticate middleware)
+      const authenticatedUser = request.user as any;
+      if (!authenticatedUser || !authenticatedUser.userId) {
+        reply
+          .code(401)
+          .send({ error: "Unable to identify authenticated user" });
+        return;
+      }
 
-      // Temporary response
-      reply.code(201).send({
-        success: true,
-        message: "Expense creation endpoint ready (implementation pending)",
-        data: { id: "temp-uuid", ...validatedBody },
-      });
+      const command = new CreateExpenseCommand(
+        authenticatedUser.userId, // Use authenticated user's ID instead of request body
+        validatedBody.vendorId,
+        validatedBody.categoryId,
+        validatedBody.departmentId,
+        validatedBody.description,
+        validatedBody.netAmount,
+        validatedBody.taxAmount,
+        validatedBody.totalAmount,
+        new Date(validatedBody.expenseDate),
+        validatedBody.receiptUrl
+      );
+
+      const result = await this.createExpenseHandler.handle(command);
+      reply.code(201).send(result);
     } catch (error) {
       this.handleError(error, reply);
     }
@@ -83,15 +130,12 @@ export class ExpenseController {
     try {
       const validatedParams = expenseIdParamSchema.parse(request.params);
 
-      // TODO: Implement when GetExpenseByIdQueryHandler is ready
-      // const query = new GetExpenseByIdQuery(validatedParams.expenseId);
-      // const result = await this.getExpenseByIdHandler.handle(query);
+      const query = new GetExpenseByIdQuery(validatedParams.expenseId);
+      const result = await this.getExpenseByIdHandler.handle(query);
 
-      // Temporary response
       reply.code(200).send({
         success: true,
-        message: "Get expense by ID endpoint ready (implementation pending)",
-        data: { id: validatedParams.expenseId },
+        data: result,
       });
     } catch (error) {
       this.handleError(error, reply);
@@ -105,22 +149,22 @@ export class ExpenseController {
     try {
       const validatedQuery = getAllExpensesQuerySchema.parse(request.query);
 
-      // TODO: Implement when GetAllExpensesQueryHandler is ready
-      // const query = new GetAllExpensesQuery(validatedQuery);
-      // const result = await this.getAllExpensesHandler.handle(query);
+      const query = new GetAllExpensesQueryClass(
+        validatedQuery.userId,
+        validatedQuery.status,
+        validatedQuery.categoryId,
+        validatedQuery.departmentId,
+        validatedQuery.vendorId,
+        undefined, // fromDate
+        undefined, // toDate
+        validatedQuery.page,
+        validatedQuery.limit
+      );
 
-      // Temporary response
+      const result = await this.getAllExpensesHandler.handle(query);
       reply.code(200).send({
         success: true,
-        message: "Get all expenses endpoint ready (implementation pending)",
-        data: {
-          expenses: [],
-          pagination: {
-            page: validatedQuery.page,
-            limit: validatedQuery.limit,
-            total: 0,
-          },
-        },
+        data: result,
       });
     } catch (error) {
       this.handleError(error, reply);
@@ -138,15 +182,25 @@ export class ExpenseController {
       const validatedParams = updateExpenseParamsSchema.parse(request.params);
       const validatedBody = updateExpenseBodySchema.parse(request.body);
 
-      // TODO: Implement when UpdateExpenseCommandHandler is ready
-      // const command = new UpdateExpenseCommand(validatedParams.expenseId, validatedBody);
-      // const result = await this.updateExpenseHandler.handle(command);
+      const command = new UpdateExpenseCommand(
+        validatedParams.expenseId,
+        validatedBody.vendorId,
+        validatedBody.categoryId,
+        validatedBody.departmentId,
+        validatedBody.description,
+        validatedBody.netAmount,
+        validatedBody.taxAmount,
+        validatedBody.totalAmount,
+        validatedBody.expenseDate
+          ? new Date(validatedBody.expenseDate)
+          : undefined,
+        validatedBody.receiptUrl
+      );
 
-      // Temporary response
+      const result = await this.updateExpenseHandler.handle(command);
       reply.code(200).send({
         success: true,
-        message: "Update expense endpoint ready (implementation pending)",
-        data: { id: validatedParams.expenseId, ...validatedBody },
+        data: result,
       });
     } catch (error) {
       this.handleError(error, reply);
@@ -160,11 +214,9 @@ export class ExpenseController {
     try {
       const validatedParams = expenseIdParamSchema.parse(request.params);
 
-      // TODO: Implement when DeleteExpenseCommandHandler is ready
-      // const command = new DeleteExpenseCommand(validatedParams.expenseId);
-      // await this.deleteExpenseHandler.handle(command);
+      const command = new DeleteExpenseCommand(validatedParams.expenseId);
+      await this.deleteExpenseHandler.handle(command);
 
-      // Temporary response
       reply.code(204).send();
     } catch (error) {
       this.handleError(error, reply);
@@ -178,15 +230,12 @@ export class ExpenseController {
     try {
       const validatedParams = expenseIdParamSchema.parse(request.params);
 
-      // TODO: Implement when SubmitExpenseCommandHandler is ready
-      // const command = new SubmitExpenseCommand(validatedParams.expenseId);
-      // const result = await this.submitExpenseHandler.handle(command);
+      const command = new SubmitExpenseCommand(validatedParams.expenseId);
+      const result = await this.submitExpenseHandler.handle(command);
 
-      // Temporary response
       reply.code(200).send({
         success: true,
-        message: "Submit expense endpoint ready (implementation pending)",
-        data: { id: validatedParams.expenseId, status: "SUBMITTED" },
+        data: result,
       });
     } catch (error) {
       this.handleError(error, reply);
@@ -194,21 +243,35 @@ export class ExpenseController {
   }
 
   async approve(
-    request: FastifyRequest<{ Params: ExpenseIdParam }>,
+    request: FastifyRequest<{
+      Params: ApproveExpenseParams;
+      Body: ApproveExpenseBody;
+    }>,
     reply: FastifyReply
   ): Promise<void> {
     try {
-      const validatedParams = expenseIdParamSchema.parse(request.params);
+      const validatedParams = approveExpenseParamsSchema.parse(request.params);
+      const validatedBody = approveExpenseBodySchema.parse(request.body);
 
-      // TODO: Implement when ApproveExpenseCommandHandler is ready
-      // const command = new ApproveExpenseCommand(validatedParams.expenseId);
-      // const result = await this.approveExpenseHandler.handle(command);
+      // Get the authenticated user ID from the JWT token (set by authenticate middleware)
+      const authenticatedUser = request.user as any;
+      if (!authenticatedUser || !authenticatedUser.userId) {
+        reply
+          .code(401)
+          .send({ error: "Unable to identify authenticated user" });
+        return;
+      }
 
-      // Temporary response
+      const command = new ApproveExpenseCommand(
+        validatedParams.expenseId,
+        authenticatedUser.userId, // Use authenticated user's ID instead of request body
+        validatedBody.approvalNotes
+      );
+      const result = await this.approveExpenseHandler.handle(command);
+
       reply.code(200).send({
         success: true,
-        message: "Approve expense endpoint ready (implementation pending)",
-        data: { id: validatedParams.expenseId, status: "APPROVED" },
+        data: result,
       });
     } catch (error) {
       this.handleError(error, reply);
@@ -216,21 +279,35 @@ export class ExpenseController {
   }
 
   async reject(
-    request: FastifyRequest<{ Params: ExpenseIdParam }>,
+    request: FastifyRequest<{
+      Params: RejectExpenseParams;
+      Body: RejectExpenseBody;
+    }>,
     reply: FastifyReply
   ): Promise<void> {
     try {
-      const validatedParams = expenseIdParamSchema.parse(request.params);
+      const validatedParams = rejectExpenseParamsSchema.parse(request.params);
+      const validatedBody = rejectExpenseBodySchema.parse(request.body);
 
-      // TODO: Implement when RejectExpenseCommandHandler is ready
-      // const command = new RejectExpenseCommand(validatedParams.expenseId);
-      // const result = await this.rejectExpenseHandler.handle(command);
+      // Get the authenticated user ID from the JWT token (set by authenticate middleware)
+      const authenticatedUser = request.user as any;
+      if (!authenticatedUser || !authenticatedUser.userId) {
+        reply
+          .code(401)
+          .send({ error: "Unable to identify authenticated user" });
+        return;
+      }
 
-      // Temporary response
+      const command = new RejectExpenseCommand(
+        validatedParams.expenseId,
+        validatedBody.rejectionReason,
+        authenticatedUser.userId // Use authenticated user's ID instead of request body
+      );
+      const result = await this.rejectExpenseHandler.handle(command);
+
       reply.code(200).send({
         success: true,
-        message: "Reject expense endpoint ready (implementation pending)",
-        data: { id: validatedParams.expenseId, status: "REJECTED" },
+        data: result,
       });
     } catch (error) {
       this.handleError(error, reply);
@@ -244,15 +321,12 @@ export class ExpenseController {
     try {
       const validatedParams = expenseIdParamSchema.parse(request.params);
 
-      // TODO: Implement when CancelExpenseCommandHandler is ready
-      // const command = new CancelExpenseCommand(validatedParams.expenseId);
-      // const result = await this.cancelExpenseHandler.handle(command);
+      const command = new CancelExpenseCommand(validatedParams.expenseId);
+      const result = await this.cancelExpenseHandler.handle(command);
 
-      // Temporary response
       reply.code(200).send({
         success: true,
-        message: "Cancel expense endpoint ready (implementation pending)",
-        data: { id: validatedParams.expenseId, status: "CANCELLED" },
+        data: result,
       });
     } catch (error) {
       this.handleError(error, reply);

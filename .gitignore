@@ -16,6 +16,15 @@ dist-ssr/
 build/
 *.local
 
+# TypeScript Build Output
+*.js
+*.d.ts
+*.js.map
+*.d.ts.map
+!scripts/*.js
+!*.config.js
+!*.config.*.js
+
 # ======================
 # Environment Variables
 # ======================

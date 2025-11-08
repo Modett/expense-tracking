@@ -1,1 +1,1 @@
-export * from "./ExpenseTagService.js";
+export * from "./ExpenseTagDomainService.js";

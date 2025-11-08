@@ -7,6 +7,9 @@ import { PrismaClient } from "@prisma/client";
 import { config } from "./config/index.js";
 import { registerUserModule } from "../modules/user/module.js";
 import { registerMasterDataModule } from "../modules/master-data/module.js";
+import { registerExpenseManagementModule } from "../modules/expense-management/module.js";
+import { registerApprovalModule } from "../modules/approval/module.js";
+import { registerBudgetModule } from "../modules/budget/module.js";
 
 export async function buildApp() {
   const fastify = Fastify({
@@ -58,6 +61,13 @@ export async function buildApp() {
           { name: "Auth", description: "Authentication endpoints" },
           { name: "Users", description: "User management endpoints" },
           { name: "Categories", description: "Category management endpoints" },
+          { name: "Vendors", description: "Vendor management endpoints" },
+          { name: "Departments", description: "Department management endpoints" },
+          { name: "Tags", description: "Tag management endpoints" },
+          { name: "Expenses", description: "Expense management endpoints" },
+          { name: "Expense Tags", description: "Expense tagging endpoints" },
+          { name: "Approvals", description: "Approval management endpoints" },
+          { name: "Budgets", description: "Budget management endpoints" },
         ],
       },
     });
@@ -103,7 +113,10 @@ export async function buildApp() {
     }
 
     // JWT errors
-    if (error.name === "UnauthorizedError" || error.message.includes("No Authorization")) {
+    if (
+      error.name === "UnauthorizedError" ||
+      error.message.includes("No Authorization")
+    ) {
       return reply.code(401).send({
         statusCode: 401,
         error: "Unauthorized",
@@ -160,7 +173,10 @@ export async function buildApp() {
     }
 
     // Prisma errors
-    if (error.message.includes("Prisma") || error.message.includes("PrismaClient")) {
+    if (
+      error.message.includes("Prisma") ||
+      error.message.includes("PrismaClient")
+    ) {
       return reply.code(500).send({
         statusCode: 500,
         error: "Database Error",
@@ -203,6 +219,15 @@ export async function buildApp() {
 
   // Register Master Data Module
   await registerMasterDataModule(fastify, prisma);
+
+  // Register Expense Management Module
+  await registerExpenseManagementModule(fastify, prisma);
+
+  // Register Approval Module
+  await registerApprovalModule(fastify, prisma);
+
+  // Register Budget Module
+  await registerBudgetModule(fastify, prisma);
 
   // Graceful shutdown
   const closeGracefully = async (signal: string) => {
