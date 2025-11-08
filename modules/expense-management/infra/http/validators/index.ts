@@ -5,6 +5,8 @@ export * from "./create-expense.validator.js";
 export * from "./update-expense.validator.js";
 export * from "./expense-id-param.validator.js";
 export * from "./get-all-expenses.validator.js";
+export * from "./approve-expense.validator.js";
+export * from "./reject-expense.validator.js";
 
 // Expense-Tag validators
 export * from "./add-tag-to-expense.validator.js";

@@ -1,0 +1,36 @@
+import type { IApprovalQueryRepository } from "../../../domain/repositories/IApprovalQueryRepository.js";
+import { UserId } from "../../../domain/index.js";
+import type { GetPendingApprovalsQuery } from "./query.js";
+
+export interface ApprovalDTO {
+  id: string;
+  expenseId: string;
+  approverId: string;
+  status: string;
+  comments: string | null;
+  approvedAt: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export class GetPendingApprovalsQueryHandler {
+  constructor(
+    private readonly approvalQueryRepo: IApprovalQueryRepository
+  ) {}
+
+  async handle(query: GetPendingApprovalsQuery): Promise<ApprovalDTO[]> {
+    let approvals;
+
+    if (query.approverId) {
+      const approverId = UserId.fromString(query.approverId);
+      approvals =
+        await this.approvalQueryRepo.findPendingApprovalsByApproverId(
+          approverId
+        );
+    } else {
+      approvals = await this.approvalQueryRepo.findPendingApprovals();
+    }
+
+    return approvals.map((approval) => approval.toPlainObject());
+  }
+}

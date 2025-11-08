@@ -14,7 +14,7 @@ import type { CreateExpenseCommand } from "./command.js";
 
 export interface CreateExpenseResponse {
   success: boolean;
-  expenseId: string;
+  data: Record<string, any>;
 }
 
 export class CreateExpenseCommandHandler {
@@ -58,7 +58,7 @@ export class CreateExpenseCommandHandler {
 
     return {
       success: true,
-      expenseId: expense.id.getValue(),
+      data: expense.toPlainObject(),
     };
   }
 }

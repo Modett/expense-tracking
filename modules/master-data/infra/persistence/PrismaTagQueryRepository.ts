@@ -1,4 +1,4 @@
-import type { PrismaClient } from "@prisma/client";
+import type { PrismaClient, TagTypeEnum } from "@prisma/client";
 import type {
   ITagQueryRepository,
   TagListQuery,
@@ -114,11 +114,18 @@ export class PrismaTagQueryRepository implements ITagQueryRepository {
   }
 
   async count(filters?: { isActive?: boolean; type?: string }): Promise<number> {
-    return this.prisma.tag.count({
-      where: {
-        ...(filters?.isActive !== undefined && { isActive: filters.isActive }),
-        ...(filters?.type !== undefined && { type: filters.type }),
-      },
-    });
+    const where: {
+      isActive?: boolean;
+      type?: TagTypeEnum;
+    } = {};
+
+    if (filters?.isActive !== undefined) {
+      where.isActive = filters.isActive;
+    }
+    if (filters?.type !== undefined) {
+      where.type = filters.type as TagTypeEnum;
+    }
+
+    return this.prisma.tag.count({ where });
   }
 }

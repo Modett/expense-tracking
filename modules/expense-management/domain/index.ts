@@ -7,7 +7,4 @@ export * from "./entities/index.js";
 export * from "./value-objects/index.js";
 
 // Export repository interfaces
-export * from "./repositories/IExpenseCommandRepository.js";
-export * from "./repositories/IExpenseQueryRepository.js";
-export * from "./repositories/IExpenseTagCommandRepository.js";
-export * from "./repositories/IExpenseTagQueryRepository.js";
+export * from "./repositories/index.js";

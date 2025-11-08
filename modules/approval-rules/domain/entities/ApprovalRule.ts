@@ -1,0 +1,202 @@
+import {
+  ApprovalRuleId,
+  MinAmount,
+  ApproverRole,
+  ApprovalOrder,
+  CategoryId,
+} from "../value-objects/index.js";
+
+export interface ApprovalRuleProps {
+  id: ApprovalRuleId;
+  categoryId: CategoryId;
+  minAmount: MinAmount;
+  approverRole: ApproverRole;
+  approvalOrder: ApprovalOrder;
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface CreateApprovalRuleProps {
+  categoryId: CategoryId;
+  minAmount: MinAmount;
+  approverRole: ApproverRole;
+  approvalOrder: ApprovalOrder;
+}
+
+export class ApprovalRule {
+  private constructor(private props: ApprovalRuleProps) {
+    this.validate();
+  }
+
+  static create(props: CreateApprovalRuleProps): ApprovalRule {
+    const now = new Date();
+
+    return new ApprovalRule({
+      id: ApprovalRuleId.create(),
+      categoryId: props.categoryId,
+      minAmount: props.minAmount,
+      approverRole: props.approverRole,
+      approvalOrder: props.approvalOrder,
+      isActive: true,
+      createdAt: now,
+      updatedAt: now,
+    });
+  }
+
+  static reconstitute(props: ApprovalRuleProps): ApprovalRule {
+    return new ApprovalRule(props);
+  }
+
+  private validate(): void {
+    if (!this.props.id) {
+      throw new Error("ApprovalRule ID is required");
+    }
+    if (!this.props.categoryId) {
+      throw new Error("Category ID is required");
+    }
+    if (!this.props.minAmount) {
+      throw new Error("Minimum amount is required");
+    }
+    if (!this.props.approverRole) {
+      throw new Error("Approver role is required");
+    }
+    if (!this.props.approvalOrder) {
+      throw new Error("Approval order is required");
+    }
+  }
+
+  get id(): ApprovalRuleId {
+    return this.props.id;
+  }
+
+  get categoryId(): CategoryId {
+    return this.props.categoryId;
+  }
+
+  get minAmount(): MinAmount {
+    return this.props.minAmount;
+  }
+
+  get approverRole(): ApproverRole {
+    return this.props.approverRole;
+  }
+
+  get approvalOrder(): ApprovalOrder {
+    return this.props.approvalOrder;
+  }
+
+  get isActive(): boolean {
+    return this.props.isActive;
+  }
+
+  get createdAt(): Date {
+    return this.props.createdAt;
+  }
+
+  get updatedAt(): Date {
+    return this.props.updatedAt;
+  }
+
+  // Business logic methods
+
+  updateMinAmount(minAmount: MinAmount): void {
+    if (!this.isActive) {
+      throw new Error("Cannot update inactive approval rule");
+    }
+
+    this.props.minAmount = minAmount;
+    this.props.updatedAt = new Date();
+  }
+
+  updateApproverRole(approverRole: ApproverRole): void {
+    if (!this.isActive) {
+      throw new Error("Cannot update inactive approval rule");
+    }
+
+    this.props.approverRole = approverRole;
+    this.props.updatedAt = new Date();
+  }
+
+  updateApprovalOrder(approvalOrder: ApprovalOrder): void {
+    if (!this.isActive) {
+      throw new Error("Cannot update inactive approval rule");
+    }
+
+    this.props.approvalOrder = approvalOrder;
+    this.props.updatedAt = new Date();
+  }
+
+  activate(): void {
+    if (this.isActive) {
+      throw new Error("Approval rule is already active");
+    }
+
+    this.props.isActive = true;
+    this.props.updatedAt = new Date();
+  }
+
+  deactivate(): void {
+    if (!this.isActive) {
+      throw new Error("Approval rule is already inactive");
+    }
+
+    this.props.isActive = false;
+    this.props.updatedAt = new Date();
+  }
+
+  // Query methods
+
+  appliesTo(categoryId: CategoryId, amount: number): boolean {
+    if (!this.isActive) {
+      return false;
+    }
+
+    return (
+      this.props.categoryId.equals(categoryId) &&
+      this.props.minAmount.matches(amount)
+    );
+  }
+
+  appliesToCategory(categoryId: CategoryId): boolean {
+    return this.props.categoryId.equals(categoryId);
+  }
+
+  appliesToAmount(amount: number): boolean {
+    return this.props.minAmount.matches(amount);
+  }
+
+  isForCategory(categoryId: CategoryId): boolean {
+    return this.props.categoryId.equals(categoryId);
+  }
+
+  isFirstInChain(): boolean {
+    return this.props.approvalOrder.isFirst();
+  }
+
+  hasHigherPriorityThan(other: ApprovalRule): boolean {
+    return this.props.approvalOrder.isLessThan(other.approvalOrder);
+  }
+
+  hasLowerPriorityThan(other: ApprovalRule): boolean {
+    return this.props.approvalOrder.isGreaterThan(other.approvalOrder);
+  }
+
+  equals(other: ApprovalRule): boolean {
+    if (!other) return false;
+    return this.props.id.equals(other.props.id);
+  }
+
+  toPlainObject() {
+    return {
+      id: this.props.id.getValue(),
+      categoryId: this.props.categoryId.getValue(),
+      minAmount: this.props.minAmount.getValue(),
+      approverRole: this.props.approverRole.getValue(),
+      approvalOrder: this.props.approvalOrder.getValue(),
+      isActive: this.props.isActive,
+      createdAt: this.props.createdAt,
+      updatedAt: this.props.updatedAt,
+    };
+  }
+}
