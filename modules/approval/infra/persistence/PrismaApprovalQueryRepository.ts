@@ -8,6 +8,7 @@ import {
   ApprovalId,
   ApprovalStatus,
   ApprovalComments,
+  ApprovalOrder,
   ExpenseId,
   UserId,
 } from "../../domain/value-objects/index.js";
@@ -20,6 +21,7 @@ export class PrismaApprovalQueryRepository implements IApprovalQueryRepository {
       id: ApprovalId.fromString(prismaApproval.approvalId),
       expenseId: ExpenseId.fromString(prismaApproval.expenseId),
       approverId: UserId.fromString(prismaApproval.approverId),
+      approvalOrder: ApprovalOrder.create(prismaApproval.approvalOrder),
       status: ApprovalStatus.fromString(prismaApproval.status),
       comments: prismaApproval.comments
         ? ApprovalComments.fromString(prismaApproval.comments)
@@ -62,7 +64,7 @@ export class PrismaApprovalQueryRepository implements IApprovalQueryRepository {
 
   async findByStatus(status: ApprovalStatus): Promise<Approval[]> {
     const approvals = await this.prisma.approval.findMany({
-      where: { status: status.getValue() },
+      where: { status: status.getValue() as any },
       orderBy: { createdAt: "desc" },
     });
 
@@ -104,7 +106,7 @@ export class PrismaApprovalQueryRepository implements IApprovalQueryRepository {
     }
 
     if (filters?.status) {
-      where.status = filters.status.getValue();
+      where.status = filters.status.getValue() as any;
     }
 
     if (filters?.dateFrom || filters?.dateTo) {
@@ -137,7 +139,7 @@ export class PrismaApprovalQueryRepository implements IApprovalQueryRepository {
     }
 
     if (filters?.status) {
-      where.status = filters.status.getValue();
+      where.status = filters.status.getValue() as any;
     }
 
     if (filters?.dateFrom || filters?.dateTo) {

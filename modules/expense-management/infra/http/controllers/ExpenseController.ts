@@ -10,10 +10,6 @@ import { DeleteExpenseCommandHandler } from "../../../application/commands/delet
 import { DeleteExpenseCommand } from "../../../application/commands/delete-expense/command.js";
 import { SubmitExpenseCommandHandler } from "../../../application/commands/submit-expense/handler.js";
 import { SubmitExpenseCommand } from "../../../application/commands/submit-expense/command.js";
-import { ApproveExpenseCommandHandler } from "../../../application/commands/approve-expense/handler.js";
-import { ApproveExpenseCommand } from "../../../application/commands/approve-expense/command.js";
-import { RejectExpenseCommandHandler } from "../../../application/commands/reject-expense/handler.js";
-import { RejectExpenseCommand } from "../../../application/commands/reject-expense/command.js";
 import { CancelExpenseCommandHandler } from "../../../application/commands/cancel-expense/handler.js";
 import { CancelExpenseCommand } from "../../../application/commands/cancel-expense/command.js";
 
@@ -42,18 +38,6 @@ import {
   getAllExpensesQuerySchema,
   type GetAllExpensesQuery,
 } from "../validators/get-all-expenses.validator.js";
-import {
-  approveExpenseParamsSchema,
-  approveExpenseBodySchema,
-  type ApproveExpenseParams,
-  type ApproveExpenseBody,
-} from "../validators/approve-expense.validator.js";
-import {
-  rejectExpenseParamsSchema,
-  rejectExpenseBodySchema,
-  type RejectExpenseParams,
-  type RejectExpenseBody,
-} from "../validators/reject-expense.validator.js";
 
 export class ExpenseController {
   constructor(
@@ -63,8 +47,6 @@ export class ExpenseController {
     private readonly getExpenseByIdHandler: GetExpenseByIdQueryHandler,
     private readonly getAllExpensesHandler: GetAllExpensesQueryHandler,
     private readonly submitExpenseHandler: SubmitExpenseCommandHandler,
-    private readonly approveExpenseHandler: ApproveExpenseCommandHandler,
-    private readonly rejectExpenseHandler: RejectExpenseCommandHandler,
     private readonly cancelExpenseHandler: CancelExpenseCommandHandler
   ) {}
 
@@ -232,78 +214,6 @@ export class ExpenseController {
 
       const command = new SubmitExpenseCommand(validatedParams.expenseId);
       const result = await this.submitExpenseHandler.handle(command);
-
-      reply.code(200).send({
-        success: true,
-        data: result,
-      });
-    } catch (error) {
-      this.handleError(error, reply);
-    }
-  }
-
-  async approve(
-    request: FastifyRequest<{
-      Params: ApproveExpenseParams;
-      Body: ApproveExpenseBody;
-    }>,
-    reply: FastifyReply
-  ): Promise<void> {
-    try {
-      const validatedParams = approveExpenseParamsSchema.parse(request.params);
-      const validatedBody = approveExpenseBodySchema.parse(request.body);
-
-      // Get the authenticated user ID from the JWT token (set by authenticate middleware)
-      const authenticatedUser = request.user as any;
-      if (!authenticatedUser || !authenticatedUser.userId) {
-        reply
-          .code(401)
-          .send({ error: "Unable to identify authenticated user" });
-        return;
-      }
-
-      const command = new ApproveExpenseCommand(
-        validatedParams.expenseId,
-        authenticatedUser.userId, // Use authenticated user's ID instead of request body
-        validatedBody.approvalNotes
-      );
-      const result = await this.approveExpenseHandler.handle(command);
-
-      reply.code(200).send({
-        success: true,
-        data: result,
-      });
-    } catch (error) {
-      this.handleError(error, reply);
-    }
-  }
-
-  async reject(
-    request: FastifyRequest<{
-      Params: RejectExpenseParams;
-      Body: RejectExpenseBody;
-    }>,
-    reply: FastifyReply
-  ): Promise<void> {
-    try {
-      const validatedParams = rejectExpenseParamsSchema.parse(request.params);
-      const validatedBody = rejectExpenseBodySchema.parse(request.body);
-
-      // Get the authenticated user ID from the JWT token (set by authenticate middleware)
-      const authenticatedUser = request.user as any;
-      if (!authenticatedUser || !authenticatedUser.userId) {
-        reply
-          .code(401)
-          .send({ error: "Unable to identify authenticated user" });
-        return;
-      }
-
-      const command = new RejectExpenseCommand(
-        validatedParams.expenseId,
-        validatedBody.rejectionReason,
-        authenticatedUser.userId // Use authenticated user's ID instead of request body
-      );
-      const result = await this.rejectExpenseHandler.handle(command);
 
       reply.code(200).send({
         success: true,

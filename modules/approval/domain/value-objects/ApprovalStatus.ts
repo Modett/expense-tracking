@@ -1,4 +1,5 @@
 export enum ApprovalStatusType {
+  WAITING = "waiting",
   PENDING = "pending",
   APPROVED = "approved",
   REJECTED = "rejected",
@@ -22,6 +23,10 @@ export class ApprovalStatus {
 
   static create(status: ApprovalStatusType): ApprovalStatus {
     return new ApprovalStatus(status);
+  }
+
+  static waiting(): ApprovalStatus {
+    return new ApprovalStatus(ApprovalStatusType.WAITING);
   }
 
   static pending(): ApprovalStatus {
@@ -58,6 +63,10 @@ export class ApprovalStatus {
     return this.value;
   }
 
+  isWaiting(): boolean {
+    return this.value === ApprovalStatusType.WAITING;
+  }
+
   isPending(): boolean {
     return this.value === ApprovalStatusType.PENDING;
   }
@@ -76,6 +85,14 @@ export class ApprovalStatus {
 
   canBeModified(): boolean {
     return this.value === ApprovalStatusType.PENDING;
+  }
+
+  canBeApproved(): boolean {
+    return this.value === ApprovalStatusType.PENDING;
+  }
+
+  canBeActivated(): boolean {
+    return this.value === ApprovalStatusType.WAITING;
   }
 
   isFinal(): boolean {

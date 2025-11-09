@@ -93,7 +93,14 @@ export class BudgetController {
     reply: FastifyReply
   ): Promise<void> {
     try {
+      console.log(
+        "[BudgetController] Received request body:",
+        JSON.stringify(request.body, null, 2)
+      );
+
       const validatedBody = createBudgetBodySchema.parse(request.body);
+
+      console.log("[BudgetController] Validation passed, creating command...");
 
       const command = new CreateBudgetCommand(
         validatedBody.departmentId,
@@ -105,7 +112,8 @@ export class BudgetController {
       );
 
       const result = await this.createBudgetHandler.handle(command);
-      reply.code(201).send({ success: true, data: result });
+
+      reply.code(201).send(result);
     } catch (error) {
       this.handleError(error, reply);
     }
@@ -142,7 +150,9 @@ export class BudgetController {
     reply: FastifyReply
   ): Promise<void> {
     try {
-      const validatedParams = adjustBudgetSpentParamsSchema.parse(request.params);
+      const validatedParams = adjustBudgetSpentParamsSchema.parse(
+        request.params
+      );
       const validatedBody = adjustBudgetSpentBodySchema.parse(request.body);
 
       const command = new AdjustBudgetSpentCommand(
@@ -264,7 +274,11 @@ export class BudgetController {
 
   async getStatus(
     request: FastifyRequest<{
-      Querystring: { departmentId: string; categoryId: string; fiscalPeriod: string };
+      Querystring: {
+        departmentId: string;
+        categoryId: string;
+        fiscalPeriod: string;
+      };
     }>,
     reply: FastifyReply
   ): Promise<void> {

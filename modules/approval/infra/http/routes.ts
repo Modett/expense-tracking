@@ -1,6 +1,10 @@
 import type { FastifyInstance } from "fastify";
 import type { ApprovalController } from "./controllers/ApprovalController.js";
 import { authenticate } from "../../../user/infra/http/middleware/authenticate.js";
+import {
+  authorizeManager,
+  authorizeAdmin,
+} from "../../../user/infra/http/middleware/authorize.js";
 
 const errorSchema = {
   type: "object",
@@ -14,42 +18,25 @@ const successSchema = {
   type: "object",
   properties: {
     success: { type: "boolean" },
-    data: { type: "object" },
+    data: {}, // Allow any type (object, array, etc.)
   },
+  additionalProperties: true,
+};
+
+const createApprovalResponseSchema = {
+  type: "object",
+  properties: {
+    success: { type: "boolean" },
+    approvalId: { type: "string", format: "uuid" },
+  },
+  required: ["success", "approvalId"],
+  additionalProperties: false,
 };
 
 export async function registerApprovalRoutes(
   fastify: FastifyInstance,
   approvalController: ApprovalController
 ): Promise<void> {
-  // Create approval
-  fastify.post(
-    "/approvals",
-    {
-      schema: {
-        tags: ["Approvals"],
-        summary: "Create a new approval (Authenticated)",
-        security: [{ bearerAuth: [] }],
-        body: {
-          type: "object",
-          required: ["expenseId", "approverId"],
-          properties: {
-            expenseId: { type: "string", format: "uuid" },
-            approverId: { type: "string", format: "uuid" },
-            comments: { type: "string", maxLength: 1000 },
-          },
-        },
-        response: {
-          201: successSchema,
-          400: errorSchema,
-          401: errorSchema,
-        },
-      },
-      onRequest: [authenticate],
-    },
-    async (request, reply) => approvalController.create(request as any, reply)
-  );
-
   // Get all approvals
   fastify.get(
     "/approvals",
@@ -65,7 +52,7 @@ export async function registerApprovalRoutes(
             approverId: { type: "string", format: "uuid" },
             status: {
               type: "string",
-              enum: ["pending", "approved", "rejected", "skipped"],
+              enum: ["waiting", "pending", "approved", "rejected", "skipped"],
             },
             dateFrom: { type: "string", format: "date-time" },
             dateTo: { type: "string", format: "date-time" },
@@ -87,14 +74,8 @@ export async function registerApprovalRoutes(
     {
       schema: {
         tags: ["Approvals"],
-        summary: "Get pending approvals (Authenticated)",
+        summary: "Get my pending approvals (Authenticated)",
         security: [{ bearerAuth: [] }],
-        querystring: {
-          type: "object",
-          properties: {
-            approverId: { type: "string", format: "uuid" },
-          },
-        },
         response: {
           200: successSchema,
           401: errorSchema,
@@ -201,9 +182,7 @@ export async function registerApprovalRoutes(
         },
         body: {
           type: "object",
-          required: ["approverId"],
           properties: {
-            approverId: { type: "string", format: "uuid" },
             comments: { type: "string", maxLength: 1000 },
           },
         },
@@ -237,9 +216,7 @@ export async function registerApprovalRoutes(
         },
         body: {
           type: "object",
-          required: ["approverId"],
           properties: {
-            approverId: { type: "string", format: "uuid" },
             comments: { type: "string", maxLength: 1000 },
           },
         },
@@ -262,7 +239,7 @@ export async function registerApprovalRoutes(
     {
       schema: {
         tags: ["Approvals"],
-        summary: "Update approval comments (Authenticated)",
+        summary: "Update approval comments (Admin only)",
         security: [{ bearerAuth: [] }],
         params: {
           type: "object",
@@ -283,37 +260,11 @@ export async function registerApprovalRoutes(
           400: errorSchema,
           404: errorSchema,
           401: errorSchema,
+          403: errorSchema,
         },
       },
-      onRequest: [authenticate],
+      onRequest: [authenticate, authorizeAdmin],
     },
     async (request, reply) => approvalController.update(request as any, reply)
-  );
-
-  // Delete approval
-  fastify.delete(
-    "/approvals/:approvalId",
-    {
-      schema: {
-        tags: ["Approvals"],
-        summary: "Delete an approval (Authenticated)",
-        security: [{ bearerAuth: [] }],
-        params: {
-          type: "object",
-          required: ["approvalId"],
-          properties: {
-            approvalId: { type: "string", format: "uuid" },
-          },
-        },
-        response: {
-          200: successSchema,
-          400: errorSchema,
-          404: errorSchema,
-          401: errorSchema,
-        },
-      },
-      onRequest: [authenticate],
-    },
-    async (request, reply) => approvalController.delete(request as any, reply)
   );
 }

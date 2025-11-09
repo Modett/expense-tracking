@@ -11,6 +11,12 @@ import type { CreateBudgetCommand } from "./command.js";
 export interface CreateBudgetResponse {
   success: boolean;
   budgetId: string;
+  departmentId: string;
+  categoryId: string;
+  budgetAmount: number;
+  fiscalPeriod: string;
+  startDate: string;
+  endDate: string;
 }
 
 export class CreateBudgetCommandHandler {
@@ -52,6 +58,12 @@ export class CreateBudgetCommandHandler {
     return {
       success: true,
       budgetId: budget.id.getValue(),
+      departmentId: command.departmentId,
+      categoryId: command.categoryId,
+      budgetAmount: command.budgetAmount,
+      fiscalPeriod: command.fiscalPeriod,
+      startDate: command.startDate.toISOString(),
+      endDate: command.endDate.toISOString(),
     };
   }
 }

@@ -12,8 +12,8 @@ export class NetAmount {
       throw new Error("Net amount cannot have more than 2 decimal places");
     }
 
-    if (value > 1000000) {
-      throw new Error("Net amount cannot exceed 1,000,000");
+    if (value > 5000000) {
+      throw new Error("Net amount cannot exceed 5,000,000");
     }
   }
 

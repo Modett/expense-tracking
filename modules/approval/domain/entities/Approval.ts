@@ -2,6 +2,7 @@ import {
   ApprovalId,
   ApprovalStatus,
   ApprovalComments,
+  ApprovalOrder,
   ExpenseId,
   UserId,
 } from "../value-objects/index.js";
@@ -10,6 +11,7 @@ export interface ApprovalProps {
   id: ApprovalId;
   expenseId: ExpenseId;
   approverId: UserId;
+  approvalOrder: ApprovalOrder;
   status: ApprovalStatus;
   comments?: ApprovalComments | undefined;
   approvedAt?: Date | undefined;
@@ -20,6 +22,8 @@ export interface ApprovalProps {
 export interface CreateApprovalProps {
   expenseId: ExpenseId;
   approverId: UserId;
+  approvalOrder: ApprovalOrder;
+  status?: ApprovalStatus;
   comments?: ApprovalComments;
 }
 
@@ -35,7 +39,8 @@ export class Approval {
       id: ApprovalId.create(),
       expenseId: props.expenseId,
       approverId: props.approverId,
-      status: ApprovalStatus.pending(),
+      approvalOrder: props.approvalOrder,
+      status: props.status || ApprovalStatus.pending(),
       comments: props.comments,
       approvedAt: undefined,
       createdAt: now,
@@ -72,6 +77,10 @@ export class Approval {
 
   get approverId(): UserId {
     return this.props.approverId;
+  }
+
+  get approvalOrder(): ApprovalOrder {
+    return this.props.approvalOrder;
   }
 
   get status(): ApprovalStatus {
@@ -148,6 +157,17 @@ export class Approval {
     this.props.updatedAt = new Date();
   }
 
+  activate(): void {
+    if (!this.status.isWaiting()) {
+      throw new Error(
+        `Cannot activate: approval status is ${this.status.toString()}, expected waiting`
+      );
+    }
+
+    this.props.status = ApprovalStatus.pending();
+    this.props.updatedAt = new Date();
+  }
+
   isApprovedBy(userId: UserId): boolean {
     return this.props.approverId.equals(userId);
   }
@@ -186,6 +206,7 @@ export class Approval {
       id: this.props.id.getValue(),
       expenseId: this.props.expenseId.getValue(),
       approverId: this.props.approverId.getValue(),
+      approvalOrder: this.props.approvalOrder.getValue(),
       status: this.props.status.getValue(),
       comments: this.props.comments?.getValue() || null,
       approvedAt: this.props.approvedAt || null,

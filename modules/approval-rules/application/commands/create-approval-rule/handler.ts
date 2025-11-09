@@ -13,6 +13,10 @@ import type { CreateApprovalRuleCommand } from "./command.js";
 export interface CreateApprovalRuleResponse {
   success: boolean;
   approvalRuleId: string;
+  categoryId: string;
+  minAmount: number;
+  approverRole: string;
+  approvalOrder: number;
 }
 
 export class CreateApprovalRuleCommandHandler {
@@ -48,6 +52,10 @@ export class CreateApprovalRuleCommandHandler {
     return {
       success: true,
       approvalRuleId: approvalRule.id.getValue(),
+      categoryId: approvalRule.categoryId.getValue(),
+      minAmount: approvalRule.minAmount.getValue(),
+      approverRole: approvalRule.approverRole.getValue(),
+      approvalOrder: approvalRule.approvalOrder.getValue(),
     };
   }
 }

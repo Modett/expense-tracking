@@ -12,15 +12,15 @@ export class ApprovalRuleDomainService {
   ) {}
 
   async ensureRuleExists(approvalRuleId: ApprovalRuleId): Promise<void> {
-    const exists = await this.approvalRuleQueryRepo.exists(approvalRuleId);
-    if (!exists) {
+    const rule = await this.approvalRuleQueryRepo.findById(approvalRuleId);
+    if (!rule) {
       throw new Error("Approval rule does not exist");
     }
   }
 
   async ensureRuleDoesNotExist(approvalRuleId: ApprovalRuleId): Promise<void> {
-    const exists = await this.approvalRuleQueryRepo.exists(approvalRuleId);
-    if (exists) {
+    const rule = await this.approvalRuleQueryRepo.findById(approvalRuleId);
+    if (rule) {
       throw new Error("Approval rule already exists");
     }
   }
@@ -76,7 +76,12 @@ export class ApprovalRuleDomainService {
     }
 
     // Ensure first rule starts at order 1
-    if (!rules[0].isFirstInChain()) {
+    const firstRule = rules[0];
+    if (!firstRule) {
+      return;
+    }
+
+    if (!firstRule.isFirstInChain()) {
       throw new Error(
         "Approval rule chain must start with approval order 1"
       );
@@ -84,8 +89,15 @@ export class ApprovalRuleDomainService {
 
     // Check for gaps in the sequence
     for (let i = 1; i < rules.length; i++) {
-      const expectedOrder = rules[i - 1].approvalOrder.getValue() + 1;
-      const actualOrder = rules[i].approvalOrder.getValue();
+      const prevRule = rules[i - 1];
+      const currentRule = rules[i];
+
+      if (!prevRule || !currentRule) {
+        continue;
+      }
+
+      const expectedOrder = prevRule.approvalOrder.getValue() + 1;
+      const actualOrder = currentRule.approvalOrder.getValue();
 
       if (actualOrder !== expectedOrder) {
         throw new Error(
@@ -112,7 +124,12 @@ export class ApprovalRuleDomainService {
     }
 
     // Return the next sequential order
-    const lastOrder = rules[rules.length - 1].approvalOrder.getValue();
+    const lastRule = rules[rules.length - 1];
+    if (!lastRule) {
+      return 1;
+    }
+
+    const lastOrder = lastRule.approvalOrder.getValue();
     return lastOrder + 1;
   }
 

@@ -23,6 +23,35 @@ const successSchema = {
   },
 };
 
+const submitExpenseResponseSchema = {
+  type: "object",
+  properties: {
+    success: { type: "boolean" },
+    data: {
+      type: "object",
+      properties: {
+        success: { type: "boolean" },
+        expenseId: { type: "string", format: "uuid" },
+        message: { type: "string" },
+        approvalsCreated: { type: "number" },
+        approvalIds: {
+          type: "array",
+          items: { type: "string", format: "uuid" },
+        },
+        approverIds: {
+          type: "array",
+          items: { type: "string", format: "uuid" },
+        },
+        approvalErrors: {
+          type: "array",
+          items: { type: "string" },
+        },
+      },
+      required: ["success", "expenseId", "message"],
+    },
+  },
+};
+
 export async function registerExpenseRoutes(
   fastify: FastifyInstance,
   expenseController: ExpenseController
@@ -213,7 +242,7 @@ export async function registerExpenseRoutes(
           },
         },
         response: {
-          200: successSchema,
+          200: submitExpenseResponseSchema,
           400: errorSchema,
           401: errorSchema,
           404: errorSchema,
@@ -222,75 +251,6 @@ export async function registerExpenseRoutes(
       onRequest: [authenticate],
     },
     async (request, reply) => expenseController.submit(request as any, reply)
-  );
-
-  // Approve expense
-  fastify.post(
-    "/expenses/:expenseId/approve",
-    {
-      schema: {
-        tags: ["Expenses"],
-        summary: "Approve expense (Admin Only)",
-        security: [{ bearerAuth: [] }],
-        params: {
-          type: "object",
-          required: ["expenseId"],
-          properties: {
-            expenseId: { type: "string", format: "uuid" },
-          },
-        },
-        body: {
-          type: "object",
-          properties: {
-            approvalNotes: { type: "string", maxLength: 500 },
-          },
-        },
-        response: {
-          200: successSchema,
-          400: errorSchema,
-          401: errorSchema,
-          403: errorSchema,
-          404: errorSchema,
-        },
-      },
-      onRequest: [authenticate, authorizeAdmin],
-    },
-    async (request, reply) => expenseController.approve(request as any, reply)
-  );
-
-  // Reject expense
-  fastify.post(
-    "/expenses/:expenseId/reject",
-    {
-      schema: {
-        tags: ["Expenses"],
-        summary: "Reject expense (Admin Only)",
-        security: [{ bearerAuth: [] }],
-        params: {
-          type: "object",
-          required: ["expenseId"],
-          properties: {
-            expenseId: { type: "string", format: "uuid" },
-          },
-        },
-        body: {
-          type: "object",
-          required: ["rejectionReason"],
-          properties: {
-            rejectionReason: { type: "string", minLength: 1, maxLength: 500 },
-          },
-        },
-        response: {
-          200: successSchema,
-          400: errorSchema,
-          401: errorSchema,
-          403: errorSchema,
-          404: errorSchema,
-        },
-      },
-      onRequest: [authenticate, authorizeAdmin],
-    },
-    async (request, reply) => expenseController.reject(request as any, reply)
   );
 
   // Cancel expense
