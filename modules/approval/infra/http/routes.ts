@@ -76,6 +76,12 @@ export async function registerApprovalRoutes(
         tags: ["Approvals"],
         summary: "Get my pending approvals (Authenticated)",
         security: [{ bearerAuth: [] }],
+        querystring: {
+          type: "object",
+          properties: {
+            approverId: { type: "string", format: "uuid" },
+          },
+        },
         response: {
           200: successSchema,
           401: errorSchema,

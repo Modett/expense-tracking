@@ -146,7 +146,9 @@ export class PurchaseOrderController {
     reply: FastifyReply
   ): Promise<void> {
     try {
-      const validatedParams = updatePurchaseOrderParamsSchema.parse(request.params);
+      const validatedParams = updatePurchaseOrderParamsSchema.parse(
+        request.params
+      );
       const validatedBody = updatePurchaseOrderBodySchema.parse(request.body);
 
       const command = new UpdatePurchaseOrderCommand(
@@ -167,7 +169,9 @@ export class PurchaseOrderController {
     reply: FastifyReply
   ): Promise<void> {
     try {
-      const validatedParams = issuePurchaseOrderParamsSchema.parse(request.params);
+      const validatedParams = issuePurchaseOrderParamsSchema.parse(
+        request.params
+      );
 
       const command = new IssuePurchaseOrderCommand(validatedParams.id);
 
@@ -183,7 +187,9 @@ export class PurchaseOrderController {
     reply: FastifyReply
   ): Promise<void> {
     try {
-      const validatedParams = cancelPurchaseOrderParamsSchema.parse(request.params);
+      const validatedParams = cancelPurchaseOrderParamsSchema.parse(
+        request.params
+      );
 
       const command = new CancelPurchaseOrderCommand(validatedParams.id);
 
@@ -202,7 +208,9 @@ export class PurchaseOrderController {
     reply: FastifyReply
   ): Promise<void> {
     try {
-      const validatedParams = receivePurchaseOrderParamsSchema.parse(request.params);
+      const validatedParams = receivePurchaseOrderParamsSchema.parse(
+        request.params
+      );
       const validatedBody = receivePurchaseOrderBodySchema.parse(request.body);
 
       const command = new ReceivePurchaseOrderCommand(
@@ -222,7 +230,9 @@ export class PurchaseOrderController {
     reply: FastifyReply
   ): Promise<void> {
     try {
-      const validatedParams = closePurchaseOrderParamsSchema.parse(request.params);
+      const validatedParams = closePurchaseOrderParamsSchema.parse(
+        request.params
+      );
 
       const command = new ClosePurchaseOrderCommand(validatedParams.id);
 
@@ -238,7 +248,9 @@ export class PurchaseOrderController {
     reply: FastifyReply
   ): Promise<void> {
     try {
-      const validatedParams = deletePurchaseOrderParamsSchema.parse(request.params);
+      const validatedParams = deletePurchaseOrderParamsSchema.parse(
+        request.params
+      );
 
       const command = new DeletePurchaseOrderCommand(validatedParams.id);
 
@@ -254,7 +266,9 @@ export class PurchaseOrderController {
     reply: FastifyReply
   ): Promise<void> {
     try {
-      const validatedParams = getPurchaseOrderByIdParamsSchema.parse(request.params);
+      const validatedParams = getPurchaseOrderByIdParamsSchema.parse(
+        request.params
+      );
 
       const query = new GetPurchaseOrderByIdQuery(validatedParams.id);
       const result = await this.getPurchaseOrderByIdHandler.handle(query);
@@ -275,7 +289,9 @@ export class PurchaseOrderController {
     reply: FastifyReply
   ): Promise<void> {
     try {
-      const validatedQuery = getAllPurchaseOrdersQuerySchema.parse(request.query);
+      const validatedQuery = getAllPurchaseOrdersQuerySchema.parse(
+        request.query
+      );
 
       const query = new GetAllPurchaseOrdersQueryClass(
         validatedQuery.vendorId,
@@ -287,6 +303,7 @@ export class PurchaseOrderController {
       );
 
       const result = await this.getAllPurchaseOrdersHandler.handle(query);
+
       reply.code(200).send({ success: true, data: result });
     } catch (error) {
       this.handleError(error, reply);
@@ -298,9 +315,13 @@ export class PurchaseOrderController {
     reply: FastifyReply
   ): Promise<void> {
     try {
-      const validatedParams = getPurchaseOrdersByVendorParamsSchema.parse(request.params);
+      const validatedParams = getPurchaseOrdersByVendorParamsSchema.parse(
+        request.params
+      );
 
-      const query = new GetPurchaseOrdersByVendorQueryClass(validatedParams.vendorId);
+      const query = new GetPurchaseOrdersByVendorQueryClass(
+        validatedParams.vendorId
+      );
 
       const result = await this.getPurchaseOrdersByVendorHandler.handle(query);
       reply.code(200).send({ success: true, data: result });
@@ -314,9 +335,13 @@ export class PurchaseOrderController {
     reply: FastifyReply
   ): Promise<void> {
     try {
-      const validatedParams = getPurchaseOrderByPONumberParamsSchema.parse(request.params);
+      const validatedParams = getPurchaseOrderByPONumberParamsSchema.parse(
+        request.params
+      );
 
-      const query = new GetPurchaseOrderByPONumberQueryClass(validatedParams.poNumber);
+      const query = new GetPurchaseOrderByPONumberQueryClass(
+        validatedParams.poNumber
+      );
 
       const result = await this.getPurchaseOrderByPONumberHandler.handle(query);
 

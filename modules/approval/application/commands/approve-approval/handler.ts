@@ -5,7 +5,6 @@ import {
   UserId,
   ApprovalComments,
   ApprovalChainService,
-  ExpenseId,
 } from "../../../domain/index.js";
 import type { ApproveApprovalCommand } from "./command.js";
 import type { ExpenseOrchestrationService } from "../../../../expense-management/application/services/ExpenseOrchestrationService.js";
@@ -83,7 +82,33 @@ export class ApproveApprovalCommandHandler {
       await this.approvalCommandRepo.save(nextApproval);
     } else if (!nextApproval) {
       // No next approval - this was the final approval
-      // Mark expense as approved
+      // First, create Purchase Order if service is available (BEFORE marking expense as approved)
+      let purchaseOrderCreated = false;
+      let purchaseOrderId: string | undefined;
+
+      if (this.purchaseOrderOrchestrationService) {
+        try {
+          const poResult =
+            await this.purchaseOrderOrchestrationService.createPurchaseOrderFromExpense(
+              expenseId.getValue()
+            );
+
+          if (poResult.success && poResult.purchaseOrderId) {
+            purchaseOrderCreated = true;
+            purchaseOrderId = poResult.purchaseOrderId;
+          } else {
+            // PO creation failed but approval succeeded
+            console.error(
+              `Failed to create PO after final approval: ${poResult.error}`
+            );
+          }
+        } catch (error) {
+          // Log error but don't fail the approval
+          console.error(`Error creating PO after final approval:`, error);
+        }
+      }
+
+      // Then mark expense as approved (AFTER PO is created and linked)
       if (this.expenseOrchestrationService) {
         try {
           const expenseResult =
@@ -101,31 +126,14 @@ export class ApproveApprovalCommandHandler {
         }
       }
 
-      // Automatically create Purchase Order if service is available
-      if (this.purchaseOrderOrchestrationService) {
-        try {
-          const poResult =
-            await this.purchaseOrderOrchestrationService.createPurchaseOrderFromExpense(
-              expenseId.getValue()
-            );
-
-          if (poResult.success && poResult.purchaseOrderId) {
-            return {
-              success: true,
-              approvalId: approval.id.getValue(),
-              purchaseOrderCreated: true,
-              purchaseOrderId: poResult.purchaseOrderId,
-            };
-          } else {
-            // PO creation failed but approval succeeded
-            console.error(
-              `Failed to create PO after final approval: ${poResult.error}`
-            );
-          }
-        } catch (error) {
-          // Log error but don't fail the approval
-          console.error(`Error creating PO after final approval:`, error);
-        }
+      // Return response with PO creation status
+      if (purchaseOrderCreated && purchaseOrderId) {
+        return {
+          success: true,
+          approvalId: approval.id.getValue(),
+          purchaseOrderCreated: true,
+          purchaseOrderId: purchaseOrderId,
+        };
       }
     }
 

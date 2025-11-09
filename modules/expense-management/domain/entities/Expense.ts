@@ -264,9 +264,11 @@ export class Expense {
   }
 
   linkInventoryDrop(dropId: InventoryDropId): void {
-    if (this.status.isFinal()) {
+    // Allow linking inventory drop even for approved expenses
+    // (inventory is received after PO is issued and expense is approved)
+    if (this.props.inventoryDropId) {
       throw new Error(
-        `Cannot link inventory drop: expense is ${this.status.toString()}`
+        `Cannot link inventory drop: expense already has inventory drop ${this.props.inventoryDropId.getValue()}`
       );
     }
     this.props.inventoryDropId = dropId;

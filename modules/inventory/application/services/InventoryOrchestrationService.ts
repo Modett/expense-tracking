@@ -39,19 +39,31 @@ export class InventoryOrchestrationService {
     purchaseOrderId: string
   ): Promise<InventoryCreationResult> {
     try {
+      console.log("[Inventory] Creating inventory from PO:", purchaseOrderId);
+
       // Get Purchase Order
       const poIdVO = POModulePurchaseOrderId.fromString(purchaseOrderId);
       const purchaseOrder = await this.purchaseOrderQueryRepo.findById(poIdVO);
 
       if (!purchaseOrder) {
+        console.error("[Inventory] Purchase order not found:", purchaseOrderId);
         return {
           success: false,
           error: `Purchase order with ID ${purchaseOrderId} not found`,
         };
       }
 
+      console.log(
+        "[Inventory] PO found, status:",
+        purchaseOrder.status.getValue()
+      );
+
       // Check if PO is received
       if (!purchaseOrder.isReceived() && !purchaseOrder.isClosed()) {
+        console.error(
+          "[Inventory] PO not received, status:",
+          purchaseOrder.status.getValue()
+        );
         return {
           success: false,
           error: `Cannot create inventory: PO status is ${purchaseOrder.status.getValue()}, expected received or closed`,
@@ -59,14 +71,21 @@ export class InventoryOrchestrationService {
       }
 
       // Find expense linked to this PO
+      console.log("[Inventory] Finding expense linked to PO:", purchaseOrderId);
       const expense = await this.findExpenseByPOId(purchaseOrderId);
 
       if (!expense) {
+        console.error(
+          "[Inventory] No expense found linked to PO:",
+          purchaseOrderId
+        );
         return {
           success: false,
           error: `No expense found linked to purchase order ${purchaseOrderId}`,
         };
       }
+
+      console.log("[Inventory] Found expense:", expense.id.getValue());
 
       // Check if inventory already exists for this expense
       if (expense.inventoryDropId) {
@@ -76,10 +95,17 @@ export class InventoryOrchestrationService {
         };
       }
 
-      // Generate drop number (format: DROP-YYYYMMDD-XXXXX where XXXXX is first 5 chars of PO ID)
+      // Generate drop number (format: DROP-YYYYMMDD-HHMMSS-XXXXX for uniqueness)
       const today = new Date();
-      const dateStr = `${today.getFullYear()}${String(today.getMonth() + 1).padStart(2, '0')}${String(today.getDate()).padStart(2, '0')}`;
-      const dropNumberStr = `DROP-${dateStr}-${purchaseOrderId.substring(0, 5).toUpperCase()}`;
+      const dateStr = `${today.getFullYear()}${String(
+        today.getMonth() + 1
+      ).padStart(2, "0")}${String(today.getDate()).padStart(2, "0")}`;
+      const timeStr = `${String(today.getHours()).padStart(2, "0")}${String(
+        today.getMinutes()
+      ).padStart(2, "0")}${String(today.getSeconds()).padStart(2, "0")}`;
+      const dropNumberStr = `DROP-${dateStr}-${timeStr}-${purchaseOrderId
+        .substring(0, 5)
+        .toUpperCase()}`;
       const dropNumber = DropNumber.create(dropNumberStr);
 
       // Create fabric type from expense category or description
@@ -94,7 +120,9 @@ export class InventoryOrchestrationService {
       const unitCost = UnitCost.create(purchaseOrder.totalValue.getValue());
 
       // Get vendor name as supplier (simplified - in production, fetch vendor details)
-      const supplier = `Vendor-${purchaseOrder.vendorId.getValue().substring(0, 8)}`;
+      const supplier = `Vendor-${purchaseOrder.vendorId
+        .getValue()
+        .substring(0, 8)}`;
 
       // Create Inventory Drop
       const inventoryDrop = InventoryDrop.create({
@@ -136,14 +164,39 @@ export class InventoryOrchestrationService {
    */
   private async findExpenseByPOId(purchaseOrderId: string) {
     try {
-      // This is a simplified approach - in production, you'd have a proper query method
-      // For now, we'll need to add this to the expense query repository
-      // As a workaround, we can get all expenses and filter (not efficient but works for now)
+      console.log(
+        "[Inventory] Searching for expense with linkedPOId:",
+        purchaseOrderId
+      );
 
-      // Return null for now - we'll need to update the expense query repository
-      // to support finding by linkedPOId
-      return null;
+      // Query expense by linkedPOId
+      const expenses = await this.expenseQueryRepo.findAll({});
+
+      console.log("[Inventory] Total expenses found:", expenses.length);
+
+      // Find expense with matching linkedPOId
+      const expense = expenses.find((exp) => {
+        const linkedPOId = exp.linkedPOId?.getValue();
+        console.log(
+          "[Inventory] Checking expense:",
+          exp.id.getValue(),
+          "linkedPOId:",
+          linkedPOId
+        );
+        return linkedPOId === purchaseOrderId;
+      });
+
+      console.log(
+        "[Inventory] Expense match result:",
+        expense ? expense.id.getValue() : "none"
+      );
+
+      return expense || null;
     } catch (error) {
+      console.error(
+        `[Inventory] Error finding expense by PO ID ${purchaseOrderId}:`,
+        error
+      );
       return null;
     }
   }

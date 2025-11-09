@@ -14,7 +14,7 @@ const successSchema = {
   type: "object",
   properties: {
     success: { type: "boolean" },
-    data: { type: "object" },
+    data: {}, // Allow any type (object or array)
   },
   additionalProperties: true,
 };
@@ -32,7 +32,16 @@ const createPurchaseOrderResponseSchema = {
     createdAt: { type: "string", format: "date-time" },
     updatedAt: { type: "string", format: "date-time" },
   },
-  required: ["id", "poNumber", "vendorId", "totalValue", "status", "issuedDate", "createdAt", "updatedAt"],
+  required: [
+    "id",
+    "poNumber",
+    "vendorId",
+    "totalValue",
+    "status",
+    "issuedDate",
+    "createdAt",
+    "updatedAt",
+  ],
   additionalProperties: false,
 };
 
@@ -68,7 +77,8 @@ export async function registerPurchaseOrderRoutes(
       },
       onRequest: [authenticate],
     },
-    async (request, reply) => purchaseOrderController.create(request as any, reply)
+    async (request, reply) =>
+      purchaseOrderController.create(request as any, reply)
   );
 
   // Get all purchase orders
@@ -85,7 +95,14 @@ export async function registerPurchaseOrderRoutes(
             vendorId: { type: "string", format: "uuid" },
             status: {
               type: "string",
-              enum: ["draft", "issued", "received", "partial", "cancelled", "closed"],
+              enum: [
+                "draft",
+                "issued",
+                "received",
+                "partial",
+                "cancelled",
+                "closed",
+              ],
             },
             issuedDateFrom: { type: "string", format: "date-time" },
             issuedDateTo: { type: "string", format: "date-time" },
@@ -100,7 +117,8 @@ export async function registerPurchaseOrderRoutes(
       },
       onRequest: [authenticate],
     },
-    async (request, reply) => purchaseOrderController.getAll(request as any, reply)
+    async (request, reply) =>
+      purchaseOrderController.getAll(request as any, reply)
   );
 
   // Get purchase order by ID
@@ -126,7 +144,8 @@ export async function registerPurchaseOrderRoutes(
       },
       onRequest: [authenticate],
     },
-    async (request, reply) => purchaseOrderController.getById(request as any, reply)
+    async (request, reply) =>
+      purchaseOrderController.getById(request as any, reply)
   );
 
   // Get purchase orders by vendor
@@ -151,7 +170,8 @@ export async function registerPurchaseOrderRoutes(
       },
       onRequest: [authenticate],
     },
-    async (request, reply) => purchaseOrderController.getByVendor(request as any, reply)
+    async (request, reply) =>
+      purchaseOrderController.getByVendor(request as any, reply)
   );
 
   // Get purchase order by PO number
@@ -177,7 +197,8 @@ export async function registerPurchaseOrderRoutes(
       },
       onRequest: [authenticate],
     },
-    async (request, reply) => purchaseOrderController.getByPONumber(request as any, reply)
+    async (request, reply) =>
+      purchaseOrderController.getByPONumber(request as any, reply)
   );
 
   // Update purchase order
@@ -211,7 +232,8 @@ export async function registerPurchaseOrderRoutes(
       },
       onRequest: [authenticate],
     },
-    async (request, reply) => purchaseOrderController.update(request as any, reply)
+    async (request, reply) =>
+      purchaseOrderController.update(request as any, reply)
   );
 
   // Issue purchase order
@@ -238,7 +260,8 @@ export async function registerPurchaseOrderRoutes(
       },
       onRequest: [authenticate],
     },
-    async (request, reply) => purchaseOrderController.issue(request as any, reply)
+    async (request, reply) =>
+      purchaseOrderController.issue(request as any, reply)
   );
 
   // Cancel purchase order
@@ -265,7 +288,8 @@ export async function registerPurchaseOrderRoutes(
       },
       onRequest: [authenticate],
     },
-    async (request, reply) => purchaseOrderController.cancel(request as any, reply)
+    async (request, reply) =>
+      purchaseOrderController.cancel(request as any, reply)
   );
 
   // Receive purchase order
@@ -298,7 +322,8 @@ export async function registerPurchaseOrderRoutes(
       },
       onRequest: [authenticate],
     },
-    async (request, reply) => purchaseOrderController.receive(request as any, reply)
+    async (request, reply) =>
+      purchaseOrderController.receive(request as any, reply)
   );
 
   // Close purchase order
@@ -325,7 +350,8 @@ export async function registerPurchaseOrderRoutes(
       },
       onRequest: [authenticate],
     },
-    async (request, reply) => purchaseOrderController.close(request as any, reply)
+    async (request, reply) =>
+      purchaseOrderController.close(request as any, reply)
   );
 
   // Delete purchase order
@@ -352,6 +378,7 @@ export async function registerPurchaseOrderRoutes(
       },
       onRequest: [authenticate],
     },
-    async (request, reply) => purchaseOrderController.delete(request as any, reply)
+    async (request, reply) =>
+      purchaseOrderController.delete(request as any, reply)
   );
 }

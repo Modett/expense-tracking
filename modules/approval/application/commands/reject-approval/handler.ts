@@ -40,6 +40,29 @@ export class RejectApprovalCommandHandler {
 
     await this.approvalCommandRepo.save(approval);
 
+    // Skip all remaining waiting approvals for this expense
+    const allApprovals = await this.approvalQueryRepo.findByExpenseId(
+      approval.expenseId
+    );
+
+    const skipComments = ApprovalComments.create(
+      "Automatically skipped due to earlier rejection"
+    );
+
+    for (const otherApproval of allApprovals) {
+      // Skip the approval we just rejected
+      if (otherApproval.id.equals(approval.id)) {
+        continue;
+      }
+
+      if (otherApproval.status.isWaiting()) {
+        // Activate it first so we can skip it (business rule: can only skip pending approvals)
+        otherApproval.activate();
+        otherApproval.skip(skipComments);
+        await this.approvalCommandRepo.save(otherApproval);
+      }
+    }
+
     // Mark expense as rejected
     if (this.expenseOrchestrationService) {
       try {
