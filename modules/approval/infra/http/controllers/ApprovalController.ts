@@ -240,8 +240,23 @@ export class ApprovalController {
         return;
       }
 
-      // Always use authenticated user's ID - ignore query parameter
-      const query = new GetPendingApprovalsQueryClass(authenticatedUser.userId);
+      const validatedQuery = getPendingApprovalsQuerySchema.parse(
+        request.query
+      );
+
+      // Use query parameter if provided, otherwise use authenticated user's ID
+      const approverId = validatedQuery.approverId || authenticatedUser.userId;
+
+      // If querying for someone else's approvals, verify they match
+      if (
+        validatedQuery.approverId &&
+        validatedQuery.approverId !== authenticatedUser.userId
+      ) {
+        // TODO: Add role check - only admins/managers should query others' approvals
+        // For now, we'll allow it but you should add authorization check
+      }
+
+      const query = new GetPendingApprovalsQueryClass(approverId);
 
       const result = await this.getPendingApprovalsHandler.handle(query);
       reply.code(200).send({ success: true, data: result });

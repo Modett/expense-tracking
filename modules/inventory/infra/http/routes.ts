@@ -14,7 +14,7 @@ const successSchema = {
   type: "object",
   properties: {
     success: { type: "boolean" },
-    data: { type: "object" },
+    data: {}, // Allow any type (object or array)
   },
   additionalProperties: true,
 };
@@ -63,7 +63,8 @@ export async function registerInventoryRoutes(
       },
       onRequest: [authenticate],
     },
-    async (request, reply) => inventoryDropController.create(request as any, reply)
+    async (request, reply) =>
+      inventoryDropController.create(request as any, reply)
   );
 
   // Get all inventory drops
@@ -94,7 +95,8 @@ export async function registerInventoryRoutes(
       },
       onRequest: [authenticate],
     },
-    async (request, reply) => inventoryDropController.getAll(request as any, reply)
+    async (request, reply) =>
+      inventoryDropController.getAll(request as any, reply)
   );
 
   // Get inventory drop by ID
@@ -120,7 +122,8 @@ export async function registerInventoryRoutes(
       },
       onRequest: [authenticate],
     },
-    async (request, reply) => inventoryDropController.getById(request as any, reply)
+    async (request, reply) =>
+      inventoryDropController.getById(request as any, reply)
   );
 
   // Get inventory drop by drop number
@@ -146,7 +149,8 @@ export async function registerInventoryRoutes(
       },
       onRequest: [authenticate],
     },
-    async (request, reply) => inventoryDropController.getByDropNumber(request as any, reply)
+    async (request, reply) =>
+      inventoryDropController.getByDropNumber(request as any, reply)
   );
 
   // Get inventory drops by fabric type
@@ -171,7 +175,8 @@ export async function registerInventoryRoutes(
       },
       onRequest: [authenticate],
     },
-    async (request, reply) => inventoryDropController.getByFabricType(request as any, reply)
+    async (request, reply) =>
+      inventoryDropController.getByFabricType(request as any, reply)
   );
 
   // Update inventory drop
@@ -207,7 +212,8 @@ export async function registerInventoryRoutes(
       },
       onRequest: [authenticate],
     },
-    async (request, reply) => inventoryDropController.update(request as any, reply)
+    async (request, reply) =>
+      inventoryDropController.update(request as any, reply)
   );
 
   // Delete inventory drop
@@ -234,6 +240,7 @@ export async function registerInventoryRoutes(
       },
       onRequest: [authenticate],
     },
-    async (request, reply) => inventoryDropController.delete(request as any, reply)
+    async (request, reply) =>
+      inventoryDropController.delete(request as any, reply)
   );
 }

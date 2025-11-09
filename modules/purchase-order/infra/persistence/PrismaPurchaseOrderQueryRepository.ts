@@ -1,4 +1,8 @@
-import type { PrismaClient, PurchaseOrder as PrismaPurchaseOrder } from "@prisma/client";
+import type {
+  PrismaClient,
+  PurchaseOrder as PrismaPurchaseOrder,
+  Prisma,
+} from "@prisma/client";
 import type {
   IPurchaseOrderQueryRepository,
   PurchaseOrderFilters,
@@ -12,7 +16,9 @@ import {
   VendorId,
 } from "../../domain/value-objects/index.js";
 
-export class PrismaPurchaseOrderQueryRepository implements IPurchaseOrderQueryRepository {
+export class PrismaPurchaseOrderQueryRepository
+  implements IPurchaseOrderQueryRepository
+{
   constructor(private readonly prisma: PrismaClient) {}
 
   private toDomain(prismaPurchaseOrder: PrismaPurchaseOrder): PurchaseOrder {
@@ -29,7 +35,9 @@ export class PrismaPurchaseOrderQueryRepository implements IPurchaseOrderQueryRe
     });
   }
 
-  async findById(purchaseOrderId: PurchaseOrderId): Promise<PurchaseOrder | null> {
+  async findById(
+    purchaseOrderId: PurchaseOrderId
+  ): Promise<PurchaseOrder | null> {
     const purchaseOrder = await this.prisma.purchaseOrder.findUnique({
       where: { poId: purchaseOrderId.getValue() },
     });
@@ -71,43 +79,50 @@ export class PrismaPurchaseOrderQueryRepository implements IPurchaseOrderQueryRe
     return purchaseOrders.map((po) => this.toDomain(po));
   }
 
-  async findAll(filters?: PurchaseOrderFilters): Promise<PurchaseOrder[]> {
-    const where: any = {};
+  async findAll(filters: PurchaseOrderFilters = {}): Promise<PurchaseOrder[]> {
+    const where: Prisma.PurchaseOrderWhereInput = {};
 
-    if (filters?.vendorId) {
-      where.vendorId = filters.vendorId.getValue();
+    if (filters.vendorId) {
+      where.vendorId = filters.vendorId.toString();
     }
 
-    if (filters?.status) {
-      where.status = filters.status.getValue();
+    if (filters.status) {
+      where.status = filters.status.toString();
     }
 
-    if (filters?.issuedDateFrom || filters?.issuedDateTo) {
+    if (filters.issuedDateFrom || filters.issuedDateTo) {
       where.issuedDate = {};
+
       if (filters.issuedDateFrom) {
         where.issuedDate.gte = filters.issuedDateFrom;
       }
+
       if (filters.issuedDateTo) {
         where.issuedDate.lte = filters.issuedDateTo;
       }
     }
 
-    if (filters?.minTotalValue !== undefined || filters?.maxTotalValue !== undefined) {
+    if (
+      filters.minTotalValue !== undefined ||
+      filters.maxTotalValue !== undefined
+    ) {
       where.totalValue = {};
+
       if (filters.minTotalValue !== undefined) {
         where.totalValue.gte = filters.minTotalValue;
       }
+
       if (filters.maxTotalValue !== undefined) {
         where.totalValue.lte = filters.maxTotalValue;
       }
     }
 
-    const purchaseOrders = await this.prisma.purchaseOrder.findMany({
+    const prismaPos = await this.prisma.purchaseOrder.findMany({
       where,
-      orderBy: { createdAt: "desc" },
+      orderBy: { issuedDate: "desc" },
     });
 
-    return purchaseOrders.map((po) => this.toDomain(po));
+    return prismaPos.map((po) => this.toDomain(po));
   }
 
   async count(filters?: PurchaseOrderFilters): Promise<number> {
@@ -131,7 +146,10 @@ export class PrismaPurchaseOrderQueryRepository implements IPurchaseOrderQueryRe
       }
     }
 
-    if (filters?.minTotalValue !== undefined || filters?.maxTotalValue !== undefined) {
+    if (
+      filters?.minTotalValue !== undefined ||
+      filters?.maxTotalValue !== undefined
+    ) {
       where.totalValue = {};
       if (filters.minTotalValue !== undefined) {
         where.totalValue.gte = filters.minTotalValue;

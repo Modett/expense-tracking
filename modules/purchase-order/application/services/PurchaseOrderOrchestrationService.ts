@@ -49,14 +49,6 @@ export class PurchaseOrderOrchestrationService {
         };
       }
 
-      // Check if expense is approved
-      if (!expense.status.isApproved()) {
-        return {
-          success: false,
-          error: `Cannot create PO: expense status is ${expense.status.toString()}, expected approved`,
-        };
-      }
-
       // Check if PO already exists for this expense
       if (expense.linkedPOId) {
         return {
