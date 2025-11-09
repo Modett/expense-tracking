@@ -4,6 +4,8 @@ import {
   ExpenseId,
   UserId,
   ApprovalComments,
+  ApprovalOrder,
+  ApprovalChainService,
 } from "../../../domain/index.js";
 import type { CreateApprovalCommand } from "./command.js";
 
@@ -22,14 +24,20 @@ export class CreateApprovalCommandHandler {
   ): Promise<CreateApprovalResponse> {
     const expenseId = ExpenseId.fromString(command.expenseId);
     const approverId = UserId.fromString(command.approverId);
+    const approvalOrder = ApprovalOrder.create(command.approvalOrder);
     const comments = command.comments
       ? ApprovalComments.create(command.comments)
       : undefined;
 
+    // Determine initial status based on approval order
+    const status = ApprovalChainService.getInitialStatus(command.approvalOrder);
+
     const approval = Approval.create({
       expenseId,
       approverId,
-      comments,
+      approvalOrder,
+      status,
+      ...(comments && { comments }),
     });
 
     await this.approvalCommandRepo.save(approval);

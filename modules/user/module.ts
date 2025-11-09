@@ -44,7 +44,7 @@ export async function registerUserModule(
   fastify: FastifyInstance,
   prisma: PrismaClient,
   config: UserModuleConfig
-): Promise<void> {
+): Promise<{ userQueryRepo: PrismaUserQueryRepository }> {
   // Infrastructure - Repositories
   const userRepository = new PrismaUserRepository(prisma);
   const userQueryRepository = new PrismaUserQueryRepository(prisma);
@@ -135,4 +135,7 @@ export async function registerUserModule(
 
   // Register Routes
   await registerUserRoutes(fastify, authController, userController, prisma);
+
+  // Return repository for cross-module usage
+  return { userQueryRepo: userQueryRepository };
 }

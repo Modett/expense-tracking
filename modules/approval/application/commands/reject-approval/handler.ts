@@ -1,11 +1,8 @@
 import type { IApprovalCommandRepository } from "../../../domain/repositories/IApprovalCommandRepository.js";
 import type { IApprovalQueryRepository } from "../../../domain/repositories/IApprovalQueryRepository.js";
-import {
-  ApprovalId,
-  UserId,
-  ApprovalComments,
-} from "../../../domain/index.js";
+import { ApprovalId, UserId, ApprovalComments } from "../../../domain/index.js";
 import type { RejectApprovalCommand } from "./command.js";
+import type { ExpenseOrchestrationService } from "../../../../expense-management/application/services/ExpenseOrchestrationService.js";
 
 export interface RejectApprovalResponse {
   success: boolean;
@@ -15,7 +12,8 @@ export interface RejectApprovalResponse {
 export class RejectApprovalCommandHandler {
   constructor(
     private readonly approvalQueryRepo: IApprovalQueryRepository,
-    private readonly approvalCommandRepo: IApprovalCommandRepository
+    private readonly approvalCommandRepo: IApprovalCommandRepository,
+    private readonly expenseOrchestrationService?: ExpenseOrchestrationService | null
   ) {}
 
   async handle(
@@ -31,9 +29,7 @@ export class RejectApprovalCommandHandler {
 
     // Verify the approver is authorized
     if (!approval.isApprovedBy(approverId)) {
-      throw new Error(
-        "You are not authorized to reject this approval request"
-      );
+      throw new Error("You are not authorized to reject this approval request");
     }
 
     const comments = command.comments
@@ -43,6 +39,25 @@ export class RejectApprovalCommandHandler {
     approval.reject(comments);
 
     await this.approvalCommandRepo.save(approval);
+
+    // Mark expense as rejected
+    if (this.expenseOrchestrationService) {
+      try {
+        const expenseResult =
+          await this.expenseOrchestrationService.markExpenseAsRejected(
+            approval.expenseId.getValue(),
+            comments?.getValue()
+          );
+
+        if (!expenseResult.success) {
+          console.error(
+            `Failed to mark expense as rejected: ${expenseResult.error}`
+          );
+        }
+      } catch (error) {
+        console.error(`Error marking expense as rejected:`, error);
+      }
+    }
 
     return {
       success: true,

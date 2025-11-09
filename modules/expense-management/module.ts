@@ -14,8 +14,6 @@ import { CreateExpenseCommandHandler } from "./application/commands/create-expen
 import { UpdateExpenseCommandHandler } from "./application/commands/update-expense/handler.js";
 import { DeleteExpenseCommandHandler } from "./application/commands/delete-expense/handler.js";
 import { SubmitExpenseCommandHandler } from "./application/commands/submit-expense/handler.js";
-import { ApproveExpenseCommandHandler } from "./application/commands/approve-expense/handler.js";
-import { RejectExpenseCommandHandler } from "./application/commands/reject-expense/handler.js";
 import { CancelExpenseCommandHandler } from "./application/commands/cancel-expense/handler.js";
 
 // Expense Tag Command Handlers
@@ -46,15 +44,37 @@ import {
   registerExpenseTagRoutes,
 } from "./infra/http/routes.js";
 
+// Import ApprovalOrchestrationService type
+import type { ApprovalOrchestrationService } from "../approval/application/services/ApprovalOrchestrationService.js";
+
+// Import ExpenseOrchestrationService
+import { ExpenseOrchestrationService } from "./application/services/ExpenseOrchestrationService.js";
+
+export interface ExpenseManagementModuleDependencies {
+  approvalOrchestrationService?: ApprovalOrchestrationService | null;
+  skipRouteRegistration?: boolean;
+}
+
 export async function registerExpenseManagementModule(
   fastify: FastifyInstance,
-  prisma: PrismaClient
-): Promise<void> {
+  prisma: PrismaClient,
+  dependencies?: ExpenseManagementModuleDependencies
+): Promise<{
+  expenseQueryRepo: PrismaExpenseQueryRepository;
+  expenseCommandRepo: PrismaExpenseCommandRepository;
+  expenseOrchestrationService: ExpenseOrchestrationService;
+}> {
   // Initialize Repositories
   const expenseCommandRepo = new PrismaExpenseCommandRepository(prisma);
   const expenseQueryRepo = new PrismaExpenseQueryRepository(prisma);
   const expenseTagCommandRepo = new PrismaExpenseTagCommandRepository(prisma);
   const expenseTagQueryRepo = new PrismaExpenseTagQueryRepository(prisma);
+
+  // Initialize Orchestration Service
+  const expenseOrchestrationService = new ExpenseOrchestrationService(
+    expenseQueryRepo,
+    expenseCommandRepo
+  );
 
   // Initialize Expense Command Handlers
   const createExpenseHandler = new CreateExpenseCommandHandler(
@@ -68,18 +88,20 @@ export async function registerExpenseManagementModule(
     expenseQueryRepo,
     expenseCommandRepo
   );
-  const submitExpenseHandler = new SubmitExpenseCommandHandler(
-    expenseQueryRepo,
-    expenseCommandRepo
-  );
-  const approveExpenseHandler = new ApproveExpenseCommandHandler(
-    expenseQueryRepo,
-    expenseCommandRepo
-  );
-  const rejectExpenseHandler = new RejectExpenseCommandHandler(
-    expenseQueryRepo,
-    expenseCommandRepo
-  );
+
+  // Create submit handler with or without orchestration service
+  const submitExpenseHandler = dependencies?.approvalOrchestrationService
+    ? new SubmitExpenseCommandHandler(
+        expenseQueryRepo,
+        expenseCommandRepo,
+        dependencies.approvalOrchestrationService
+      )
+    : new SubmitExpenseCommandHandler(
+        expenseQueryRepo,
+        expenseCommandRepo,
+        null as any // Temporary - will throw error if used
+      );
+
   const cancelExpenseHandler = new CancelExpenseCommandHandler(
     expenseQueryRepo,
     expenseCommandRepo
@@ -156,8 +178,6 @@ export async function registerExpenseManagementModule(
     getExpenseByIdHandler,
     getAllExpensesHandler,
     submitExpenseHandler,
-    approveExpenseHandler,
-    rejectExpenseHandler,
     cancelExpenseHandler
   );
 
@@ -176,7 +196,16 @@ export async function registerExpenseManagementModule(
     getExpensesByAnyTagsHandler
   );
 
-  // Register Routes
-  await registerExpenseRoutes(fastify, expenseController);
-  await registerExpenseTagRoutes(fastify, expenseTagController);
+  // Register Routes (skip if already registered)
+  if (!dependencies?.skipRouteRegistration) {
+    await registerExpenseRoutes(fastify, expenseController);
+    await registerExpenseTagRoutes(fastify, expenseTagController);
+  }
+
+  // Return repositories for cross-module usage
+  return {
+    expenseQueryRepo,
+    expenseCommandRepo,
+    expenseOrchestrationService,
+  };
 }

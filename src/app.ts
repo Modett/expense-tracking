@@ -9,7 +9,10 @@ import { registerUserModule } from "../modules/user/module.js";
 import { registerMasterDataModule } from "../modules/master-data/module.js";
 import { registerExpenseManagementModule } from "../modules/expense-management/module.js";
 import { registerApprovalModule } from "../modules/approval/module.js";
+import { registerApprovalRulesModule } from "../modules/approval-rules/module.js";
 import { registerBudgetModule } from "../modules/budget/module.js";
+import { registerPurchaseOrderModule } from "../modules/purchase-order/module.js";
+import { registerInventoryModule } from "../modules/inventory/module.js";
 
 export async function buildApp() {
   const fastify = Fastify({
@@ -62,12 +65,27 @@ export async function buildApp() {
           { name: "Users", description: "User management endpoints" },
           { name: "Categories", description: "Category management endpoints" },
           { name: "Vendors", description: "Vendor management endpoints" },
-          { name: "Departments", description: "Department management endpoints" },
+          {
+            name: "Departments",
+            description: "Department management endpoints",
+          },
           { name: "Tags", description: "Tag management endpoints" },
           { name: "Expenses", description: "Expense management endpoints" },
           { name: "Expense Tags", description: "Expense tagging endpoints" },
           { name: "Approvals", description: "Approval management endpoints" },
+          {
+            name: "Approval Rules",
+            description: "Approval rule configuration endpoints",
+          },
           { name: "Budgets", description: "Budget management endpoints" },
+          {
+            name: "Purchase Orders",
+            description: "Purchase order management endpoints",
+          },
+          {
+            name: "Inventory",
+            description: "Inventory drop management endpoints",
+          },
         ],
       },
     });
@@ -209,8 +227,8 @@ export async function buildApp() {
     return { status: "ok", timestamp: new Date().toISOString() };
   });
 
-  // Register User Module
-  await registerUserModule(fastify, prisma, {
+  // Register User Module and get repositories
+  const { userQueryRepo } = await registerUserModule(fastify, prisma, {
     jwtSecret: config.jwt.secret,
     jwtAccessTokenExpiry: config.jwt.accessTokenExpiry,
     jwtRefreshTokenExpiry: config.jwt.refreshTokenExpiry,
@@ -220,11 +238,74 @@ export async function buildApp() {
   // Register Master Data Module
   await registerMasterDataModule(fastify, prisma);
 
-  // Register Expense Management Module
-  await registerExpenseManagementModule(fastify, prisma);
+  // Register Approval Rules Module and get repositories
+  const { approvalRuleQueryRepo } = await registerApprovalRulesModule(
+    fastify,
+    prisma
+  );
 
-  // Register Approval Module
-  await registerApprovalModule(fastify, prisma);
+  // Create expense repositories first (needed for other modules)
+  const PrismaExpenseCommandRepository = (
+    await import("../modules/expense-management/infra/persistence/index.js")
+  ).PrismaExpenseCommandRepository;
+  const PrismaExpenseQueryRepository = (
+    await import("../modules/expense-management/infra/persistence/index.js")
+  ).PrismaExpenseQueryRepository;
+  const expenseCommandRepo = new PrismaExpenseCommandRepository(prisma);
+  const expenseQueryRepo = new PrismaExpenseQueryRepository(prisma);
+
+  // Create expense orchestration service early (needed for approval module)
+  const ExpenseOrchestrationService = (
+    await import(
+      "../modules/expense-management/application/services/ExpenseOrchestrationService.js"
+    )
+  ).ExpenseOrchestrationService;
+  const expenseOrchestrationService = new ExpenseOrchestrationService(
+    expenseQueryRepo,
+    expenseCommandRepo
+  );
+
+  // Register Purchase Order Module (to get query repo - routes will be registered later with full dependencies)
+  const purchaseOrderQueryRepo = new (
+    await import("../modules/purchase-order/infra/persistence/index.js")
+  ).PrismaPurchaseOrderQueryRepository(prisma);
+
+  // Register Inventory Module with dependencies
+  const { inventoryOrchestrationService } = await registerInventoryModule(
+    fastify,
+    prisma,
+    {
+      purchaseOrderQueryRepo,
+      expenseQueryRepo,
+      expenseCommandRepo,
+    }
+  );
+
+  // Now register Purchase Order Module with all dependencies including routes
+  const { purchaseOrderOrchestrationService } =
+    await registerPurchaseOrderModule(fastify, prisma, {
+      expenseQueryRepo,
+      expenseCommandRepo,
+      approvalQueryRepo: approvalRuleQueryRepo,
+      inventoryOrchestrationService,
+    });
+
+  // Register Approval Module with all dependencies including PO orchestration
+  const { approvalOrchestrationService } = await registerApprovalModule(
+    fastify,
+    prisma,
+    {
+      approvalRuleQueryRepo,
+      userQueryRepo,
+      purchaseOrderOrchestrationService,
+      expenseOrchestrationService, // Add expense orchestration service
+    }
+  );
+
+  // NOW register Expense Management Module with approval orchestration service available
+  await registerExpenseManagementModule(fastify, prisma, {
+    approvalOrchestrationService,
+  });
 
   // Register Budget Module
   await registerBudgetModule(fastify, prisma);

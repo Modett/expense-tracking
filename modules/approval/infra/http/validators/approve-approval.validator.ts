@@ -5,7 +5,6 @@ export const approveApprovalParamsSchema = z.object({
 });
 
 export const approveApprovalBodySchema = z.object({
-  approverId: z.string().uuid(),
   comments: z.string().max(1000).optional(),
 });
 

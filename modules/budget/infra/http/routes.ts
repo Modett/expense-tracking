@@ -14,8 +14,36 @@ const successSchema = {
   type: "object",
   properties: {
     success: { type: "boolean" },
-    data: { type: "object" },
+    data: {
+      type: "object",
+      additionalProperties: true,
+    },
   },
+};
+
+const createBudgetResponseSchema = {
+  type: "object",
+  properties: {
+    success: { type: "boolean" },
+    budgetId: { type: "string", format: "uuid" },
+    departmentId: { type: "string", format: "uuid" },
+    categoryId: { type: "string", format: "uuid" },
+    budgetAmount: { type: "number" },
+    fiscalPeriod: { type: "string" },
+    startDate: { type: "string", format: "date-time" },
+    endDate: { type: "string", format: "date-time" },
+  },
+  required: [
+    "success",
+    "budgetId",
+    "departmentId",
+    "categoryId",
+    "budgetAmount",
+    "fiscalPeriod",
+    "startDate",
+    "endDate",
+  ],
+  additionalProperties: false,
 };
 
 export async function registerBudgetRoutes(
@@ -32,7 +60,14 @@ export async function registerBudgetRoutes(
         security: [{ bearerAuth: [] }],
         body: {
           type: "object",
-          required: ["departmentId", "categoryId", "budgetAmount", "fiscalPeriod", "startDate", "endDate"],
+          required: [
+            "departmentId",
+            "categoryId",
+            "budgetAmount",
+            "fiscalPeriod",
+            "startDate",
+            "endDate",
+          ],
           properties: {
             departmentId: { type: "string", format: "uuid" },
             categoryId: { type: "string", format: "uuid" },
@@ -43,7 +78,7 @@ export async function registerBudgetRoutes(
           },
         },
         response: {
-          201: successSchema,
+          201: createBudgetResponseSchema,
           400: errorSchema,
           401: errorSchema,
           409: errorSchema,
@@ -141,7 +176,8 @@ export async function registerBudgetRoutes(
     {
       schema: {
         tags: ["Budgets"],
-        summary: "Check budget status for department/category/period (Authenticated)",
+        summary:
+          "Check budget status for department/category/period (Authenticated)",
         security: [{ bearerAuth: [] }],
         querystring: {
           type: "object",
@@ -228,7 +264,8 @@ export async function registerBudgetRoutes(
       },
       onRequest: [authenticate],
     },
-    async (request, reply) => budgetController.adjustSpent(request as any, reply)
+    async (request, reply) =>
+      budgetController.adjustSpent(request as any, reply)
   );
 
   // Activate budget

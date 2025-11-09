@@ -34,6 +34,7 @@ enum ExpenseStatusEnum {
 }
 
 enum ApprovalStatusEnum {
+  waiting
   pending
   approved
   rejected
@@ -233,14 +234,15 @@ model ApprovalRule {
 }
 
 model Approval {
-  approvalId String              @id @default(dbgenerated("gen_random_uuid()")) @map("approval_id") @db.Uuid
-  expenseId  String              @map("expense_id") @db.Uuid
-  approverId String              @map("approver_id") @db.Uuid
-  status     ApprovalStatusEnum  @default(pending)
-  comments   String?
-  approvedAt DateTime?           @map("approved_at") @db.Timestamptz(6)
-  createdAt  DateTime            @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt  DateTime            @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  approvalId    String              @id @default(dbgenerated("gen_random_uuid()")) @map("approval_id") @db.Uuid
+  expenseId     String              @map("expense_id") @db.Uuid
+  approverId    String              @map("approver_id") @db.Uuid
+  approvalOrder Int                 @default(1) @map("approval_order")
+  status        ApprovalStatusEnum  @default(pending)
+  comments      String?
+  approvedAt    DateTime?           @map("approved_at") @db.Timestamptz(6)
+  createdAt     DateTime            @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt     DateTime            @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   // Relations
   expense  Expense @relation(fields: [expenseId], references: [expenseId], onDelete: Cascade)

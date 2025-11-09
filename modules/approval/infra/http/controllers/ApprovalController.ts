@@ -2,16 +2,12 @@ import type { FastifyRequest, FastifyReply } from "fastify";
 import { ZodError } from "zod";
 
 // Command imports
-import { CreateApprovalCommandHandler } from "../../../application/commands/create-approval/handler.js";
-import { CreateApprovalCommand } from "../../../application/commands/create-approval/command.js";
 import { ApproveApprovalCommandHandler } from "../../../application/commands/approve-approval/handler.js";
 import { ApproveApprovalCommand } from "../../../application/commands/approve-approval/command.js";
 import { RejectApprovalCommandHandler } from "../../../application/commands/reject-approval/handler.js";
 import { RejectApprovalCommand } from "../../../application/commands/reject-approval/command.js";
 import { UpdateApprovalCommandHandler } from "../../../application/commands/update-approval/handler.js";
 import { UpdateApprovalCommand } from "../../../application/commands/update-approval/command.js";
-import { DeleteApprovalCommandHandler } from "../../../application/commands/delete-approval/handler.js";
-import { DeleteApprovalCommand } from "../../../application/commands/delete-approval/command.js";
 
 // Query imports
 import { GetApprovalByIdQueryHandler } from "../../../application/queries/get-approval-by-id/handler.js";
@@ -26,10 +22,6 @@ import { GetApprovalsByApproverQueryHandler } from "../../../application/queries
 import { GetApprovalsByApproverQuery as GetApprovalsByApproverQueryClass } from "../../../application/queries/get-approvals-by-approver/query.js";
 
 // Validators
-import {
-  createApprovalBodySchema,
-  type CreateApprovalBody,
-} from "../validators/create-approval.validator.js";
 import {
   approveApprovalParamsSchema,
   approveApprovalBodySchema,
@@ -49,10 +41,6 @@ import {
   type UpdateApprovalBody,
 } from "../validators/update-approval.validator.js";
 import {
-  deleteApprovalParamsSchema,
-  type DeleteApprovalParams,
-} from "../validators/delete-approval.validator.js";
-import {
   getApprovalByIdParamsSchema,
   type GetApprovalByIdParams,
 } from "../validators/get-approval-by-id.validator.js";
@@ -67,11 +55,9 @@ import {
 
 export class ApprovalController {
   constructor(
-    private readonly createApprovalHandler: CreateApprovalCommandHandler,
     private readonly approveApprovalHandler: ApproveApprovalCommandHandler,
     private readonly rejectApprovalHandler: RejectApprovalCommandHandler,
     private readonly updateApprovalHandler: UpdateApprovalCommandHandler,
-    private readonly deleteApprovalHandler: DeleteApprovalCommandHandler,
     private readonly getApprovalByIdHandler: GetApprovalByIdQueryHandler,
     private readonly getAllApprovalsHandler: GetAllApprovalsQueryHandler,
     private readonly getPendingApprovalsHandler: GetPendingApprovalsQueryHandler,
@@ -88,33 +74,16 @@ export class ApprovalController {
     } else if (error instanceof Error) {
       if (error.message.includes("not found")) {
         reply.code(404).send({ error: error.message });
-      } else if (error.message.includes("not authorized") || error.message.includes("unauthorized")) {
+      } else if (
+        error.message.includes("not authorized") ||
+        error.message.includes("unauthorized")
+      ) {
         reply.code(403).send({ error: error.message });
       } else {
         reply.code(400).send({ error: error.message });
       }
     } else {
       reply.code(500).send({ error: "Internal server error" });
-    }
-  }
-
-  async create(
-    request: FastifyRequest<{ Body: CreateApprovalBody }>,
-    reply: FastifyReply
-  ): Promise<void> {
-    try {
-      const validatedBody = createApprovalBodySchema.parse(request.body);
-
-      const command = new CreateApprovalCommand(
-        validatedBody.expenseId,
-        validatedBody.approverId,
-        validatedBody.comments
-      );
-
-      const result = await this.createApprovalHandler.handle(command);
-      reply.code(201).send({ success: true, data: result });
-    } catch (error) {
-      this.handleError(error, reply);
     }
   }
 
@@ -129,9 +98,18 @@ export class ApprovalController {
       const validatedParams = approveApprovalParamsSchema.parse(request.params);
       const validatedBody = approveApprovalBodySchema.parse(request.body);
 
+      // Get authenticated user ID from JWT token
+      const authenticatedUser = request.user as any;
+      if (!authenticatedUser || !authenticatedUser.userId) {
+        reply
+          .code(401)
+          .send({ error: "Unable to identify authenticated user" });
+        return;
+      }
+
       const command = new ApproveApprovalCommand(
         validatedParams.approvalId,
-        validatedBody.approverId,
+        authenticatedUser.userId, // Use authenticated user's ID
         validatedBody.comments
       );
 
@@ -153,9 +131,18 @@ export class ApprovalController {
       const validatedParams = rejectApprovalParamsSchema.parse(request.params);
       const validatedBody = rejectApprovalBodySchema.parse(request.body);
 
+      // Get authenticated user ID from JWT token
+      const authenticatedUser = request.user as any;
+      if (!authenticatedUser || !authenticatedUser.userId) {
+        reply
+          .code(401)
+          .send({ error: "Unable to identify authenticated user" });
+        return;
+      }
+
       const command = new RejectApprovalCommand(
         validatedParams.approvalId,
-        validatedBody.approverId,
+        authenticatedUser.userId, // Use authenticated user's ID
         validatedBody.comments
       );
 
@@ -183,22 +170,6 @@ export class ApprovalController {
       );
 
       const result = await this.updateApprovalHandler.handle(command);
-      reply.code(200).send({ success: true, data: result });
-    } catch (error) {
-      this.handleError(error, reply);
-    }
-  }
-
-  async delete(
-    request: FastifyRequest<{ Params: DeleteApprovalParams }>,
-    reply: FastifyReply
-  ): Promise<void> {
-    try {
-      const validatedParams = deleteApprovalParamsSchema.parse(request.params);
-
-      const command = new DeleteApprovalCommand(validatedParams.approvalId);
-
-      const result = await this.deleteApprovalHandler.handle(command);
       reply.code(200).send({ success: true, data: result });
     } catch (error) {
       this.handleError(error, reply);
@@ -260,13 +231,17 @@ export class ApprovalController {
     reply: FastifyReply
   ): Promise<void> {
     try {
-      const validatedQuery = getPendingApprovalsQuerySchema.parse(
-        request.query
-      );
+      // Get authenticated user ID from JWT token
+      const authenticatedUser = request.user as any;
+      if (!authenticatedUser || !authenticatedUser.userId) {
+        reply
+          .code(401)
+          .send({ error: "Unable to identify authenticated user" });
+        return;
+      }
 
-      const query = new GetPendingApprovalsQueryClass(
-        validatedQuery.approverId
-      );
+      // Always use authenticated user's ID - ignore query parameter
+      const query = new GetPendingApprovalsQueryClass(authenticatedUser.userId);
 
       const result = await this.getPendingApprovalsHandler.handle(query);
       reply.code(200).send({ success: true, data: result });

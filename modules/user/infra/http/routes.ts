@@ -4,7 +4,12 @@ import type { AuthController } from "./controllers/AuthController.js";
 import type { UserController } from "./controllers/UserController.js";
 import { createAuthenticateMiddleware } from "./middleware/authenticate.js";
 import { authorizeAdmin } from "./middleware/authorize.js";
-import { userSchema, authResponseSchema, errorSchema, messageSchema } from "./schemas/index.js";
+import {
+  userSchema,
+  authResponseSchema,
+  errorSchema,
+  messageSchema,
+} from "./schemas/index.js";
 
 export async function registerUserRoutes(
   fastify: FastifyInstance,
@@ -28,7 +33,10 @@ export async function registerUserRoutes(
           name: { type: "string", minLength: 2, maxLength: 100 },
           email: { type: "string", format: "email" },
           password: { type: "string", minLength: 8, maxLength: 128 },
-          role: { type: "string", enum: ["staff", "manager", "finance", "admin"] },
+          role: {
+            type: "string",
+            enum: ["staff", "manager", "finance", "admin"],
+          },
         },
       },
       response: {
@@ -38,11 +46,12 @@ export async function registerUserRoutes(
     },
     config: {
       rateLimit: {
-        max: 5,
+        max: 10,
         timeWindow: "15 minutes",
       },
     },
-    handler: async (request, reply) => authController.register(request as any, reply),
+    handler: async (request, reply) =>
+      authController.register(request as any, reply),
   });
 
   fastify.post("/auth/login", {
@@ -68,7 +77,8 @@ export async function registerUserRoutes(
         timeWindow: "15 minutes",
       },
     },
-    handler: async (request, reply) => authController.login(request as any, reply),
+    handler: async (request, reply) =>
+      authController.login(request as any, reply),
   });
 
   fastify.post("/auth/refresh-token", {
@@ -98,7 +108,8 @@ export async function registerUserRoutes(
         timeWindow: "15 minutes",
       },
     },
-    handler: async (request, reply) => authController.refreshToken(request as any, reply),
+    handler: async (request, reply) =>
+      authController.refreshToken(request as any, reply),
   });
 
   fastify.post("/auth/logout", {
@@ -118,7 +129,8 @@ export async function registerUserRoutes(
         timeWindow: "15 minutes",
       },
     },
-    handler: async (request, reply) => authController.logout(request as any, reply),
+    handler: async (request, reply) =>
+      authController.logout(request as any, reply),
   });
 
   fastify.put("/auth/change-password", {
@@ -147,7 +159,8 @@ export async function registerUserRoutes(
         timeWindow: "15 minutes",
       },
     },
-    handler: async (request, reply) => authController.changePassword(request as any, reply),
+    handler: async (request, reply) =>
+      authController.changePassword(request as any, reply),
   });
 
   // ==================== USER QUERY ROUTES ====================
@@ -170,7 +183,8 @@ export async function registerUserRoutes(
       },
     },
     onRequest: [authenticate],
-    handler: async (request, reply) => userController.getUserById(request as any, reply),
+    handler: async (request, reply) =>
+      userController.getUserById(request as any, reply),
   });
 
   fastify.get("/users", {
@@ -183,7 +197,10 @@ export async function registerUserRoutes(
         properties: {
           limit: { type: "integer", minimum: 1, maximum: 100 },
           offset: { type: "integer", minimum: 0 },
-          role: { type: "string", enum: ["staff", "manager", "finance", "admin"] },
+          role: {
+            type: "string",
+            enum: ["staff", "manager", "finance", "admin"],
+          },
           isActive: { type: "boolean" },
           searchTerm: { type: "string", minLength: 1, maxLength: 100 },
         },
@@ -197,7 +214,8 @@ export async function registerUserRoutes(
       },
     },
     onRequest: [authenticate],
-    handler: async (request, reply) => userController.getAllUsers(request as any, reply),
+    handler: async (request, reply) =>
+      userController.getAllUsers(request as any, reply),
   });
 
   // ==================== USER MANAGEMENT ROUTES ====================
@@ -235,7 +253,8 @@ export async function registerUserRoutes(
         timeWindow: "1 minute",
       },
     },
-    handler: async (request, reply) => userController.updateProfile(request as any, reply),
+    handler: async (request, reply) =>
+      userController.updateProfile(request as any, reply),
   });
 
   fastify.put("/users/:userId/role", {
@@ -253,7 +272,10 @@ export async function registerUserRoutes(
         type: "object",
         required: ["role"],
         properties: {
-          role: { type: "string", enum: ["staff", "manager", "finance", "admin"] },
+          role: {
+            type: "string",
+            enum: ["staff", "manager", "finance", "admin"],
+          },
         },
       },
       response: {
@@ -270,7 +292,8 @@ export async function registerUserRoutes(
         timeWindow: "1 minute",
       },
     },
-    handler: async (request, reply) => userController.updateRole(request as any, reply),
+    handler: async (request, reply) =>
+      userController.updateRole(request as any, reply),
   });
 
   fastify.put("/users/:userId/activate", {
@@ -298,7 +321,8 @@ export async function registerUserRoutes(
         timeWindow: "1 minute",
       },
     },
-    handler: async (request, reply) => userController.activateUser(request as any, reply),
+    handler: async (request, reply) =>
+      userController.activateUser(request as any, reply),
   });
 
   fastify.put("/users/:userId/deactivate", {
@@ -326,7 +350,8 @@ export async function registerUserRoutes(
         timeWindow: "1 minute",
       },
     },
-    handler: async (request, reply) => userController.deactivateUser(request as any, reply),
+    handler: async (request, reply) =>
+      userController.deactivateUser(request as any, reply),
   });
 
   fastify.delete("/users/:userId", {
@@ -354,6 +379,7 @@ export async function registerUserRoutes(
         timeWindow: "1 minute",
       },
     },
-    handler: async (request, reply) => userController.deleteUser(request as any, reply),
+    handler: async (request, reply) =>
+      userController.deleteUser(request as any, reply),
   });
 }
