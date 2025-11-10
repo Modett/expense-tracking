@@ -29,6 +29,7 @@ import { ClearExpenseTagsCommandHandler } from "./application/commands/clear-exp
 // Query Handlers
 import { GetExpenseByIdQueryHandler } from "./application/queries/get-expense-by-id/handler.js";
 import { GetAllExpensesQueryHandler } from "./application/queries/get-all-expenses/handler.js";
+import { GetExpenseAggregationsQueryHandler } from "./application/queries/get-expense-aggregations/handler.js";
 import { GetExpenseTagsQueryHandler } from "./application/queries/get-expense-tags/handler.js";
 import { GetExpensesByTagQueryHandler } from "./application/queries/get-expenses-by-tag/handler.js";
 import { GetExpensesByAllTagsQueryHandler } from "./application/queries/get-expenses-by-all-tags/handler.js";
@@ -157,6 +158,9 @@ export async function registerExpenseManagementModule(
   const getAllExpensesHandler = new GetAllExpensesQueryHandler(
     expenseQueryRepo
   );
+  const getExpenseAggregationsHandler = new GetExpenseAggregationsQueryHandler(
+    expenseQueryRepo
+  );
   const getExpenseTagsHandler = new GetExpenseTagsQueryHandler(
     expenseTagQueryRepo
   );
@@ -178,7 +182,8 @@ export async function registerExpenseManagementModule(
     getExpenseByIdHandler,
     getAllExpensesHandler,
     submitExpenseHandler,
-    cancelExpenseHandler
+    cancelExpenseHandler,
+    getExpenseAggregationsHandler
   );
 
   const expenseTagController = new ExpenseTagController(

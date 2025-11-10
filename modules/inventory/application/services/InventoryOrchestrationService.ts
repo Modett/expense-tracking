@@ -2,6 +2,8 @@ import type { IInventoryDropCommandRepository } from "../../domain/repositories/
 import type { IPurchaseOrderQueryRepository } from "../../../purchase-order/domain/repositories/IPurchaseOrderQueryRepository.js";
 import type { IExpenseQueryRepository } from "../../../expense-management/domain/repositories/IExpenseQueryRepository.js";
 import type { IExpenseCommandRepository } from "../../../expense-management/domain/repositories/IExpenseCommandRepository.js";
+import type { IBudgetQueryRepository } from "../../../budget/domain/repositories/IBudgetQueryRepository.js";
+import type { IBudgetCommandRepository } from "../../../budget/domain/repositories/IBudgetCommandRepository.js";
 import { InventoryDrop } from "../../domain/entities/InventoryDrop.js";
 import {
   DropNumber,
@@ -12,6 +14,8 @@ import {
 import { PurchaseOrderId as POModulePurchaseOrderId } from "../../../purchase-order/domain/value-objects/PurchaseOrderId.js";
 import { ExpenseId } from "../../../expense-management/domain/value-objects/ExpenseId.js";
 import { InventoryDropId } from "../../../expense-management/domain/value-objects/InventoryDropId.js";
+import { DepartmentId as BudgetDepartmentId } from "../../../budget/domain/value-objects/DepartmentId.js";
+import { CategoryId as BudgetCategoryId } from "../../../budget/domain/value-objects/CategoryId.js";
 
 export interface InventoryCreationResult {
   success: boolean;
@@ -28,7 +32,9 @@ export class InventoryOrchestrationService {
     private readonly inventoryDropCommandRepo: IInventoryDropCommandRepository,
     private readonly purchaseOrderQueryRepo: IPurchaseOrderQueryRepository,
     private readonly expenseQueryRepo: IExpenseQueryRepository,
-    private readonly expenseCommandRepo: IExpenseCommandRepository
+    private readonly expenseCommandRepo: IExpenseCommandRepository,
+    private readonly budgetQueryRepo: IBudgetQueryRepository,
+    private readonly budgetCommandRepo: IBudgetCommandRepository
   ) {}
 
   /**
@@ -144,6 +150,18 @@ export class InventoryOrchestrationService {
       expense.linkInventoryDrop(inventoryDropIdForExpense);
       await this.expenseCommandRepo.save(expense);
 
+      // Update budget spent amount
+      try {
+        console.log(
+          "[Inventory] Updating budget for expense:",
+          expense.id.getValue()
+        );
+        await this.updateBudgetSpent(expense);
+      } catch (budgetError) {
+        console.warn("[Inventory] Failed to update budget:", budgetError);
+        // Don't fail the entire operation if budget update fails
+      }
+
       return {
         success: true,
         inventoryDropId: inventoryDrop.id.getValue(),
@@ -199,5 +217,99 @@ export class InventoryOrchestrationService {
       );
       return null;
     }
+  }
+
+  /**
+   * Updates the budget spent amount when an expense is converted to inventory
+   */
+  private async updateBudgetSpent(expense: any): Promise<void> {
+    const budgetDepartmentId = BudgetDepartmentId.fromString(
+      expense.departmentId.getValue()
+    );
+    const budgetCategoryId = BudgetCategoryId.fromString(
+      expense.categoryId.getValue()
+    );
+
+    console.log(
+      "[Inventory] Finding budget for department:",
+      budgetDepartmentId.getValue(),
+      "category:",
+      budgetCategoryId.getValue()
+    );
+
+    // Find active budgets for the expense's department and category
+    const budgets = await this.budgetQueryRepo.findByDepartmentAndCategory(
+      budgetDepartmentId,
+      budgetCategoryId
+    );
+
+    console.log("[Inventory] Found budgets:", budgets.length);
+
+    if (budgets.length === 0) {
+      console.warn(
+        "[Inventory] No budget found for department:",
+        budgetDepartmentId.getValue(),
+        "category:",
+        budgetCategoryId.getValue()
+      );
+      return;
+    }
+
+    // Find an active budget that covers the expense date (or just use the first active one)
+    const expenseDate = expense.dateOfExpense.getValue();
+    let activeBudget = budgets.find((budget) => {
+      const isActive = budget.isActive;
+      const startDate = budget.period.getStartDate();
+      const endDate = budget.period.getEndDate();
+      const isInPeriod = expenseDate >= startDate && expenseDate <= endDate;
+      console.log(
+        "[Inventory] Checking budget:",
+        budget.id.getValue(),
+        "isActive:",
+        isActive,
+        "isInPeriod (expense date):",
+        isInPeriod,
+        "expense date:",
+        expenseDate
+      );
+      return isActive && isInPeriod;
+    });
+
+    // If no budget covers the expense date, try to find any active budget for this dept/category
+    if (!activeBudget) {
+      console.log(
+        "[Inventory] No budget found for expense date, looking for any active budget"
+      );
+      activeBudget = budgets.find((budget) => budget.isActive);
+    }
+
+    if (!activeBudget) {
+      console.warn(
+        "[Inventory] No active budget found for department:",
+        budgetDepartmentId.getValue(),
+        "category:",
+        budgetCategoryId.getValue()
+      );
+      return;
+    }
+
+    console.log(
+      "[Inventory] Found active budget:",
+      activeBudget.id.getValue(),
+      "current spent:",
+      activeBudget.amount.getSpentAmount()
+    );
+
+    // Add the expense amount to the budget spent
+    const expenseAmount = expense.amount.getTotalValue();
+    console.log("[Inventory] Adding expense amount to budget:", expenseAmount);
+
+    activeBudget.addSpent(expenseAmount);
+    await this.budgetCommandRepo.save(activeBudget);
+
+    console.log(
+      "[Inventory] Budget updated. New spent amount:",
+      activeBudget.amount.getSpentAmount()
+    );
   }
 }

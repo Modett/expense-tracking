@@ -20,6 +20,14 @@ export interface ExpenseFilters {
   maxAmount?: number;
 }
 
+export interface ExpenseAggregation {
+  groupBy: string;
+  groupId: string;
+  groupName?: string;
+  totalAmount: number;
+  count: number;
+}
+
 export interface IExpenseQueryRepository {
   findById(expenseId: ExpenseId): Promise<Expense | null>;
   findByUserId(userId: UserId): Promise<Expense[]>;
@@ -29,4 +37,8 @@ export interface IExpenseQueryRepository {
   findByVendorId(vendorId: VendorId): Promise<Expense[]>;
   findAll(filters?: ExpenseFilters): Promise<Expense[]>;
   count(filters?: ExpenseFilters): Promise<number>;
+  getAggregations(
+    filters: ExpenseFilters,
+    groupBy: string[]
+  ): Promise<ExpenseAggregation[]>;
 }

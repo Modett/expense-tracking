@@ -2,6 +2,7 @@ import type { PrismaClient } from "@prisma/client";
 import type {
   IExpenseQueryRepository,
   ExpenseFilters,
+  ExpenseAggregation,
 } from "../../domain/repositories/IExpenseQueryRepository.js";
 import { Expense } from "../../domain/entities/Expense.js";
 import {
@@ -24,7 +25,9 @@ import type { Expense as PrismaExpense } from "@prisma/client";
 export class PrismaExpenseQueryRepository implements IExpenseQueryRepository {
   constructor(private readonly prisma: PrismaClient) {}
 
-  private toDomain(prismaExpense: PrismaExpense & { expenseTags?: Array<{ tagId: string }> }): Expense {
+  private toDomain(
+    prismaExpense: PrismaExpense & { expenseTags?: Array<{ tagId: string }> }
+  ): Expense {
     const tagIds = prismaExpense.expenseTags
       ? prismaExpense.expenseTags.map((et) => TagId.fromString(et.tagId))
       : [];
@@ -150,7 +153,9 @@ export class PrismaExpenseQueryRepository implements IExpenseQueryRepository {
       where: {
         ...(filters?.userId && { userId: filters.userId.getValue() }),
         ...(filters?.vendorId && { vendorId: filters.vendorId.getValue() }),
-        ...(filters?.categoryId && { categoryId: filters.categoryId.getValue() }),
+        ...(filters?.categoryId && {
+          categoryId: filters.categoryId.getValue(),
+        }),
         ...(filters?.departmentId && {
           departmentId: filters.departmentId.getValue(),
         }),
@@ -166,8 +171,12 @@ export class PrismaExpenseQueryRepository implements IExpenseQueryRepository {
         ...(filters?.minAmount || filters?.maxAmount
           ? {
               totalAmount: {
-                ...(filters.minAmount !== undefined && { gte: filters.minAmount }),
-                ...(filters.maxAmount !== undefined && { lte: filters.maxAmount }),
+                ...(filters.minAmount !== undefined && {
+                  gte: filters.minAmount,
+                }),
+                ...(filters.maxAmount !== undefined && {
+                  lte: filters.maxAmount,
+                }),
               },
             }
           : {}),
@@ -188,7 +197,9 @@ export class PrismaExpenseQueryRepository implements IExpenseQueryRepository {
       where: {
         ...(filters?.userId && { userId: filters.userId.getValue() }),
         ...(filters?.vendorId && { vendorId: filters.vendorId.getValue() }),
-        ...(filters?.categoryId && { categoryId: filters.categoryId.getValue() }),
+        ...(filters?.categoryId && {
+          categoryId: filters.categoryId.getValue(),
+        }),
         ...(filters?.departmentId && {
           departmentId: filters.departmentId.getValue(),
         }),
@@ -204,12 +215,76 @@ export class PrismaExpenseQueryRepository implements IExpenseQueryRepository {
         ...(filters?.minAmount || filters?.maxAmount
           ? {
               totalAmount: {
-                ...(filters.minAmount !== undefined && { gte: filters.minAmount }),
-                ...(filters.maxAmount !== undefined && { lte: filters.maxAmount }),
+                ...(filters.minAmount !== undefined && {
+                  gte: filters.minAmount,
+                }),
+                ...(filters.maxAmount !== undefined && {
+                  lte: filters.maxAmount,
+                }),
               },
             }
           : {}),
       },
     });
+  }
+
+  async getAggregations(
+    filters: ExpenseFilters = {},
+    groupBy: string[]
+  ): Promise<ExpenseAggregation[]> {
+    const expenses = await this.findAll(filters);
+
+    const aggregations: ExpenseAggregation[] = [];
+
+    for (const field of groupBy) {
+      const grouped = this.groupExpensesBy(expenses, field);
+      aggregations.push(...grouped);
+    }
+
+    return aggregations;
+  }
+
+  private groupExpensesBy(
+    expenses: Expense[],
+    field: string
+  ): ExpenseAggregation[] {
+    const groups = new Map<string, { total: number; count: number }>();
+
+    for (const expense of expenses) {
+      let groupId: string;
+
+      switch (field) {
+        case "department":
+          groupId = expense.departmentId.getValue();
+          break;
+        case "vendor":
+          groupId = expense.vendorId.getValue();
+          break;
+        case "category":
+          groupId = expense.categoryId.getValue();
+          break;
+        case "user":
+          groupId = expense.userId.getValue();
+          break;
+        case "tag":
+          // Group by first tag if exists, otherwise "untagged"
+          groupId = expense.tagIds[0]?.getValue() || "untagged";
+          break;
+        default:
+          continue;
+      }
+
+      const existing = groups.get(groupId) || { total: 0, count: 0 };
+      existing.total += expense.amount.getTotalValue();
+      existing.count += 1;
+      groups.set(groupId, existing);
+    }
+
+    return Array.from(groups.entries()).map(([groupId, data]) => ({
+      groupBy: field,
+      groupId,
+      totalAmount: data.total,
+      count: data.count,
+    }));
   }
 }

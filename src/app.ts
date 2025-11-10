@@ -270,6 +270,12 @@ export async function buildApp() {
     await import("../modules/purchase-order/infra/persistence/index.js")
   ).PrismaPurchaseOrderQueryRepository(prisma);
 
+  // Register Budget Module (before inventory so we can pass repositories)
+  const { budgetQueryRepo, budgetCommandRepo } = await registerBudgetModule(
+    fastify,
+    prisma
+  );
+
   // Register Inventory Module with dependencies
   const { inventoryOrchestrationService } = await registerInventoryModule(
     fastify,
@@ -278,6 +284,8 @@ export async function buildApp() {
       purchaseOrderQueryRepo,
       expenseQueryRepo,
       expenseCommandRepo,
+      budgetQueryRepo,
+      budgetCommandRepo,
     }
   );
 
@@ -306,9 +314,6 @@ export async function buildApp() {
   await registerExpenseManagementModule(fastify, prisma, {
     approvalOrchestrationService,
   });
-
-  // Register Budget Module
-  await registerBudgetModule(fastify, prisma);
 
   // Graceful shutdown
   const closeGracefully = async (signal: string) => {

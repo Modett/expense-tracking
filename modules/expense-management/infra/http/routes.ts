@@ -16,11 +16,9 @@ const successSchema = {
   type: "object",
   properties: {
     success: { type: "boolean" },
-    data: {
-      type: "object",
-      additionalProperties: true,
-    },
+    data: {}, // Allow any type (object or array)
   },
+  additionalProperties: true,
 };
 
 const submitExpenseResponseSchema = {
@@ -97,6 +95,46 @@ export async function registerExpenseRoutes(
       onRequest: [authenticate],
     },
     async (request, reply) => expenseController.create(request as any, reply)
+  );
+
+  // Get expense aggregations
+  fastify.get(
+    "/expenses/aggregations",
+    {
+      schema: {
+        tags: ["Expenses"],
+        summary: "Get expense aggregations (Admin Only)",
+        security: [{ bearerAuth: [] }],
+        querystring: {
+          type: "object",
+          properties: {
+            status: {
+              type: "string",
+              enum: ["DRAFT", "SUBMITTED", "APPROVED", "REJECTED", "CANCELLED"],
+            },
+            userId: { type: "string", format: "uuid" },
+            vendorId: { type: "string", format: "uuid" },
+            categoryId: { type: "string", format: "uuid" },
+            departmentId: { type: "string", format: "uuid" },
+            dateFrom: { type: "string", format: "date-time" },
+            dateTo: { type: "string", format: "date-time" },
+            groupBy: {
+              type: "string",
+              description:
+                "Comma-separated list: department,vendor,category,user,tag",
+            },
+          },
+        },
+        response: {
+          200: successSchema,
+          401: errorSchema,
+          403: errorSchema,
+        },
+      },
+      onRequest: [authenticate, authorizeAdmin],
+    },
+    async (request, reply) =>
+      expenseController.getAggregations(request as any, reply)
   );
 
   // Get all expenses

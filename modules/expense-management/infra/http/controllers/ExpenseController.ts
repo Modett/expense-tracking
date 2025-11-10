@@ -18,6 +18,11 @@ import { GetExpenseByIdQueryHandler } from "../../../application/queries/get-exp
 import { GetExpenseByIdQuery } from "../../../application/queries/get-expense-by-id/query.js";
 import { GetAllExpensesQueryHandler } from "../../../application/queries/get-all-expenses/handler.js";
 import { GetAllExpensesQuery as GetAllExpensesQueryClass } from "../../../application/queries/get-all-expenses/query.js";
+import { GetExpenseAggregationsQueryHandler } from "../../../application/queries/get-expense-aggregations/handler.js";
+import { GetExpenseAggregationsQuery } from "../../../application/queries/get-expense-aggregations/query.js";
+
+// Services
+import { ExpenseCSVExportService } from "../../../application/services/ExpenseCSVExportService.js";
 
 // Validators
 import {
@@ -47,7 +52,8 @@ export class ExpenseController {
     private readonly getExpenseByIdHandler: GetExpenseByIdQueryHandler,
     private readonly getAllExpensesHandler: GetAllExpensesQueryHandler,
     private readonly submitExpenseHandler: SubmitExpenseCommandHandler,
-    private readonly cancelExpenseHandler: CancelExpenseCommandHandler
+    private readonly cancelExpenseHandler: CancelExpenseCommandHandler,
+    private readonly getExpenseAggregationsHandler: GetExpenseAggregationsQueryHandler
   ) {}
 
   private handleError(error: unknown, reply: FastifyReply): void {
@@ -233,6 +239,43 @@ export class ExpenseController {
 
       const command = new CancelExpenseCommand(validatedParams.expenseId);
       const result = await this.cancelExpenseHandler.handle(command);
+
+      reply.code(200).send({
+        success: true,
+        data: result,
+      });
+    } catch (error) {
+      this.handleError(error, reply);
+    }
+  }
+
+  async getAggregations(
+    request: FastifyRequest,
+    reply: FastifyReply
+  ): Promise<void> {
+    try {
+      const queryParams = request.query as any;
+
+      // Parse groupBy as array if it's a string
+      let groupBy: string[] | undefined;
+      if (queryParams.groupBy) {
+        groupBy = Array.isArray(queryParams.groupBy)
+          ? queryParams.groupBy
+          : queryParams.groupBy.split(",");
+      }
+
+      const query = new GetExpenseAggregationsQuery(
+        queryParams.status,
+        queryParams.userId,
+        queryParams.vendorId,
+        queryParams.categoryId,
+        queryParams.departmentId,
+        queryParams.dateFrom,
+        queryParams.dateTo,
+        groupBy
+      );
+
+      const result = await this.getExpenseAggregationsHandler.handle(query);
 
       reply.code(200).send({
         success: true,
