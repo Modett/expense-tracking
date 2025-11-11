@@ -12,7 +12,7 @@ export interface CreateBudgetResponse {
   success: boolean;
   budgetId: string;
   departmentId: string;
-  categoryId: string;
+  categoryId: string | null;
   budgetAmount: number;
   fiscalPeriod: string;
   startDate: string;
@@ -27,26 +27,42 @@ export class CreateBudgetCommandHandler {
 
   async handle(command: CreateBudgetCommand): Promise<CreateBudgetResponse> {
     const departmentId = DepartmentId.fromString(command.departmentId);
-    const categoryId = CategoryId.fromString(command.categoryId);
+    const categoryId = command.categoryId
+      ? CategoryId.fromString(command.categoryId)
+      : null;
     const fiscalPeriod = FiscalPeriod.fromString(command.fiscalPeriod);
 
     // Check if budget already exists for this combination
-    const existingBudget =
-      await this.budgetQueryRepo.findByDepartmentAndCategoryAndPeriod(
-        departmentId,
-        categoryId,
-        fiscalPeriod
-      );
+    if (categoryId) {
+      const existingBudget =
+        await this.budgetQueryRepo.findByDepartmentAndCategoryAndPeriod(
+          departmentId,
+          categoryId,
+          fiscalPeriod
+        );
 
-    if (existingBudget) {
-      throw new Error(
-        `Budget already exists for department ${command.departmentId}, category ${command.categoryId}, and fiscal period ${command.fiscalPeriod}`
-      );
+      if (existingBudget) {
+        throw new Error(
+          `Budget already exists for department ${command.departmentId}, category ${command.categoryId}, and fiscal period ${command.fiscalPeriod}`
+        );
+      }
+    } else {
+      const existingBudget =
+        await this.budgetQueryRepo.findActiveDepartmentBudget(
+          departmentId,
+          fiscalPeriod
+        );
+
+      if (existingBudget) {
+        throw new Error(
+          `Department budget already exists for department ${command.departmentId} and fiscal period ${command.fiscalPeriod}`
+        );
+      }
     }
 
     const budget = Budget.create({
       departmentId,
-      categoryId,
+      categoryId: categoryId ?? null,
       budgetAmount: command.budgetAmount,
       fiscalPeriod,
       startDate: command.startDate,
@@ -59,7 +75,7 @@ export class CreateBudgetCommandHandler {
       success: true,
       budgetId: budget.id.getValue(),
       departmentId: command.departmentId,
-      categoryId: command.categoryId,
+      categoryId: command.categoryId ?? null,
       budgetAmount: command.budgetAmount,
       fiscalPeriod: command.fiscalPeriod,
       startDate: command.startDate.toISOString(),

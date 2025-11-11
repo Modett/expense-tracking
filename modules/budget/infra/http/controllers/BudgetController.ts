@@ -104,7 +104,7 @@ export class BudgetController {
 
       const command = new CreateBudgetCommand(
         validatedBody.departmentId,
-        validatedBody.categoryId,
+        validatedBody.categoryId ?? null,
         validatedBody.budgetAmount,
         validatedBody.fiscalPeriod,
         new Date(validatedBody.startDate),

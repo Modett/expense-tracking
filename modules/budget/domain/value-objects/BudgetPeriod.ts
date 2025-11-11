@@ -13,7 +13,32 @@ export class BudgetPeriod {
   }
 
   static create(startDate: Date, endDate: Date): BudgetPeriod {
-    return new BudgetPeriod(startDate, endDate);
+    // Normalize dates to midnight UTC for consistent comparison with expense dates
+    const normalizedStart = new Date(
+      Date.UTC(
+        startDate.getUTCFullYear(),
+        startDate.getUTCMonth(),
+        startDate.getUTCDate(),
+        0,
+        0,
+        0,
+        0
+      )
+    );
+
+    const normalizedEnd = new Date(
+      Date.UTC(
+        endDate.getUTCFullYear(),
+        endDate.getUTCMonth(),
+        endDate.getUTCDate(),
+        23,
+        59,
+        59,
+        999
+      )
+    );
+
+    return new BudgetPeriod(normalizedStart, normalizedEnd);
   }
 
   getStartDate(): Date {
@@ -46,9 +71,7 @@ export class BudgetPeriod {
   }
 
   overlaps(other: BudgetPeriod): boolean {
-    return (
-      this.startDate <= other.endDate && this.endDate >= other.startDate
-    );
+    return this.startDate <= other.endDate && this.endDate >= other.startDate;
   }
 
   equals(other: BudgetPeriod): boolean {

@@ -258,7 +258,7 @@ model Approval {
 model Budget {
   budgetId     String   @id @default(dbgenerated("gen_random_uuid()")) @map("budget_id") @db.Uuid
   departmentId String   @map("department_id") @db.Uuid
-  categoryId   String   @map("category_id") @db.Uuid
+  categoryId   String?  @map("category_id") @db.Uuid
   budgetAmount Decimal  @map("budget_amount") @db.Decimal(12, 2)
   spentAmount  Decimal  @default(0) @map("spent_amount") @db.Decimal(12, 2)
   fiscalPeriod String   @map("fiscal_period")
@@ -270,7 +270,7 @@ model Budget {
 
   // Relations
   department Department @relation(fields: [departmentId], references: [departmentId])
-  category   Category   @relation(fields: [categoryId], references: [categoryId])
+  category   Category?  @relation(fields: [categoryId], references: [categoryId])
 
   @@unique([departmentId, categoryId, fiscalPeriod])
   @@map("budgets")

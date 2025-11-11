@@ -28,6 +28,11 @@ export interface IBudgetQueryRepository {
     categoryId: CategoryId,
     fiscalPeriod: FiscalPeriod
   ): Promise<Budget | null>;
+  // Find active department budget for a fiscal period (for department-based budgets)
+  findActiveDepartmentBudget(
+    departmentId: DepartmentId,
+    fiscalPeriod: FiscalPeriod
+  ): Promise<Budget | null>;
   findByFiscalPeriod(fiscalPeriod: FiscalPeriod): Promise<Budget[]>;
   findActive(): Promise<Budget[]>;
   findOverBudget(): Promise<Budget[]>;

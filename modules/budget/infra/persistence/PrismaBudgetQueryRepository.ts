@@ -20,16 +20,15 @@ export class PrismaBudgetQueryRepository implements IBudgetQueryRepository {
     return Budget.reconstitute({
       id: BudgetId.fromString(prismaBudget.budgetId),
       departmentId: DepartmentId.fromString(prismaBudget.departmentId),
-      categoryId: CategoryId.fromString(prismaBudget.categoryId),
+      categoryId: prismaBudget.categoryId
+        ? CategoryId.fromString(prismaBudget.categoryId)
+        : null,
       amount: BudgetAmount.create(
         Number(prismaBudget.budgetAmount),
         Number(prismaBudget.spentAmount)
       ),
       fiscalPeriod: FiscalPeriod.fromString(prismaBudget.fiscalPeriod),
-      period: BudgetPeriod.create(
-        prismaBudget.startDate,
-        prismaBudget.endDate
-      ),
+      period: BudgetPeriod.create(prismaBudget.startDate, prismaBudget.endDate),
       isActive: prismaBudget.isActive,
       createdAt: prismaBudget.createdAt,
       updatedAt: prismaBudget.updatedAt,
@@ -99,6 +98,28 @@ export class PrismaBudgetQueryRepository implements IBudgetQueryRepository {
     }
 
     return this.toDomain(budget);
+  }
+
+  async findActiveDepartmentBudget(
+    departmentId: DepartmentId,
+    fiscalPeriod: FiscalPeriod
+  ): Promise<Budget | null> {
+    const budgets = await this.prisma.budget.findMany({
+      where: {
+        departmentId: departmentId.getValue(),
+        fiscalPeriod: fiscalPeriod.getValue(),
+        isActive: true,
+      },
+    });
+
+    // Filter for department-only budgets (categoryId is null)
+    const departmentBudget = budgets.find((b) => b.categoryId === null);
+
+    if (!departmentBudget) {
+      return null;
+    }
+
+    return this.toDomain(departmentBudget);
   }
 
   async findByFiscalPeriod(fiscalPeriod: FiscalPeriod): Promise<Budget[]> {

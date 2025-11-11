@@ -5,7 +5,7 @@ import type { GetBudgetByIdQuery } from "./query.js";
 export interface BudgetDTO {
   id: string;
   departmentId: string;
-  categoryId: string;
+  categoryId: string | null;
   budgetAmount: number;
   spentAmount: number;
   remainingAmount: number;
