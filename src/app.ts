@@ -254,7 +254,13 @@ export async function buildApp() {
   const expenseCommandRepo = new PrismaExpenseCommandRepository(prisma);
   const expenseQueryRepo = new PrismaExpenseQueryRepository(prisma);
 
-  // Create expense orchestration service early (needed for approval module)
+  // Register Budget Module (before expense orchestration so we can pass repositories)
+  const { budgetQueryRepo, budgetCommandRepo } = await registerBudgetModule(
+    fastify,
+    prisma
+  );
+
+  // Create expense orchestration service early (needed for approval module) - WITH budget repos
   const ExpenseOrchestrationService = (
     await import(
       "../modules/expense-management/application/services/ExpenseOrchestrationService.js"
@@ -262,19 +268,15 @@ export async function buildApp() {
   ).ExpenseOrchestrationService;
   const expenseOrchestrationService = new ExpenseOrchestrationService(
     expenseQueryRepo,
-    expenseCommandRepo
+    expenseCommandRepo,
+    budgetQueryRepo,
+    budgetCommandRepo
   );
 
   // Register Purchase Order Module (to get query repo - routes will be registered later with full dependencies)
   const purchaseOrderQueryRepo = new (
     await import("../modules/purchase-order/infra/persistence/index.js")
   ).PrismaPurchaseOrderQueryRepository(prisma);
-
-  // Register Budget Module (before inventory so we can pass repositories)
-  const { budgetQueryRepo, budgetCommandRepo } = await registerBudgetModule(
-    fastify,
-    prisma
-  );
 
   // Register Inventory Module with dependencies
   const { inventoryOrchestrationService } = await registerInventoryModule(

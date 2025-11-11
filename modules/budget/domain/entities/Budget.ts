@@ -10,7 +10,7 @@ import {
 export interface BudgetProps {
   id: BudgetId;
   departmentId: DepartmentId;
-  categoryId: CategoryId;
+  categoryId: CategoryId | null; // Optional for backward compatibility
   amount: BudgetAmount;
   fiscalPeriod: FiscalPeriod;
   period: BudgetPeriod;
@@ -21,7 +21,7 @@ export interface BudgetProps {
 
 export interface CreateBudgetProps {
   departmentId: DepartmentId;
-  categoryId: CategoryId;
+  categoryId?: CategoryId | null; // Optional - department-based budgets
   budgetAmount: number;
   fiscalPeriod: FiscalPeriod;
   startDate: Date;
@@ -39,7 +39,7 @@ export class Budget {
     return new Budget({
       id: BudgetId.create(),
       departmentId: props.departmentId,
-      categoryId: props.categoryId,
+      categoryId: props.categoryId ?? null,
       amount: BudgetAmount.create(props.budgetAmount, 0),
       fiscalPeriod: props.fiscalPeriod,
       period: BudgetPeriod.create(props.startDate, props.endDate),
@@ -60,9 +60,7 @@ export class Budget {
     if (!this.props.departmentId) {
       throw new Error("Department ID is required");
     }
-    if (!this.props.categoryId) {
-      throw new Error("Category ID is required");
-    }
+    // CategoryId is now optional for department-based budgets
     if (!this.props.amount) {
       throw new Error("Budget amount is required");
     }
@@ -82,7 +80,7 @@ export class Budget {
     return this.props.departmentId;
   }
 
-  get categoryId(): CategoryId {
+  get categoryId(): CategoryId | null {
     return this.props.categoryId;
   }
 
@@ -204,6 +202,7 @@ export class Budget {
   }
 
   belongsToCategory(categoryId: CategoryId): boolean {
+    if (!this.props.categoryId) return true; // Department-only budget matches any category
     return this.props.categoryId.equals(categoryId);
   }
 
@@ -220,7 +219,7 @@ export class Budget {
     return {
       id: this.props.id.getValue(),
       departmentId: this.props.departmentId.getValue(),
-      categoryId: this.props.categoryId.getValue(),
+      categoryId: this.props.categoryId?.getValue() ?? null,
       budgetAmount: this.props.amount.getBudgetAmount(),
       spentAmount: this.props.amount.getSpentAmount(),
       remainingAmount: this.getRemainingAmount(),

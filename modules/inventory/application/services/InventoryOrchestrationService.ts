@@ -221,95 +221,15 @@ export class InventoryOrchestrationService {
 
   /**
    * Updates the budget spent amount when an expense is converted to inventory
+   * NOTE: This is now redundant as budgets are updated when expenses are approved.
+   * Keeping for backward compatibility but consider removing in the future.
    */
   private async updateBudgetSpent(expense: any): Promise<void> {
-    const budgetDepartmentId = BudgetDepartmentId.fromString(
-      expense.departmentId.getValue()
+    console.warn(
+      "[Inventory] Budget update in inventory service is deprecated. Budgets are now updated when expenses are approved."
     );
-    const budgetCategoryId = BudgetCategoryId.fromString(
-      expense.categoryId.getValue()
-    );
-
-    console.log(
-      "[Inventory] Finding budget for department:",
-      budgetDepartmentId.getValue(),
-      "category:",
-      budgetCategoryId.getValue()
-    );
-
-    // Find active budgets for the expense's department and category
-    const budgets = await this.budgetQueryRepo.findByDepartmentAndCategory(
-      budgetDepartmentId,
-      budgetCategoryId
-    );
-
-    console.log("[Inventory] Found budgets:", budgets.length);
-
-    if (budgets.length === 0) {
-      console.warn(
-        "[Inventory] No budget found for department:",
-        budgetDepartmentId.getValue(),
-        "category:",
-        budgetCategoryId.getValue()
-      );
-      return;
-    }
-
-    // Find an active budget that covers the expense date (or just use the first active one)
-    const expenseDate = expense.dateOfExpense.getValue();
-    let activeBudget = budgets.find((budget) => {
-      const isActive = budget.isActive;
-      const startDate = budget.period.getStartDate();
-      const endDate = budget.period.getEndDate();
-      const isInPeriod = expenseDate >= startDate && expenseDate <= endDate;
-      console.log(
-        "[Inventory] Checking budget:",
-        budget.id.getValue(),
-        "isActive:",
-        isActive,
-        "isInPeriod (expense date):",
-        isInPeriod,
-        "expense date:",
-        expenseDate
-      );
-      return isActive && isInPeriod;
-    });
-
-    // If no budget covers the expense date, try to find any active budget for this dept/category
-    if (!activeBudget) {
-      console.log(
-        "[Inventory] No budget found for expense date, looking for any active budget"
-      );
-      activeBudget = budgets.find((budget) => budget.isActive);
-    }
-
-    if (!activeBudget) {
-      console.warn(
-        "[Inventory] No active budget found for department:",
-        budgetDepartmentId.getValue(),
-        "category:",
-        budgetCategoryId.getValue()
-      );
-      return;
-    }
-
-    console.log(
-      "[Inventory] Found active budget:",
-      activeBudget.id.getValue(),
-      "current spent:",
-      activeBudget.amount.getSpentAmount()
-    );
-
-    // Add the expense amount to the budget spent
-    const expenseAmount = expense.amount.getTotalValue();
-    console.log("[Inventory] Adding expense amount to budget:", expenseAmount);
-
-    activeBudget.addSpent(expenseAmount);
-    await this.budgetCommandRepo.save(activeBudget);
-
-    console.log(
-      "[Inventory] Budget updated. New spent amount:",
-      activeBudget.amount.getSpentAmount()
-    );
+    // Budget is already updated when expense was approved
+    // This method is kept for backward compatibility but does nothing
+    return;
   }
 }
