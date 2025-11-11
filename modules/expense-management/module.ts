@@ -50,6 +50,10 @@ import type { ApprovalOrchestrationService } from "../approval/application/servi
 
 // Import ExpenseOrchestrationService
 import { ExpenseOrchestrationService } from "./application/services/ExpenseOrchestrationService.js";
+import { ExpenseCSVExportService } from "./application/services/ExpenseCSVExportService.js";
+import { ExpenseCSVImportService } from "./application/services/ExpenseCSVImportService.js";
+import { ExpenseMonthlyReportService } from "./application/services/ExpenseMonthlyReportService.js";
+import { ExpenseAIAnalyticsService } from "./application/services/ExpenseAIAnalyticsService.js";
 
 export interface ExpenseManagementModuleDependencies {
   approvalOrchestrationService?: ApprovalOrchestrationService | null;
@@ -174,6 +178,14 @@ export async function registerExpenseManagementModule(
     expenseTagQueryRepo
   );
 
+  // Initialize Services
+  const csvExportService = new ExpenseCSVExportService(expenseQueryRepo);
+  const csvImportService = new ExpenseCSVImportService(expenseCommandRepo);
+  const monthlyReportService = new ExpenseMonthlyReportService(
+    expenseQueryRepo
+  );
+  const aiAnalyticsService = new ExpenseAIAnalyticsService(expenseQueryRepo);
+
   // Initialize Controllers
   const expenseController = new ExpenseController(
     createExpenseHandler,
@@ -183,7 +195,11 @@ export async function registerExpenseManagementModule(
     getAllExpensesHandler,
     submitExpenseHandler,
     cancelExpenseHandler,
-    getExpenseAggregationsHandler
+    getExpenseAggregationsHandler,
+    csvExportService,
+    csvImportService,
+    monthlyReportService,
+    aiAnalyticsService
   );
 
   const expenseTagController = new ExpenseTagController(

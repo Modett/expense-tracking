@@ -30,9 +30,6 @@ export class ApprovalOrchestrationService {
     private readonly approvalCommandRepo: IApprovalCommandRepository
   ) {}
 
-  /**
-   * Creates approvals for an expense based on applicable approval rules
-   */
   async createApprovalsForExpense(
     expense: Expense
   ): Promise<ApprovalCreationResult> {
@@ -44,12 +41,10 @@ export class ApprovalOrchestrationService {
     };
 
     try {
-      // Convert expense categoryId to approval-rules CategoryId using string value
       const categoryIdForRules = ApprovalRuleCategoryId.fromString(
         expense.categoryId.getValue()
       );
 
-      // Find applicable approval rules for this expense
       const applicableRules =
         await this.approvalRuleQueryRepo.findApplicableRules(
           categoryIdForRules,
@@ -63,17 +58,14 @@ export class ApprovalOrchestrationService {
         return result;
       }
 
-      // Sort rules by approval order to ensure correct sequence
       const sortedRules = [...applicableRules].sort(
         (a, b) => a.approvalOrder.getValue() - b.approvalOrder.getValue()
       );
 
-      // Create approvals for each rule
       const approvals: Approval[] = [];
 
       for (const rule of sortedRules) {
         try {
-          // Find a user with the required role
           const roleValue = rule.approverRole.getValue();
           const role = Role.fromString(roleValue);
           const usersWithRole = await this.userQueryRepo.findByRole(role, 1);
@@ -85,7 +77,6 @@ export class ApprovalOrchestrationService {
             continue;
           }
 
-          // Use the first available user with the required role
           const approver = usersWithRole[0];
           if (!approver) {
             result.errors.push(
@@ -94,7 +85,6 @@ export class ApprovalOrchestrationService {
             continue;
           }
 
-          // Determine initial status based on approval order
           const status = ApprovalChainService.getInitialStatus(
             rule.approvalOrder.getValue()
           );
