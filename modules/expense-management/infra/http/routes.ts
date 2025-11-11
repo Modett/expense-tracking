@@ -16,11 +16,9 @@ const successSchema = {
   type: "object",
   properties: {
     success: { type: "boolean" },
-    data: {
-      type: "object",
-      additionalProperties: true,
-    },
+    data: {}, // Allow any type (object or array)
   },
+  additionalProperties: true,
 };
 
 const submitExpenseResponseSchema = {
@@ -97,6 +95,169 @@ export async function registerExpenseRoutes(
       onRequest: [authenticate],
     },
     async (request, reply) => expenseController.create(request as any, reply)
+  );
+
+  // Get expense aggregations
+  fastify.get(
+    "/expenses/aggregations",
+    {
+      schema: {
+        tags: ["Expenses"],
+        summary: "Get expense aggregations (Admin Only)",
+        security: [{ bearerAuth: [] }],
+        querystring: {
+          type: "object",
+          properties: {
+            status: {
+              type: "string",
+              enum: ["DRAFT", "SUBMITTED", "APPROVED", "REJECTED", "CANCELLED"],
+            },
+            userId: { type: "string", format: "uuid" },
+            vendorId: { type: "string", format: "uuid" },
+            categoryId: { type: "string", format: "uuid" },
+            departmentId: { type: "string", format: "uuid" },
+            dateFrom: { type: "string", format: "date-time" },
+            dateTo: { type: "string", format: "date-time" },
+            groupBy: {
+              type: "string",
+              description:
+                "Comma-separated list: department,vendor,category,user,tag",
+            },
+          },
+        },
+        response: {
+          200: successSchema,
+          401: errorSchema,
+          403: errorSchema,
+        },
+      },
+      onRequest: [authenticate, authorizeAdmin],
+    },
+    async (request, reply) =>
+      expenseController.getAggregations(request as any, reply)
+  );
+
+  // Export expenses to CSV
+  fastify.get(
+    "/expenses/export/csv",
+    {
+      schema: {
+        tags: ["Expenses"],
+        summary: "Export expenses to CSV (Admin Only)",
+        security: [{ bearerAuth: [] }],
+        querystring: {
+          type: "object",
+          properties: {
+            status: {
+              type: "string",
+              enum: ["DRAFT", "SUBMITTED", "APPROVED", "REJECTED", "CANCELLED"],
+            },
+            userId: { type: "string", format: "uuid" },
+            vendorId: { type: "string", format: "uuid" },
+            categoryId: { type: "string", format: "uuid" },
+            departmentId: { type: "string", format: "uuid" },
+          },
+        },
+        response: {
+          200: { type: "string" },
+          401: errorSchema,
+          403: errorSchema,
+        },
+      },
+      onRequest: [authenticate, authorizeAdmin],
+    },
+    async (request, reply) =>
+      expenseController.exportToCSV(request as any, reply)
+  );
+
+  // Import expenses from CSV
+  fastify.post(
+    "/expenses/import/csv",
+    {
+      schema: {
+        tags: ["Expenses"],
+        summary: "Import expenses from CSV (Admin Only)",
+        security: [{ bearerAuth: [] }],
+        consumes: ["multipart/form-data"],
+        response: {
+          200: successSchema,
+          400: errorSchema,
+          401: errorSchema,
+          403: errorSchema,
+        },
+      },
+      onRequest: [authenticate, authorizeAdmin],
+    },
+    async (request, reply) =>
+      expenseController.importFromCSV(request as any, reply)
+  );
+
+  // Generate monthly report of approved expenses
+  fastify.get(
+    "/expenses/reports/monthly",
+    {
+      schema: {
+        tags: ["Expenses"],
+        summary: "Generate monthly report of approved expenses (Admin Only)",
+        security: [{ bearerAuth: [] }],
+        querystring: {
+          type: "object",
+          required: ["month", "year"],
+          properties: {
+            month: { type: "integer", minimum: 1, maximum: 12 },
+            year: { type: "integer", minimum: 2000, maximum: 2100 },
+            departmentId: { type: "string", format: "uuid" },
+            userId: { type: "string", format: "uuid" },
+          },
+        },
+        response: {
+          200: { type: "string" },
+          400: errorSchema,
+          401: errorSchema,
+          403: errorSchema,
+        },
+      },
+      onRequest: [authenticate, authorizeAdmin],
+    },
+    async (request, reply) =>
+      expenseController.generateMonthlyReport(request as any, reply)
+  );
+
+  // Get AI-powered analytics insights
+  fastify.get(
+    "/expenses/ai-analytics",
+    {
+      schema: {
+        tags: ["Expenses"],
+        summary: "Get AI-powered expense analytics and insights (Admin Only)",
+        security: [{ bearerAuth: [] }],
+        querystring: {
+          type: "object",
+          properties: {
+            status: {
+              type: "string",
+              enum: ["DRAFT", "SUBMITTED", "APPROVED", "REJECTED", "CANCELLED"],
+            },
+            userId: { type: "string", format: "uuid" },
+            vendorId: { type: "string", format: "uuid" },
+            categoryId: { type: "string", format: "uuid" },
+            departmentId: { type: "string", format: "uuid" },
+            dateFrom: { type: "string", format: "date-time" },
+            dateTo: { type: "string", format: "date-time" },
+          },
+        },
+        response: {
+          200: successSchema,
+          400: errorSchema,
+          401: errorSchema,
+          403: errorSchema,
+          500: errorSchema,
+        },
+      },
+      onRequest: [authenticate, authorizeAdmin],
+    },
+    async (request, reply) =>
+      expenseController.getAIAnalytics(request as any, reply)
   );
 
   // Get all expenses

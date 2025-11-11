@@ -109,7 +109,7 @@ export class ApprovalController {
 
       const command = new ApproveApprovalCommand(
         validatedParams.approvalId,
-        authenticatedUser.userId, // Use authenticated user's ID
+        authenticatedUser.userId,
         validatedBody.comments
       );
 

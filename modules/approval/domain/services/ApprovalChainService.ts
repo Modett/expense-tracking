@@ -54,45 +54,33 @@ export class ApprovalChainService {
 
     // Get all approvals with lower order numbers
     const previousApprovals = allApprovalsForExpense.filter(
-      a => a.approvalOrder.getValue() < currentOrder
+      (a) => a.approvalOrder.getValue() < currentOrder
     );
 
     // Check if all previous approvals are approved
-    return previousApprovals.every(a => a.status.isApproved());
+    return previousApprovals.every((a) => a.status.isApproved());
   }
 
-  /**
-   * Finds the next approval in the chain that should be activated
-   */
   static findNextApproval(
     currentApprovalOrder: number,
     allApprovalsForExpense: Approval[]
   ): Approval | null {
     const nextApprovals = allApprovalsForExpense
-      .filter(a => a.approvalOrder.getValue() > currentApprovalOrder)
+      .filter((a) => a.approvalOrder.getValue() > currentApprovalOrder)
       .sort((a, b) => a.approvalOrder.getValue() - b.approvalOrder.getValue());
 
     return nextApprovals.length > 0 ? nextApprovals[0] ?? null : null;
   }
 
-  /**
-   * Checks if all approvals in the chain are completed (approved/rejected/skipped)
-   */
   static areAllApprovalsCompleted(approvals: Approval[]): boolean {
-    return approvals.every(a => a.status.isFinal());
+    return approvals.every((a) => a.status.isFinal());
   }
 
-  /**
-   * Checks if all approvals are approved (to approve the expense)
-   */
   static areAllApprovalsApproved(approvals: Approval[]): boolean {
-    return approvals.every(a => a.status.isApproved());
+    return approvals.every((a) => a.status.isApproved());
   }
 
-  /**
-   * Checks if any approval was rejected (to reject the expense)
-   */
   static hasAnyRejection(approvals: Approval[]): boolean {
-    return approvals.some(a => a.status.isRejected());
+    return approvals.some((a) => a.status.isRejected());
   }
 }

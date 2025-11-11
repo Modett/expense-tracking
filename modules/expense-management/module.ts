@@ -29,6 +29,7 @@ import { ClearExpenseTagsCommandHandler } from "./application/commands/clear-exp
 // Query Handlers
 import { GetExpenseByIdQueryHandler } from "./application/queries/get-expense-by-id/handler.js";
 import { GetAllExpensesQueryHandler } from "./application/queries/get-all-expenses/handler.js";
+import { GetExpenseAggregationsQueryHandler } from "./application/queries/get-expense-aggregations/handler.js";
 import { GetExpenseTagsQueryHandler } from "./application/queries/get-expense-tags/handler.js";
 import { GetExpensesByTagQueryHandler } from "./application/queries/get-expenses-by-tag/handler.js";
 import { GetExpensesByAllTagsQueryHandler } from "./application/queries/get-expenses-by-all-tags/handler.js";
@@ -49,6 +50,10 @@ import type { ApprovalOrchestrationService } from "../approval/application/servi
 
 // Import ExpenseOrchestrationService
 import { ExpenseOrchestrationService } from "./application/services/ExpenseOrchestrationService.js";
+import { ExpenseCSVExportService } from "./application/services/ExpenseCSVExportService.js";
+import { ExpenseCSVImportService } from "./application/services/ExpenseCSVImportService.js";
+import { ExpenseMonthlyReportService } from "./application/services/ExpenseMonthlyReportService.js";
+import { ExpenseAIAnalyticsService } from "./application/services/ExpenseAIAnalyticsService.js";
 
 export interface ExpenseManagementModuleDependencies {
   approvalOrchestrationService?: ApprovalOrchestrationService | null;
@@ -157,6 +162,9 @@ export async function registerExpenseManagementModule(
   const getAllExpensesHandler = new GetAllExpensesQueryHandler(
     expenseQueryRepo
   );
+  const getExpenseAggregationsHandler = new GetExpenseAggregationsQueryHandler(
+    expenseQueryRepo
+  );
   const getExpenseTagsHandler = new GetExpenseTagsQueryHandler(
     expenseTagQueryRepo
   );
@@ -170,6 +178,14 @@ export async function registerExpenseManagementModule(
     expenseTagQueryRepo
   );
 
+  // Initialize Services
+  const csvExportService = new ExpenseCSVExportService(expenseQueryRepo);
+  const csvImportService = new ExpenseCSVImportService(expenseCommandRepo);
+  const monthlyReportService = new ExpenseMonthlyReportService(
+    expenseQueryRepo
+  );
+  const aiAnalyticsService = new ExpenseAIAnalyticsService(expenseQueryRepo);
+
   // Initialize Controllers
   const expenseController = new ExpenseController(
     createExpenseHandler,
@@ -178,7 +194,12 @@ export async function registerExpenseManagementModule(
     getExpenseByIdHandler,
     getAllExpensesHandler,
     submitExpenseHandler,
-    cancelExpenseHandler
+    cancelExpenseHandler,
+    getExpenseAggregationsHandler,
+    csvExportService,
+    csvImportService,
+    monthlyReportService,
+    aiAnalyticsService
   );
 
   const expenseTagController = new ExpenseTagController(

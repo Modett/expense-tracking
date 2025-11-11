@@ -30,7 +30,10 @@ import { registerBudgetRoutes } from "./infra/http/routes.js";
 export async function registerBudgetModule(
   fastify: FastifyInstance,
   prisma: PrismaClient
-): Promise<void> {
+): Promise<{
+  budgetQueryRepo: PrismaBudgetQueryRepository;
+  budgetCommandRepo: PrismaBudgetCommandRepository;
+}> {
   // Initialize Repositories
   const budgetCommandRepo = new PrismaBudgetCommandRepository(prisma);
   const budgetQueryRepo = new PrismaBudgetQueryRepository(prisma);
@@ -87,4 +90,10 @@ export async function registerBudgetModule(
 
   // Register Routes
   await registerBudgetRoutes(fastify, budgetController);
+
+  // Return repositories for cross-module usage
+  return {
+    budgetQueryRepo,
+    budgetCommandRepo,
+  };
 }

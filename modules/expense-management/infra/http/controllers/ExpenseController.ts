@@ -18,6 +18,14 @@ import { GetExpenseByIdQueryHandler } from "../../../application/queries/get-exp
 import { GetExpenseByIdQuery } from "../../../application/queries/get-expense-by-id/query.js";
 import { GetAllExpensesQueryHandler } from "../../../application/queries/get-all-expenses/handler.js";
 import { GetAllExpensesQuery as GetAllExpensesQueryClass } from "../../../application/queries/get-all-expenses/query.js";
+import { GetExpenseAggregationsQueryHandler } from "../../../application/queries/get-expense-aggregations/handler.js";
+import { GetExpenseAggregationsQuery } from "../../../application/queries/get-expense-aggregations/query.js";
+
+// Services
+import { ExpenseCSVExportService } from "../../../application/services/ExpenseCSVExportService.js";
+import { ExpenseCSVImportService } from "../../../application/services/ExpenseCSVImportService.js";
+import { ExpenseMonthlyReportService } from "../../../application/services/ExpenseMonthlyReportService.js";
+import { ExpenseAIAnalyticsService } from "../../../application/services/ExpenseAIAnalyticsService.js";
 
 // Validators
 import {
@@ -47,7 +55,12 @@ export class ExpenseController {
     private readonly getExpenseByIdHandler: GetExpenseByIdQueryHandler,
     private readonly getAllExpensesHandler: GetAllExpensesQueryHandler,
     private readonly submitExpenseHandler: SubmitExpenseCommandHandler,
-    private readonly cancelExpenseHandler: CancelExpenseCommandHandler
+    private readonly cancelExpenseHandler: CancelExpenseCommandHandler,
+    private readonly getExpenseAggregationsHandler: GetExpenseAggregationsQueryHandler,
+    private readonly csvExportService: ExpenseCSVExportService,
+    private readonly csvImportService: ExpenseCSVImportService,
+    private readonly monthlyReportService: ExpenseMonthlyReportService,
+    private readonly aiAnalyticsService: ExpenseAIAnalyticsService
   ) {}
 
   private handleError(error: unknown, reply: FastifyReply): void {
@@ -237,6 +250,242 @@ export class ExpenseController {
       reply.code(200).send({
         success: true,
         data: result,
+      });
+    } catch (error) {
+      this.handleError(error, reply);
+    }
+  }
+
+  async getAggregations(
+    request: FastifyRequest,
+    reply: FastifyReply
+  ): Promise<void> {
+    try {
+      const queryParams = request.query as any;
+
+      // Parse groupBy as array if it's a string
+      let groupBy: string[] | undefined;
+      if (queryParams.groupBy) {
+        groupBy = Array.isArray(queryParams.groupBy)
+          ? queryParams.groupBy
+          : queryParams.groupBy.split(",");
+      }
+
+      const query = new GetExpenseAggregationsQuery(
+        queryParams.status,
+        queryParams.userId,
+        queryParams.vendorId,
+        queryParams.categoryId,
+        queryParams.departmentId,
+        queryParams.dateFrom,
+        queryParams.dateTo,
+        groupBy
+      );
+
+      const result = await this.getExpenseAggregationsHandler.handle(query);
+
+      reply.code(200).send({
+        success: true,
+        data: result,
+      });
+    } catch (error) {
+      this.handleError(error, reply);
+    }
+  }
+
+  async exportToCSV(
+    request: FastifyRequest,
+    reply: FastifyReply
+  ): Promise<void> {
+    try {
+      const queryParams = request.query as any;
+
+      // Build filters with value objects
+      const filters: any = {};
+
+      if (queryParams.status) {
+        const { ExpenseStatus } = await import(
+          "../../../domain/value-objects/index.js"
+        );
+        filters.status = ExpenseStatus.fromString(queryParams.status);
+      }
+      if (queryParams.userId) {
+        const { UserId } = await import(
+          "../../../domain/value-objects/index.js"
+        );
+        filters.userId = UserId.fromString(queryParams.userId);
+      }
+      if (queryParams.vendorId) {
+        const { VendorId } = await import(
+          "../../../domain/value-objects/index.js"
+        );
+        filters.vendorId = VendorId.fromString(queryParams.vendorId);
+      }
+      if (queryParams.categoryId) {
+        const { CategoryId } = await import(
+          "../../../domain/value-objects/index.js"
+        );
+        filters.categoryId = CategoryId.fromString(queryParams.categoryId);
+      }
+      if (queryParams.departmentId) {
+        const { DepartmentId } = await import(
+          "../../../domain/value-objects/index.js"
+        );
+        filters.departmentId = DepartmentId.fromString(
+          queryParams.departmentId
+        );
+      }
+
+      const filePath = await this.csvExportService.exportToCSV(filters);
+
+      const fs = await import("fs");
+      const fileStream = fs.createReadStream(filePath);
+
+      reply.header("Content-Type", "text/csv");
+      reply.header(
+        "Content-Disposition",
+        `attachment; filename="expenses-export.csv"`
+      );
+      reply.send(fileStream);
+    } catch (error) {
+      this.handleError(error, reply);
+    }
+  }
+
+  async importFromCSV(
+    request: FastifyRequest,
+    reply: FastifyReply
+  ): Promise<void> {
+    try {
+      const data = await (request as any).file();
+      if (!data) {
+        reply.code(400).send({ error: "No file uploaded" });
+        return;
+      }
+
+      const fs = await import("fs");
+      const path = await import("path");
+      const uploadPath = path.join("./exports", `import-${Date.now()}.csv`);
+
+      await fs.promises.writeFile(uploadPath, await data.toBuffer());
+
+      const result = await this.csvImportService.importFromCSV(uploadPath);
+
+      await fs.promises.unlink(uploadPath);
+
+      reply.code(200).send({
+        success: true,
+        data: result,
+      });
+    } catch (error) {
+      this.handleError(error, reply);
+    }
+  }
+
+  async generateMonthlyReport(
+    request: FastifyRequest,
+    reply: FastifyReply
+  ): Promise<void> {
+    try {
+      const queryParams = request.query as any;
+
+      // Validate required parameters
+      if (!queryParams.month || !queryParams.year) {
+        reply.code(400).send({
+          error: "Month and year are required (e.g., ?month=1&year=2025)",
+        });
+        return;
+      }
+
+      const month = parseInt(queryParams.month);
+      const year = parseInt(queryParams.year);
+
+      if (month < 1 || month > 12) {
+        reply.code(400).send({ error: "Month must be between 1 and 12" });
+        return;
+      }
+
+      // Generate the report
+      const filePath = await this.monthlyReportService.generateMonthlyReport({
+        month,
+        year,
+        departmentId: queryParams.departmentId,
+        userId: queryParams.userId,
+      });
+
+      // Stream the file
+      const fs = await import("fs");
+      const fileStream = fs.createReadStream(filePath);
+
+      const monthName = new Date(year, month - 1).toLocaleString("default", {
+        month: "long",
+      });
+
+      reply.header("Content-Type", "text/csv");
+      reply.header(
+        "Content-Disposition",
+        `attachment; filename="monthly-report-${monthName}-${year}.csv"`
+      );
+      reply.send(fileStream);
+    } catch (error) {
+      this.handleError(error, reply);
+    }
+  }
+
+  async getAIAnalytics(
+    request: FastifyRequest,
+    reply: FastifyReply
+  ): Promise<void> {
+    try {
+      const queryParams = request.query as any;
+
+      // Build filters with value objects
+      const filters: any = {};
+
+      if (queryParams.status) {
+        const { ExpenseStatus } = await import(
+          "../../../domain/value-objects/index.js"
+        );
+        filters.status = ExpenseStatus.fromString(queryParams.status);
+      }
+      if (queryParams.userId) {
+        const { UserId } = await import(
+          "../../../domain/value-objects/index.js"
+        );
+        filters.userId = UserId.fromString(queryParams.userId);
+      }
+      if (queryParams.vendorId) {
+        const { VendorId } = await import(
+          "../../../domain/value-objects/index.js"
+        );
+        filters.vendorId = VendorId.fromString(queryParams.vendorId);
+      }
+      if (queryParams.categoryId) {
+        const { CategoryId } = await import(
+          "../../../domain/value-objects/index.js"
+        );
+        filters.categoryId = CategoryId.fromString(queryParams.categoryId);
+      }
+      if (queryParams.departmentId) {
+        const { DepartmentId } = await import(
+          "../../../domain/value-objects/index.js"
+        );
+        filters.departmentId = DepartmentId.fromString(
+          queryParams.departmentId
+        );
+      }
+      if (queryParams.dateFrom) {
+        filters.dateFrom = new Date(queryParams.dateFrom);
+      }
+      if (queryParams.dateTo) {
+        filters.dateTo = new Date(queryParams.dateTo);
+      }
+
+      const insights = await this.aiAnalyticsService.analyzeExpenses(filters);
+
+      reply.code(200).send({
+        success: true,
+        data: { insights },
       });
     } catch (error) {
       this.handleError(error, reply);

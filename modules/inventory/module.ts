@@ -31,6 +31,8 @@ export interface InventoryModuleDependencies {
   purchaseOrderQueryRepo?: any;
   expenseQueryRepo?: any;
   expenseCommandRepo?: any;
+  budgetQueryRepo?: any;
+  budgetCommandRepo?: any;
 }
 
 export async function registerInventoryModule(
@@ -41,7 +43,9 @@ export async function registerInventoryModule(
   inventoryOrchestrationService: InventoryOrchestrationService | null;
 }> {
   // Initialize Repositories
-  const inventoryDropCommandRepo = new PrismaInventoryDropCommandRepository(prisma);
+  const inventoryDropCommandRepo = new PrismaInventoryDropCommandRepository(
+    prisma
+  );
   const inventoryDropQueryRepo = new PrismaInventoryDropQueryRepository(prisma);
 
   // Initialize Command Handlers
@@ -65,12 +69,10 @@ export async function registerInventoryModule(
   const getAllInventoryDropsHandler = new GetAllInventoryDropsQueryHandler(
     inventoryDropQueryRepo
   );
-  const getInventoryDropByDropNumberHandler = new GetInventoryDropByDropNumberQueryHandler(
-    inventoryDropQueryRepo
-  );
-  const getInventoryDropsByFabricTypeHandler = new GetInventoryDropsByFabricTypeQueryHandler(
-    inventoryDropQueryRepo
-  );
+  const getInventoryDropByDropNumberHandler =
+    new GetInventoryDropByDropNumberQueryHandler(inventoryDropQueryRepo);
+  const getInventoryDropsByFabricTypeHandler =
+    new GetInventoryDropsByFabricTypeQueryHandler(inventoryDropQueryRepo);
 
   // Initialize Controller
   const inventoryDropController = new InventoryDropController(
@@ -84,17 +86,22 @@ export async function registerInventoryModule(
   );
 
   // Initialize Orchestration Service if dependencies provided
-  let inventoryOrchestrationService: InventoryOrchestrationService | null = null;
+  let inventoryOrchestrationService: InventoryOrchestrationService | null =
+    null;
   if (
     dependencies?.purchaseOrderQueryRepo &&
     dependencies?.expenseQueryRepo &&
-    dependencies?.expenseCommandRepo
+    dependencies?.expenseCommandRepo &&
+    dependencies?.budgetQueryRepo &&
+    dependencies?.budgetCommandRepo
   ) {
     inventoryOrchestrationService = new InventoryOrchestrationService(
       inventoryDropCommandRepo,
       dependencies.purchaseOrderQueryRepo,
       dependencies.expenseQueryRepo,
-      dependencies.expenseCommandRepo
+      dependencies.expenseCommandRepo,
+      dependencies.budgetQueryRepo,
+      dependencies.budgetCommandRepo
     );
   }
 

@@ -1,0 +1,15 @@
+Expense ID,User ID,Vendor ID,Category ID,Department ID,Description,Net Amount,Tax Amount,Total Amount,Expense Date,Approved At,Linked PO ID,Inventory Drop ID
+db74dc98-7937-47af-abed-44e245d92eb0,0d449531-a8d7-448d-9c83-f1167a396e9a,24bed20b-34bf-4afa-af9b-2fe5e2db7b98,4c4d1055-3d56-4100-bbc4-e37136c6a00b,6800c6c6-98fd-4a09-b7e5-04d982fb8523,Axis IP surveillance cameras and security system for customer service center,127118.64,22881.36,150000,2025-06-20,2025-11-09,6b333884-1e62-4401-a54f-6e8719fde145,1bc81b4d-0e52-4e58-80c6-7dc88dd04d10
+7498098a-52da-415b-9ff6-b8a4044cdeb4,0d449531-a8d7-448d-9c83-f1167a396e9a,4ac24254-940e-417c-9b42-9485bd8d0cec,543bdc2b-7a3c-4914-9cb8-f199074ecd85,fd076c53-7427-466b-8fee-f6595ecdfaa9,Tablets and presentation equipment for sales team - 15 iPads and accessories,169491.53,30508.47,200000,2025-04-25,2025-11-09,,
+a41ace0c-12ad-4ef0-aa2f-548d2a047599,0d449531-a8d7-448d-9c83-f1167a396e9a,b3bcf6b2-f2d0-43c9-8677-3ec342e96dc5,30caa20a-30b2-435a-b9f8-53125dbfcee8,8453222b-b22d-4f6a-8802-da50b86985fa,Flipkart Ads - Summer sale promotional campaign for Q2 2025,254237.29,45762.71,300000,2025-06-01,2025-11-09,,
+16a47168-3161-4d82-b612-6a4ac54b9197,0d449531-a8d7-448d-9c83-f1167a396e9a,90739826-6f20-406b-a870-891203c599a1,483ab45a-2d33-4cd1-a6e2-9969d2570ab8,4cd750c8-b476-472a-b2dc-8e595131f4ae,Infosys SpringBoard training - Leadership development for 20 HR staff members,84745.76,15254.24,100000,2025-06-15,2025-11-10,01758c0d-f5d7-428d-9f59-deed6f034084,7495a506-24ec-4a12-b7c2-87700c8f8582
+dd3ac8b4-6e7d-41f9-be00-e1f268108708,0d449531-a8d7-448d-9c83-f1167a396e9a,17ff1f91-cee2-4728-b1dc-bb2776899f5a,d00dac8d-2430-43be-b445-827644153ba4,7d9778a2-6505-4fd2-a419-bcd33c133d29,TCS consulting for compliance audit and regulatory framework implementation,338983.05,61016.95,400000,2025-05-05,2025-11-09,e296f599-f2cf-4ffa-85fc-6efed06abe09,458f5c7f-72ac-476b-8598-1f55cc142ef2
+cff5cb45-5642-463b-9a53-ad32c3b5da76,0d449531-a8d7-448d-9c83-f1167a396e9a,9a542966-b6a1-4693-a5e4-2c81e9e98dd9,543bdc2b-7a3c-4914-9cb8-f199074ecd85,c2a2dc4e-24be-423e-9042-3b0f7ba0331a,Office furniture - 10 ergonomic chairs and 5 standing desks for admin team,84745.76,15254.24,100000,2025-05-20,2025-11-09,,
+6ec57d70-c522-46b1-8410-6f240d4e5ed1,0d449531-a8d7-448d-9c83-f1167a396e9a,d78d1533-e21d-4ad9-a00c-ef5d3bb35c05,b8b7abda-c92b-4d37-9a04-3f9d5d4f6f4f,e6f42491-335b-4c13-859f-6cf565e932b6,Microsoft Azure cloud hosting subscription for Q2 2025 - Production environment,42372.88,7627.12,50000,2025-04-15,2025-11-10,9daced9b-7f18-422d-a368-3de4570d3219,211d30ba-49b8-4504-a640-6aedbfbd604f
+
+
+MONTHLY SUMMARY - November 2025
+Total Expenses,7
+Total Net Amount,1101694.91
+Total Tax Amount,198305.09
+Total Amount,1300000.00
