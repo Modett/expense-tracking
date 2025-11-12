@@ -198,7 +198,7 @@ export async function registerExpenseRoutes(
     {
       schema: {
         tags: ["Expenses"],
-        summary: "Generate monthly report of approved expenses (Admin Only)",
+        summary: "Generate monthly report with advanced filters (Admin Only)",
         security: [{ bearerAuth: [] }],
         querystring: {
           type: "object",
@@ -208,6 +208,18 @@ export async function registerExpenseRoutes(
             year: { type: "integer", minimum: 2000, maximum: 2100 },
             departmentId: { type: "string", format: "uuid" },
             userId: { type: "string", format: "uuid" },
+            categoryId: { type: "string", format: "uuid" },
+            vendorId: { type: "string", format: "uuid" },
+            status: {
+              type: "string",
+              enum: ["DRAFT", "SUBMITTED", "APPROVED", "REJECTED", "CANCELLED"],
+            },
+            minAmount: { type: "number", minimum: 0 },
+            maxAmount: { type: "number", minimum: 0 },
+            tagIds: {
+              type: "array",
+              items: { type: "string", format: "uuid" },
+            },
           },
         },
         response: {

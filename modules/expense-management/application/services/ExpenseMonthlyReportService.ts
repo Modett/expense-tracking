@@ -5,23 +5,42 @@ import { ExpenseStatus } from "../../domain/value-objects/ExpenseStatus.js";
 export interface MonthlyReportOptions {
   month: number; // 1-12
   year: number;
-  departmentId?: string;
-  userId?: string;
+  departmentId?: string | undefined;
+  userId?: string | undefined;
+  categoryId?: string | undefined;
+  vendorId?: string | undefined;
+  status?: string | undefined;
+  minAmount?: number | undefined;
+  maxAmount?: number | undefined;
+  tagIds?: string[] | undefined;
 }
 
 export class ExpenseMonthlyReportService {
   constructor(private readonly expenseQueryRepo: IExpenseQueryRepository) {}
 
   async generateMonthlyReport(options: MonthlyReportOptions): Promise<string> {
-    const { month, year, departmentId, userId } = options;
+    const {
+      month,
+      year,
+      departmentId,
+      userId,
+      categoryId,
+      vendorId,
+      status,
+      minAmount,
+      maxAmount,
+      tagIds,
+    } = options;
 
     // Calculate date range for the month
     const startDate = new Date(year, month - 1, 1);
     const endDate = new Date(year, month, 0, 23, 59, 59, 999);
 
-    // Build filters for approved expenses
+    // Build filters for expenses
     const filters: any = {
-      status: ExpenseStatus.fromString("APPROVED"),
+      status: status
+        ? ExpenseStatus.fromString(status)
+        : ExpenseStatus.fromString("APPROVED"),
     };
 
     if (departmentId) {
@@ -36,13 +55,51 @@ export class ExpenseMonthlyReportService {
       filters.userId = UserId.fromString(userId);
     }
 
-    // Fetch all approved expenses
+    if (categoryId) {
+      const { CategoryId } = await import(
+        "../../domain/value-objects/index.js"
+      );
+      filters.categoryId = CategoryId.fromString(categoryId);
+    }
+
+    if (vendorId) {
+      const { VendorId } = await import("../../domain/value-objects/index.js");
+      filters.vendorId = VendorId.fromString(vendorId);
+    }
+
+    // Fetch all expenses with filters
     const allExpenses = await this.expenseQueryRepo.findAll(filters);
 
-    // Filter by approval date (updatedAt) in memory
+    // Filter by approval date (updatedAt) and additional criteria in memory
     const expenses = allExpenses.filter((expense) => {
       const approvalDate = expense.updatedAt;
-      return approvalDate >= startDate && approvalDate <= endDate;
+
+      // Date range filter
+      if (approvalDate < startDate || approvalDate > endDate) {
+        return false;
+      }
+
+      // Amount range filter
+      const totalAmount = expense.amount.getTotalValue();
+      if (minAmount !== undefined && totalAmount < minAmount) {
+        return false;
+      }
+      if (maxAmount !== undefined && totalAmount > maxAmount) {
+        return false;
+      }
+
+      // Tag filter
+      if (tagIds && tagIds.length > 0) {
+        const expenseTagIds = expense.tagIds.map((tag) => tag.getValue());
+        const hasMatchingTag = tagIds.some((tagId) =>
+          expenseTagIds.includes(tagId)
+        );
+        if (!hasMatchingTag) {
+          return false;
+        }
+      }
+
+      return true;
     });
 
     // Calculate totals
