@@ -405,12 +405,30 @@ export class ExpenseController {
         return;
       }
 
+      // Parse optional array parameter (tagIds)
+      let tagIds: string[] | undefined;
+      if (queryParams.tagIds) {
+        tagIds = Array.isArray(queryParams.tagIds)
+          ? queryParams.tagIds
+          : [queryParams.tagIds];
+      }
+
       // Generate the report
       const filePath = await this.monthlyReportService.generateMonthlyReport({
         month,
         year,
         departmentId: queryParams.departmentId,
         userId: queryParams.userId,
+        categoryId: queryParams.categoryId,
+        vendorId: queryParams.vendorId,
+        status: queryParams.status,
+        minAmount: queryParams.minAmount
+          ? parseFloat(queryParams.minAmount)
+          : undefined,
+        maxAmount: queryParams.maxAmount
+          ? parseFloat(queryParams.maxAmount)
+          : undefined,
+        tagIds,
       });
 
       // Stream the file
