@@ -17,12 +17,14 @@ export interface ExpenseListItem {
   userId: string;
   vendorId: string;
   categoryId: string;
-  departmentId: string;
+  departmentId: string | null;
   description: string;
   netAmount: number;
   taxAmount: number;
   totalAmount: number;
   status: string;
+  priority: string;
+  budgetOverride: string;
   receiptUrl?: string;
   dateOfExpense: Date;
   linkedPOId?: string;
@@ -106,6 +108,8 @@ export class GetAllExpensesQueryHandler {
         taxAmount: plainObject.taxAmount,
         totalAmount: plainObject.totalAmount,
         status: plainObject.status,
+        priority: plainObject.priority,
+        budgetOverride: plainObject.budgetOverride,
         dateOfExpense: plainObject.dateOfExpense,
         tagIds: plainObject.tagIds,
         createdAt: plainObject.createdAt,

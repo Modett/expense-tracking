@@ -5,6 +5,8 @@
 export * from "./ExpenseId.js";
 export * from "./ExpenseDescription.js";
 export * from "./ExpenseStatus.js";
+export * from "./ExpensePriority.js";
+export * from "./BudgetExceptionType.js";
 export * from "./DateOfExpense.js";
 
 // Amount value objects (owned by this module)

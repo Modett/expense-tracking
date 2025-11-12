@@ -19,10 +19,6 @@ export interface ApprovalCreationResult {
   errors: string[];
 }
 
-/**
- * Orchestrates the creation of approvals based on approval rules
- * when an expense is submitted
- */
 export class ApprovalOrchestrationService {
   constructor(
     private readonly approvalRuleQueryRepo: IApprovalRuleQueryRepository,
@@ -89,7 +85,6 @@ export class ApprovalOrchestrationService {
             rule.approvalOrder.getValue()
           );
 
-          // Convert IDs from other modules to approval module value objects
           const expenseIdForApproval = ExpenseId.fromString(
             expense.id.getValue()
           );
@@ -97,7 +92,6 @@ export class ApprovalOrchestrationService {
             approver.id.getValue()
           );
 
-          // Create the approval
           const approval = Approval.create({
             expenseId: expenseIdForApproval,
             approverId: approverIdForApproval,
@@ -115,7 +109,6 @@ export class ApprovalOrchestrationService {
         }
       }
 
-      // Save all approvals in a batch
       if (approvals.length > 0) {
         const savedApprovals = await this.approvalCommandRepo.saveMany(
           approvals
@@ -134,11 +127,7 @@ export class ApprovalOrchestrationService {
     }
   }
 
-  /**
-   * Validates that approval rules exist for an expense before submission
-   */
   async validateApprovalRulesExist(expense: Expense): Promise<boolean> {
-    // Convert expense categoryId to approval-rules CategoryId using string value
     const categoryIdForRules = ApprovalRuleCategoryId.fromString(
       expense.categoryId.getValue()
     );
@@ -152,11 +141,7 @@ export class ApprovalOrchestrationService {
     return applicableRules.length > 0;
   }
 
-  /**
-   * Gets the count of approvals that would be created for an expense
-   */
   async getExpectedApprovalCount(expense: Expense): Promise<number> {
-    // Convert expense categoryId to approval-rules CategoryId using string value
     const categoryIdForRules = ApprovalRuleCategoryId.fromString(
       expense.categoryId.getValue()
     );

@@ -84,12 +84,16 @@ export async function registerUserRoutes(
   fastify.post("/auth/refresh-token", {
     schema: {
       tags: ["Auth"],
-      summary: "Refresh access token",
+      summary: "Refresh access token (uses HTTP-only cookie or body)",
+      description:
+        "Refresh token can be sent via HTTP-only cookie (recommended) or in request body",
       body: {
         type: "object",
-        required: ["refreshToken"],
         properties: {
-          refreshToken: { type: "string" },
+          refreshToken: {
+            type: "string",
+            description: "Optional: only needed if not using cookies",
+          },
         },
       },
       response: {

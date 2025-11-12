@@ -7,12 +7,16 @@ export interface GetExpenseByIdResponse {
   userId: string;
   vendorId: string;
   categoryId: string;
-  departmentId: string;
+  departmentId: string | null;
   description: string;
   netAmount: number;
   taxAmount: number;
   totalAmount: number;
   status: string;
+  priority: string;
+  budgetOverride: string;
+  justification?: string | null;
+  approvalDeadline?: Date | null;
   receiptUrl?: string;
   dateOfExpense: Date;
   linkedPOId?: string;
@@ -46,6 +50,10 @@ export class GetExpenseByIdQueryHandler {
       taxAmount: plainObject.taxAmount,
       totalAmount: plainObject.totalAmount,
       status: plainObject.status,
+      priority: plainObject.priority,
+      budgetOverride: plainObject.budgetOverride,
+      justification: plainObject.justification,
+      approvalDeadline: plainObject.approvalDeadline,
       dateOfExpense: plainObject.dateOfExpense,
       tagIds: plainObject.tagIds,
       createdAt: plainObject.createdAt,

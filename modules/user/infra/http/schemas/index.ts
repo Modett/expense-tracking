@@ -14,8 +14,10 @@ export const userSchema = {
 export const authResponseSchema = {
   type: "object",
   properties: {
-    accessToken: { type: "string" },
-    refreshToken: { type: "string" },
+    accessToken: {
+      type: "string",
+      description: "JWT access token (expires in 15 minutes)",
+    },
     user: {
       type: "object",
       properties: {
@@ -26,6 +28,8 @@ export const authResponseSchema = {
       },
     },
   },
+  description:
+    "Note: Refresh token is set as HTTP-only cookie (expires in 7 days)",
 } as const;
 
 export const errorSchema = {

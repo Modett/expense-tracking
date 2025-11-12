@@ -7,6 +7,8 @@ import {
   DepartmentId,
   ExpenseDescription,
   ExpenseAmount,
+  ExpensePriority,
+  BudgetExceptionType,
   DateOfExpense,
   Receipt,
 } from "../../../domain/index.js";
@@ -24,7 +26,12 @@ export class CreateExpenseCommandHandler {
     const userId = UserId.fromString(command.userId);
     const vendorId = VendorId.fromString(command.vendorId);
     const categoryId = CategoryId.fromString(command.categoryId);
-    const departmentId = DepartmentId.fromString(command.departmentId);
+
+    // Handle optional department - if null, will be assigned to "General" at persistence layer
+    const departmentId = command.departmentId
+      ? DepartmentId.fromString(command.departmentId)
+      : null;
+
     const description = ExpenseDescription.create(command.description);
     const amount = ExpenseAmount.create(
       command.netAmount,
@@ -32,6 +39,16 @@ export class CreateExpenseCommandHandler {
       command.totalAmount
     );
     const dateOfExpense = DateOfExpense.create(command.expenseDate);
+
+    // Parse priority (default to standard if not provided)
+    const priority = command.priority
+      ? ExpensePriority.fromString(command.priority)
+      : ExpensePriority.standard();
+
+    // Parse budget override (default to none if not provided)
+    const budgetOverride = command.budgetOverride
+      ? BudgetExceptionType.fromString(command.budgetOverride)
+      : BudgetExceptionType.none();
 
     const receipt = command.receiptUrl
       ? Receipt.create(command.receiptUrl)
@@ -45,6 +62,9 @@ export class CreateExpenseCommandHandler {
       description,
       amount,
       dateOfExpense,
+      priority,
+      budgetOverride,
+      justification: command.justification,
       tagIds: [],
     };
 
