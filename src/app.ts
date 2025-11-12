@@ -1,6 +1,8 @@
 import Fastify from "fastify";
 import fastifyJwt from "@fastify/jwt";
 import fastifyRateLimit from "@fastify/rate-limit";
+import fastifyCookie from "@fastify/cookie";
+import fastifyCors from "@fastify/cors";
 import fastifySwagger from "@fastify/swagger";
 import fastifySwaggerUi from "@fastify/swagger-ui";
 import { PrismaClient } from "@prisma/client";
@@ -110,6 +112,17 @@ export async function buildApp() {
     max: 100,
     timeWindow: "1 minute",
     cache: 10000,
+  });
+
+  // Register Cookie Plugin for HTTP-only cookies
+  await fastify.register(fastifyCookie, {
+    secret: config.jwt.secret, // Use same secret as JWT for signing cookies
+  });
+
+  // Register CORS (to allow credentials/cookies from frontend)
+  await fastify.register(fastifyCors, {
+    origin: true, // Allow all origins in development (configure for production)
+    credentials: true, // Allow cookies to be sent
   });
 
   // Global Error Handler

@@ -9,10 +9,22 @@ import { LoginCommand } from "../../../application/commands/auth/login/command.j
 import { ChangePasswordCommand } from "../../../application/commands/auth/change-password/command.js";
 import { RefreshTokenCommand } from "../../../application/commands/auth/refresh-token/command.js";
 import { LogoutCommand } from "../../../application/commands/auth/logout/command.js";
-import { registerSchema, type RegisterDto } from "../validators/auth/register.validator.js";
-import { loginSchema, type LoginDto } from "../validators/auth/login.validator.js";
-import { changePasswordSchema, type ChangePasswordDto } from "../validators/auth/change-password.validator.js";
-import { refreshTokenSchema, type RefreshTokenDto } from "../validators/auth/refresh-token.validator.js";
+import {
+  registerSchema,
+  type RegisterDto,
+} from "../validators/auth/register.validator.js";
+import {
+  loginSchema,
+  type LoginDto,
+} from "../validators/auth/login.validator.js";
+import {
+  changePasswordSchema,
+  type ChangePasswordDto,
+} from "../validators/auth/change-password.validator.js";
+import {
+  refreshTokenSchema,
+  type RefreshTokenDto,
+} from "../validators/auth/refresh-token.validator.js";
 
 export class AuthController {
   constructor(
@@ -38,7 +50,20 @@ export class AuthController {
 
     const response = await this.registerHandler.handle(command);
 
-    reply.code(201).send(response);
+    // Set refresh token as HTTP-only cookie (7 days)
+    reply.setCookie("refreshToken", response.refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 7 * 24 * 60 * 60, // 7 days in seconds
+      path: "/",
+    });
+
+    // Return user and access token (refresh token now in cookie)
+    reply.code(201).send({
+      accessToken: response.accessToken,
+      user: response.user,
+    });
   }
 
   async login(
@@ -47,11 +72,27 @@ export class AuthController {
   ): Promise<void> {
     const validatedData = loginSchema.parse(request.body);
 
-    const command = new LoginCommand(validatedData.email, validatedData.password);
+    const command = new LoginCommand(
+      validatedData.email,
+      validatedData.password
+    );
 
     const response = await this.loginHandler.handle(command);
 
-    reply.code(200).send(response);
+    // Set refresh token as HTTP-only cookie (7 days)
+    reply.setCookie("refreshToken", response.refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 7 * 24 * 60 * 60, // 7 days in seconds
+      path: "/",
+    });
+
+    // Return user and access token (refresh token now in cookie)
+    reply.code(200).send({
+      accessToken: response.accessToken,
+      user: response.user,
+    });
   }
 
   async changePassword(
@@ -61,7 +102,7 @@ export class AuthController {
     const validatedData = changePasswordSchema.parse(request.body);
 
     const command = new ChangePasswordCommand(
-      request.user.userId,
+      (request.user as any).userId,
       validatedData.currentPassword,
       validatedData.newPassword
     );
@@ -75,26 +116,33 @@ export class AuthController {
     request: FastifyRequest<{ Body: RefreshTokenDto }>,
     reply: FastifyReply
   ): Promise<void> {
-    const validatedData = refreshTokenSchema.parse(request.body);
+    // Try to get refresh token from cookie first, then from body
+    const refreshToken =
+      request.cookies.refreshToken || request.body?.refreshToken;
 
-    const command = new RefreshTokenCommand(validatedData.refreshToken);
+    if (!refreshToken) {
+      reply.code(401).send({ error: "Refresh token is required" });
+      return;
+    }
+
+    const command = new RefreshTokenCommand(refreshToken);
 
     const response = await this.refreshTokenHandler.handle(command);
 
+    // Return new access token
     reply.code(200).send(response);
   }
 
-  async logout(
-    request: FastifyRequest,
-    reply: FastifyReply
-  ): Promise<void> {
+  async logout(request: FastifyRequest, reply: FastifyReply): Promise<void> {
     // Get userId from authenticated request (set by authenticate middleware)
-    const userId = request.user.userId;
+    const userId = (request.user as any).userId;
 
     // Extract access token from Authorization header
     const authHeader = request.headers.authorization;
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      reply.code(401).send({ error: 'Missing or invalid authorization header' });
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      reply
+        .code(401)
+        .send({ error: "Missing or invalid authorization header" });
       return;
     }
     const accessToken = authHeader.substring(7); // Remove "Bearer " prefix
@@ -102,6 +150,14 @@ export class AuthController {
     const command = new LogoutCommand(userId, accessToken);
 
     const response = await this.logoutHandler.handle(command);
+
+    // Clear refresh token cookie
+    reply.clearCookie("refreshToken", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      path: "/",
+    });
 
     reply.code(200).send(response);
   }

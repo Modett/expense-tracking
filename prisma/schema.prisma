@@ -52,6 +52,24 @@ enum TagTypeEnum {
   @@map("tag_type_enum")
 }
 
+enum ExpensePriorityEnum {
+  routine
+  standard
+  urgent
+  emergency
+
+  @@map("expense_priority_enum")
+}
+
+enum BudgetExceptionTypeEnum {
+  none
+  emergency
+  annual
+  recurring
+
+  @@map("budget_exception_type_enum")
+}
+
 // ==========================================
 // USER MANAGEMENT
 // ==========================================
@@ -132,6 +150,8 @@ model Department {
   departmentId String   @id @default(dbgenerated("gen_random_uuid()")) @map("department_id") @db.Uuid
   name         String   @unique
   code         String?  @unique
+  description  String?
+  isSystem     Boolean  @default(false) @map("is_system")
   isActive     Boolean  @default(true) @map("is_active")
   createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt    DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
@@ -168,28 +188,32 @@ model Tag {
 // ==========================================
 
 model Expense {
-  expenseId       String            @id @default(dbgenerated("gen_random_uuid()")) @map("expense_id") @db.Uuid
-  userId          String            @map("user_id") @db.Uuid
-  vendorId        String            @map("vendor_id") @db.Uuid
-  categoryId      String            @map("category_id") @db.Uuid
-  departmentId    String            @map("department_id") @db.Uuid
-  description     String
-  amountNet       Decimal           @map("amount_net") @db.Decimal(12, 2)
-  taxAmount       Decimal           @map("tax_amount") @db.Decimal(12, 2)
-  totalAmount     Decimal           @map("total_amount") @db.Decimal(12, 2)
-  status          ExpenseStatusEnum @default(draft)
-  receiptUrl      String?           @map("receipt_url")
-  dateOfExpense   DateTime          @map("date_of_expense") @db.Timestamptz(6)
-  linkedPoId      String?           @map("linked_po_id") @db.Uuid
-  inventoryDropId String?           @map("inventory_drop_id") @db.Uuid
-  createdAt       DateTime          @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt       DateTime          @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  expenseId          String                    @id @default(dbgenerated("gen_random_uuid()")) @map("expense_id") @db.Uuid
+  userId             String                    @map("user_id") @db.Uuid
+  vendorId           String                    @map("vendor_id") @db.Uuid
+  categoryId         String                    @map("category_id") @db.Uuid
+  departmentId       String?                   @map("department_id") @db.Uuid
+  description        String
+  amountNet          Decimal                   @map("amount_net") @db.Decimal(12, 2)
+  taxAmount          Decimal                   @map("tax_amount") @db.Decimal(12, 2)
+  totalAmount        Decimal                   @map("total_amount") @db.Decimal(12, 2)
+  status             ExpenseStatusEnum         @default(draft)
+  priority           ExpensePriorityEnum       @default(standard)
+  budgetOverride     BudgetExceptionTypeEnum   @default(none) @map("budget_override")
+  justification      String?
+  approvalDeadline   DateTime?                 @map("approval_deadline") @db.Timestamptz(6)
+  receiptUrl         String?                   @map("receipt_url")
+  dateOfExpense      DateTime                  @map("date_of_expense") @db.Timestamptz(6)
+  linkedPoId         String?                   @map("linked_po_id") @db.Uuid
+  inventoryDropId    String?                   @map("inventory_drop_id") @db.Uuid
+  createdAt          DateTime                  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt          DateTime                  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   // Relations
   user          User            @relation(fields: [userId], references: [userId])
   vendor        Vendor          @relation(fields: [vendorId], references: [vendorId])
   category      Category        @relation(fields: [categoryId], references: [categoryId])
-  department    Department      @relation(fields: [departmentId], references: [departmentId])
+  department    Department?     @relation(fields: [departmentId], references: [departmentId])
   purchaseOrder PurchaseOrder?  @relation(fields: [linkedPoId], references: [poId])
   inventoryDrop InventoryDrop?  @relation(fields: [inventoryDropId], references: [dropId])
   expenseTags   ExpenseTag[]

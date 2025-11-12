@@ -108,7 +108,7 @@ Keep response under 200 words.`;
   private groupByDepartment(expenses: Expense[]): Record<string, any> {
     const grouped: Record<string, any> = {};
     expenses.forEach((exp) => {
-      const deptId = exp.departmentId.getValue();
+      const deptId = exp.departmentId?.getValue() || "UNASSIGNED";
       if (!grouped[deptId]) {
         grouped[deptId] = { count: 0, total: 0 };
       }

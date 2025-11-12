@@ -2,6 +2,8 @@ import {
   ExpenseId,
   ExpenseDescription,
   ExpenseStatus,
+  ExpensePriority,
+  BudgetExceptionType,
   DateOfExpense,
   ExpenseAmount,
   Receipt,
@@ -19,10 +21,14 @@ export interface ExpenseProps {
   userId: UserId;
   vendorId: VendorId;
   categoryId: CategoryId;
-  departmentId: DepartmentId;
+  departmentId: DepartmentId | null;
   description: ExpenseDescription;
   amount: ExpenseAmount;
   status: ExpenseStatus;
+  priority: ExpensePriority;
+  budgetOverride: BudgetExceptionType;
+  justification?: string | undefined;
+  approvalDeadline?: Date | undefined;
   receipt?: Receipt | undefined;
   dateOfExpense: DateOfExpense;
   linkedPOId?: PurchaseOrderId | undefined;
@@ -36,10 +42,13 @@ export interface CreateExpenseProps {
   userId: UserId;
   vendorId: VendorId;
   categoryId: CategoryId;
-  departmentId: DepartmentId;
+  departmentId: DepartmentId | null;
   description: ExpenseDescription;
   amount: ExpenseAmount;
   dateOfExpense: DateOfExpense;
+  priority?: ExpensePriority;
+  budgetOverride?: BudgetExceptionType;
+  justification?: string;
   receipt?: Receipt;
   linkedPOId?: PurchaseOrderId;
   inventoryDropId?: InventoryDropId;
@@ -54,6 +63,17 @@ export class Expense {
   static create(props: CreateExpenseProps): Expense {
     const now = new Date();
 
+    // Set default priority to standard if not provided
+    const priority = props.priority || ExpensePriority.standard();
+
+    // Set default budget override to none if not provided
+    const budgetOverride = props.budgetOverride || BudgetExceptionType.none();
+
+    // Calculate approval deadline based on priority
+    const approvalDeadline = new Date(
+      now.getTime() + priority.getSLAHours() * 60 * 60 * 1000
+    );
+
     return new Expense({
       id: ExpenseId.create(),
       userId: props.userId,
@@ -63,6 +83,10 @@ export class Expense {
       description: props.description,
       amount: props.amount,
       status: ExpenseStatus.draft(),
+      priority,
+      budgetOverride,
+      justification: props.justification,
+      approvalDeadline,
       receipt: props.receipt,
       dateOfExpense: props.dateOfExpense,
       linkedPOId: props.linkedPOId,
@@ -90,9 +114,7 @@ export class Expense {
     if (!this.props.categoryId) {
       throw new Error("Category ID is required");
     }
-    if (!this.props.departmentId) {
-      throw new Error("Department ID is required");
-    }
+    // Department is now optional (null allowed for personal/startup use)
     if (!this.props.description) {
       throw new Error("Description is required");
     }
@@ -102,8 +124,25 @@ export class Expense {
     if (!this.props.status) {
       throw new Error("Status is required");
     }
+    if (!this.props.priority) {
+      throw new Error("Priority is required");
+    }
+    if (!this.props.budgetOverride) {
+      throw new Error("Budget override type is required");
+    }
     if (!this.props.dateOfExpense) {
       throw new Error("Date of expense is required");
+    }
+
+    // If budget override requires justification, validate it exists
+    if (
+      this.props.budgetOverride.requiresJustification() &&
+      !this.props.justification
+    ) {
+      throw new Error(
+        "Justification is required for budget override type: " +
+          this.props.budgetOverride.getValue()
+      );
     }
   }
 
@@ -123,8 +162,24 @@ export class Expense {
     return this.props.categoryId;
   }
 
-  get departmentId(): DepartmentId {
+  get departmentId(): DepartmentId | null {
     return this.props.departmentId;
+  }
+
+  get priority(): ExpensePriority {
+    return this.props.priority;
+  }
+
+  get budgetOverride(): BudgetExceptionType {
+    return this.props.budgetOverride;
+  }
+
+  get justification(): string | undefined {
+    return this.props.justification;
+  }
+
+  get approvalDeadline(): Date | undefined {
+    return this.props.approvalDeadline;
   }
 
   get description(): ExpenseDescription {
@@ -363,7 +418,12 @@ export class Expense {
   }
 
   belongsToDepartment(departmentId: DepartmentId): boolean {
+    if (!this.props.departmentId) return false;
     return this.props.departmentId.equals(departmentId);
+  }
+
+  hasDepartment(): boolean {
+    return this.props.departmentId !== null;
   }
 
   isFromVendor(vendorId: VendorId): boolean {
@@ -406,12 +466,16 @@ export class Expense {
       userId: this.props.userId.getValue(),
       vendorId: this.props.vendorId.getValue(),
       categoryId: this.props.categoryId.getValue(),
-      departmentId: this.props.departmentId.getValue(),
+      departmentId: this.props.departmentId?.getValue() || null,
       description: this.props.description.getValue(),
       amountNet: this.props.amount.getNetValue(),
       taxAmount: this.props.amount.getTaxValue(),
       totalAmount: this.props.amount.getTotalValue(),
       status: this.props.status.getValue(),
+      priority: this.props.priority.getValue(),
+      budgetOverride: this.props.budgetOverride.getValue(),
+      justification: this.props.justification || null,
+      approvalDeadline: this.props.approvalDeadline || null,
       receiptUrl: this.props.receipt?.getValue() || null,
       dateOfExpense: this.props.dateOfExpense.toDate(),
       linkedPOId: this.props.linkedPOId?.getValue() || null,

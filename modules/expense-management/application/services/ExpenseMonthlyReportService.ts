@@ -149,7 +149,7 @@ export class ExpenseMonthlyReportService {
       userId: expense.userId.getValue(),
       vendorId: expense.vendorId.getValue(),
       categoryId: expense.categoryId.getValue(),
-      departmentId: expense.departmentId.getValue(),
+      departmentId: expense.departmentId?.getValue() || "General",
       description: expense.description.getValue(),
       netAmount: expense.amount.getNetValue(),
       taxAmount: expense.amount.getTaxValue(),

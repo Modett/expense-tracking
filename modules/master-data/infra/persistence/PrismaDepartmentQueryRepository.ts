@@ -11,7 +11,9 @@ import {
   DepartmentStatus,
 } from "../../domain/value-objects/index.js";
 
-export class PrismaDepartmentQueryRepository implements IDepartmentQueryRepository {
+export class PrismaDepartmentQueryRepository
+  implements IDepartmentQueryRepository
+{
   constructor(private readonly prisma: PrismaClient) {}
 
   async findById(id: DepartmentId): Promise<Department | null> {
@@ -28,6 +30,8 @@ export class PrismaDepartmentQueryRepository implements IDepartmentQueryReposito
       DepartmentName.create(department.name),
       DepartmentCode.fromString(department.code),
       DepartmentStatus.fromBoolean(department.isActive),
+      department.description || null,
+      department.isSystem,
       department.createdAt,
       department.updatedAt
     );
@@ -55,6 +59,8 @@ export class PrismaDepartmentQueryRepository implements IDepartmentQueryReposito
         DepartmentName.create(department.name),
         DepartmentCode.fromString(department.code),
         DepartmentStatus.fromBoolean(department.isActive),
+        department.description || null,
+        department.isSystem,
         department.createdAt,
         department.updatedAt
       )
@@ -75,6 +81,8 @@ export class PrismaDepartmentQueryRepository implements IDepartmentQueryReposito
       DepartmentName.create(department.name),
       DepartmentCode.fromString(department.code),
       DepartmentStatus.fromBoolean(department.isActive),
+      department.description || null,
+      department.isSystem,
       department.createdAt,
       department.updatedAt
     );
@@ -94,6 +102,8 @@ export class PrismaDepartmentQueryRepository implements IDepartmentQueryReposito
       DepartmentName.create(department.name),
       DepartmentCode.fromString(department.code),
       DepartmentStatus.fromBoolean(department.isActive),
+      department.description || null,
+      department.isSystem,
       department.createdAt,
       department.updatedAt
     );
