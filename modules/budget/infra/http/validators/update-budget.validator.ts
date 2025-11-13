@@ -5,7 +5,12 @@ export const updateBudgetParamsSchema = z.object({
 });
 
 export const updateBudgetBodySchema = z.object({
-  budgetAmount: z.number().positive(),
+  budgetAmount: z.number().positive().optional(),
+  enforcementType: z.enum(["soft", "hard"]).optional(),
+  overrideAllowed: z.boolean().optional(),
+  warningThreshold1: z.number().min(0).max(100).optional(),
+  warningThreshold2: z.number().min(0).max(100).optional(),
+  criticalThreshold: z.number().min(0).max(100).optional(),
 });
 
 export type UpdateBudgetParams = z.infer<typeof updateBudgetParamsSchema>;

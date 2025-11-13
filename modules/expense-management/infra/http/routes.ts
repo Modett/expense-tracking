@@ -67,7 +67,6 @@ export async function registerExpenseRoutes(
           required: [
             "vendorId",
             "categoryId",
-            "departmentId",
             "description",
             "netAmount",
             "taxAmount",
@@ -75,15 +74,71 @@ export async function registerExpenseRoutes(
             "expenseDate",
           ],
           properties: {
-            vendorId: { type: "string", format: "uuid" },
-            categoryId: { type: "string", format: "uuid" },
-            departmentId: { type: "string", format: "uuid" },
-            description: { type: "string", minLength: 1, maxLength: 1000 },
-            netAmount: { type: "number", minimum: 0 },
-            taxAmount: { type: "number", minimum: 0 },
-            totalAmount: { type: "number", minimum: 0 },
-            expenseDate: { type: "string", format: "date-time" },
-            receiptUrl: { type: "string", format: "uri" },
+            vendorId: {
+              type: "string",
+              format: "uuid",
+              description: "Vendor UUID",
+            },
+            categoryId: {
+              type: "string",
+              format: "uuid",
+              description: "Category UUID",
+            },
+            departmentId: {
+              type: ["string", "null"],
+              format: "uuid",
+              description: "Department UUID (optional)",
+            },
+            description: {
+              type: "string",
+              minLength: 1,
+              maxLength: 1000,
+              description: "Expense description",
+            },
+            netAmount: {
+              type: "number",
+              minimum: 0,
+              description: "Net amount before tax",
+            },
+            taxAmount: {
+              type: "number",
+              minimum: 0,
+              description: "Tax amount (GST)",
+            },
+            totalAmount: {
+              type: "number",
+              minimum: 0,
+              description: "Total amount (net + tax)",
+            },
+            expenseDate: {
+              type: "string",
+              format: "date-time",
+              description: "Date of expense",
+            },
+            receiptUrl: {
+              type: ["string", "null"],
+              format: "uri",
+              description: "Receipt URL (optional)",
+            },
+            priority: {
+              type: "string",
+              enum: ["routine", "standard", "urgent", "emergency"],
+              default: "standard",
+              description: "Expense priority level",
+            },
+            budgetOverride: {
+              type: "string",
+              enum: ["none", "emergency", "annual", "recurring"],
+              default: "none",
+              description: "Budget override type",
+            },
+            justification: {
+              type: ["string", "null"],
+              minLength: 10,
+              maxLength: 2000,
+              description:
+                "Justification (required for budget overrides other than 'none')",
+            },
           },
         },
         response: {
@@ -412,6 +467,22 @@ export async function registerExpenseRoutes(
           required: ["expenseId"],
           properties: {
             expenseId: { type: "string", format: "uuid" },
+          },
+        },
+        body: {
+          type: "object",
+          properties: {
+            budgetOverride: {
+              type: "string",
+              enum: ["none", "emergency", "annual", "recurring"],
+              description: "Budget override type (if expense exceeds budget)",
+            },
+            justification: {
+              type: ["string", "null"],
+              minLength: 50,
+              maxLength: 2000,
+              description: "Justification for budget override (required if budgetOverride is not 'none')",
+            },
           },
         },
         response: {

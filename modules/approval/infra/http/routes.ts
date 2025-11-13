@@ -273,4 +273,89 @@ export async function registerApprovalRoutes(
     },
     async (request, reply) => approvalController.update(request as any, reply)
   );
+
+  // Get rejected approvals visible to role
+  fastify.get(
+    "/approvals/rejected-visible",
+    {
+      schema: {
+        tags: ["Approvals"],
+        summary: "Get rejected approvals visible to user role (Finance/Admin)",
+        description:
+          "Returns expenses rejected at lower approval levels. Finance can see manager rejections, Admin can see all lower-level rejections. Includes summary statistics and rejection patterns.",
+        security: [{ bearerAuth: [] }],
+        querystring: {
+          type: "object",
+          properties: {
+            departmentId: {
+              type: "string",
+              format: "uuid",
+              description: "Filter by department",
+            },
+            categoryId: {
+              type: "string",
+              format: "uuid",
+              description: "Filter by category",
+            },
+            dateFrom: {
+              type: "string",
+              format: "date-time",
+              description: "Filter rejections from this date",
+            },
+            dateTo: {
+              type: "string",
+              format: "date-time",
+              description: "Filter rejections until this date",
+            },
+            rejectedByRole: {
+              type: "string",
+              description: "Filter by role that rejected (manager, finance, admin)",
+            },
+            limit: {
+              type: "number",
+              minimum: 1,
+              maximum: 100,
+              default: 50,
+              description: "Number of results to return",
+            },
+            offset: {
+              type: "number",
+              minimum: 0,
+              default: 0,
+              description: "Number of results to skip",
+            },
+          },
+        },
+        response: {
+          200: successSchema,
+          401: errorSchema,
+          403: errorSchema,
+        },
+      },
+      onRequest: [authenticate],
+    },
+    async (request, reply) =>
+      approvalController.getRejectedVisible(request as any, reply)
+  );
+
+  // Get role-based dashboard
+  fastify.get(
+    "/approvals/dashboard",
+    {
+      schema: {
+        tags: ["Approvals"],
+        summary: "Get personalized approval dashboard for user role",
+        description:
+          "Returns a role-specific dashboard with: pending approvals (action required), recently approved/rejected by user, expenses awaiting higher-level approval, rejections at lower levels (for oversight), and summary statistics including average approval time and oldest pending days.",
+        security: [{ bearerAuth: [] }],
+        response: {
+          200: successSchema,
+          401: errorSchema,
+        },
+      },
+      onRequest: [authenticate],
+    },
+    async (request, reply) =>
+      approvalController.getDashboard(request as any, reply)
+  );
 }

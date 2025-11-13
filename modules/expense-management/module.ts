@@ -48,15 +48,20 @@ import {
 // Import ApprovalOrchestrationService type
 import type { ApprovalOrchestrationService } from "../approval/application/services/ApprovalOrchestrationService.js";
 
+// Import Budget repository type
+import type { IBudgetQueryRepository } from "../budget/domain/repositories/IBudgetQueryRepository.js";
+
 // Import ExpenseOrchestrationService
 import { ExpenseOrchestrationService } from "./application/services/ExpenseOrchestrationService.js";
 import { ExpenseCSVExportService } from "./application/services/ExpenseCSVExportService.js";
 import { ExpenseCSVImportService } from "./application/services/ExpenseCSVImportService.js";
 import { ExpenseMonthlyReportService } from "./application/services/ExpenseMonthlyReportService.js";
 import { ExpenseAIAnalyticsService } from "./application/services/ExpenseAIAnalyticsService.js";
+import { BudgetEnforcementService } from "./application/services/BudgetEnforcementService.js";
 
 export interface ExpenseManagementModuleDependencies {
   approvalOrchestrationService?: ApprovalOrchestrationService | null;
+  budgetQueryRepo?: IBudgetQueryRepository | null;
   skipRouteRegistration?: boolean;
 }
 
@@ -81,6 +86,11 @@ export async function registerExpenseManagementModule(
     expenseCommandRepo
   );
 
+  // Initialize Budget Enforcement Service (if budget repo is available)
+  const budgetEnforcementService = dependencies?.budgetQueryRepo
+    ? new BudgetEnforcementService(dependencies.budgetQueryRepo)
+    : undefined;
+
   // Initialize Expense Command Handlers
   const createExpenseHandler = new CreateExpenseCommandHandler(
     expenseCommandRepo
@@ -94,17 +104,19 @@ export async function registerExpenseManagementModule(
     expenseCommandRepo
   );
 
-  // Create submit handler with or without orchestration service
+  // Create submit handler with or without orchestration service and budget enforcement
   const submitExpenseHandler = dependencies?.approvalOrchestrationService
     ? new SubmitExpenseCommandHandler(
         expenseQueryRepo,
         expenseCommandRepo,
-        dependencies.approvalOrchestrationService
+        dependencies.approvalOrchestrationService,
+        budgetEnforcementService
       )
     : new SubmitExpenseCommandHandler(
         expenseQueryRepo,
         expenseCommandRepo,
-        null as any // Temporary - will throw error if used
+        null as any, // Temporary - will throw error if used
+        budgetEnforcementService
       );
 
   const cancelExpenseHandler = new CancelExpenseCommandHandler(

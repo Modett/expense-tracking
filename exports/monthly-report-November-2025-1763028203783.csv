@@ -1,0 +1,9 @@
+Expense ID,User ID,Vendor ID,Category ID,Department ID,Description,Net Amount,Tax Amount,Total Amount,Expense Date,Approved At,Linked PO ID,Inventory Drop ID
+61deabcb-e7c2-4959-98b6-ed1f8066cf3f,97a3a109-8ac8-48be-9e5a-c81042daf3e5,031b7bdf-2a8d-4955-81e9-dce9ff7e5805,d78a03f1-9cef-4a1a-97fe-75e88ce9ec4a,3274421c-0fe2-4b92-8e58-9cfbf28203c4,Emergency international travel for urgent client meeting,29400,0,29400,2025-11-13,2025-11-13,ac95ae3e-6635-460f-a986-3875c3b25824,
+
+
+MONTHLY SUMMARY - November 2025
+Total Expenses,1
+Total Net Amount,29400.00
+Total Tax Amount,0.00
+Total Amount,29400.00

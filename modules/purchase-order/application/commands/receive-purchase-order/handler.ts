@@ -1,8 +1,9 @@
-import type { IPurchaseOrderCommandRepository } from "../../../domain/repositories/IPurchaseOrderCommandRepository.js";
 import type { IPurchaseOrderQueryRepository } from "../../../domain/repositories/IPurchaseOrderQueryRepository.js";
+import type { IPurchaseOrderCommandRepository } from "../../../domain/repositories/IPurchaseOrderCommandRepository.js";
 import { PurchaseOrderId } from "../../../domain/index.js";
 import type { ReceivePurchaseOrderCommand } from "./command.js";
-import type { InventoryOrchestrationService } from "../../../inventory/application/services/InventoryOrchestrationService.js";
+// TODO: Create InventoryOrchestrationService when implementing inventory module
+// import type { InventoryOrchestrationService } from "../../../inventory/application/services/InventoryOrchestrationService.js";
 
 export interface ReceivePurchaseOrderResponse {
   success: boolean;
@@ -15,7 +16,7 @@ export class ReceivePurchaseOrderCommandHandler {
   constructor(
     private readonly purchaseOrderQueryRepo: IPurchaseOrderQueryRepository,
     private readonly purchaseOrderCommandRepo: IPurchaseOrderCommandRepository,
-    private readonly inventoryOrchestrationService?: InventoryOrchestrationService | null
+    private readonly inventoryOrchestrationService?: any // InventoryOrchestrationService | null
   ) {}
 
   async handle(
@@ -23,9 +24,13 @@ export class ReceivePurchaseOrderCommandHandler {
   ): Promise<ReceivePurchaseOrderResponse> {
     const purchaseOrderId = PurchaseOrderId.fromString(command.purchaseOrderId);
 
-    const purchaseOrder = await this.purchaseOrderQueryRepo.findById(purchaseOrderId);
+    const purchaseOrder = await this.purchaseOrderQueryRepo.findById(
+      purchaseOrderId
+    );
     if (!purchaseOrder) {
-      throw new Error(`Purchase order with ID ${command.purchaseOrderId} not found`);
+      throw new Error(
+        `Purchase order with ID ${command.purchaseOrderId} not found`
+      );
     }
 
     if (command.isPartial) {
@@ -39,9 +44,10 @@ export class ReceivePurchaseOrderCommandHandler {
     // Automatically create inventory drop when PO is received (not for partial)
     if (!command.isPartial && this.inventoryOrchestrationService) {
       try {
-        const inventoryResult = await this.inventoryOrchestrationService.createInventoryFromPurchaseOrder(
-          purchaseOrder.id.getValue()
-        );
+        const inventoryResult =
+          await this.inventoryOrchestrationService.createInventoryFromPurchaseOrder(
+            purchaseOrder.id.getValue()
+          );
 
         if (inventoryResult.success) {
           return {
@@ -53,7 +59,9 @@ export class ReceivePurchaseOrderCommandHandler {
         } else {
           // Inventory creation failed but PO receipt succeeded
           // Log error but don't fail the operation
-          console.error(`Failed to create inventory after PO receipt: ${inventoryResult.error}`);
+          console.error(
+            `Failed to create inventory after PO receipt: ${inventoryResult.error}`
+          );
         }
       } catch (error) {
         // Log error but don't fail the operation

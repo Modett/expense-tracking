@@ -5,6 +5,8 @@ import {
   DepartmentId,
   CategoryId,
   FiscalPeriod,
+  BudgetEnforcementType,
+  BudgetThresholds,
 } from "../../../domain/index.js";
 import type { CreateBudgetCommand } from "./command.js";
 
@@ -60,6 +62,23 @@ export class CreateBudgetCommandHandler {
       }
     }
 
+    // Parse enforcement type if provided
+    const enforcementType = command.enforcementType
+      ? BudgetEnforcementType.fromString(command.enforcementType)
+      : undefined;
+
+    // Create thresholds if any threshold values are provided
+    const thresholds =
+      command.warningThreshold1 !== undefined ||
+      command.warningThreshold2 !== undefined ||
+      command.criticalThreshold !== undefined
+        ? BudgetThresholds.create(
+            command.warningThreshold1,
+            command.warningThreshold2,
+            command.criticalThreshold
+          )
+        : undefined;
+
     const budget = Budget.create({
       departmentId,
       categoryId: categoryId ?? null,
@@ -67,6 +86,9 @@ export class CreateBudgetCommandHandler {
       fiscalPeriod,
       startDate: command.startDate,
       endDate: command.endDate,
+      ...(enforcementType && { enforcementType }),
+      ...(command.overrideAllowed !== undefined && { overrideAllowed: command.overrideAllowed }),
+      ...(thresholds && { thresholds }),
     });
 
     await this.budgetCommandRepo.save(budget);

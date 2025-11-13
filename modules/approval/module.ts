@@ -18,6 +18,8 @@ import { GetAllApprovalsQueryHandler } from "./application/queries/get-all-appro
 import { GetPendingApprovalsQueryHandler } from "./application/queries/get-pending-approvals/handler.js";
 import { GetApprovalsByExpenseQueryHandler } from "./application/queries/get-approvals-by-expense/handler.js";
 import { GetApprovalsByApproverQueryHandler } from "./application/queries/get-approvals-by-approver/handler.js";
+import { GetRejectedApprovalsVisibleToRoleQueryHandler } from "./application/queries/get-rejected-approvals-visible-to-role/handler.js";
+import { GetRoleBasedDashboardQueryHandler } from "./application/queries/get-role-based-dashboard/handler.js";
 
 // Services
 import { ApprovalOrchestrationService } from "./application/services/ApprovalOrchestrationService.js";
@@ -89,6 +91,11 @@ export async function registerApprovalModule(
   const getApprovalsByApproverHandler = new GetApprovalsByApproverQueryHandler(
     approvalQueryRepo
   );
+  const getRejectedVisibleHandler =
+    new GetRejectedApprovalsVisibleToRoleQueryHandler(approvalQueryRepo);
+  const getDashboardHandler = new GetRoleBasedDashboardQueryHandler(
+    approvalQueryRepo
+  );
 
   // Initialize Controller
   const approvalController = new ApprovalController(
@@ -99,7 +106,9 @@ export async function registerApprovalModule(
     getAllApprovalsHandler,
     getPendingApprovalsHandler,
     getApprovalsByExpenseHandler,
-    getApprovalsByApproverHandler
+    getApprovalsByApproverHandler,
+    getRejectedVisibleHandler,
+    getDashboardHandler
   );
 
   // Register Routes

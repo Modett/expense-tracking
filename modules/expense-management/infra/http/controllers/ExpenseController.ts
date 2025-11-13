@@ -46,6 +46,10 @@ import {
   getAllExpensesQuerySchema,
   type GetAllExpensesQuery,
 } from "../validators/get-all-expenses.validator.js";
+import {
+  submitExpenseBodySchema,
+  type SubmitExpenseBody,
+} from "../validators/submit-expense.validator.js";
 
 export class ExpenseController {
   constructor(
@@ -102,13 +106,16 @@ export class ExpenseController {
         authenticatedUser.userId, // Use authenticated user's ID instead of request body
         validatedBody.vendorId,
         validatedBody.categoryId,
-        validatedBody.departmentId,
+        validatedBody.departmentId ?? null, // Convert undefined to null
         validatedBody.description,
         validatedBody.netAmount,
         validatedBody.taxAmount,
         validatedBody.totalAmount,
         new Date(validatedBody.expenseDate),
-        validatedBody.receiptUrl
+        undefined, // priority
+        undefined, // budgetOverride
+        undefined, // justification
+        validatedBody.receiptUrl ?? undefined // Convert null to undefined
       );
 
       const result = await this.createExpenseHandler.handle(command);
@@ -219,13 +226,21 @@ export class ExpenseController {
   }
 
   async submit(
-    request: FastifyRequest<{ Params: ExpenseIdParam }>,
+    request: FastifyRequest<{
+      Params: ExpenseIdParam;
+      Body: SubmitExpenseBody;
+    }>,
     reply: FastifyReply
   ): Promise<void> {
     try {
       const validatedParams = expenseIdParamSchema.parse(request.params);
+      const validatedBody = submitExpenseBodySchema.parse(request.body || {});
 
-      const command = new SubmitExpenseCommand(validatedParams.expenseId);
+      const command = new SubmitExpenseCommand(
+        validatedParams.expenseId,
+        validatedBody.budgetOverride,
+        validatedBody.justification
+      );
       const result = await this.submitExpenseHandler.handle(command);
 
       reply.code(200).send({

@@ -328,6 +328,7 @@ export async function buildApp() {
   // NOW register Expense Management Module with approval orchestration service available
   await registerExpenseManagementModule(fastify, prisma, {
     approvalOrchestrationService,
+    budgetQueryRepo, // Pass budget repo for budget enforcement
   });
 
   // Graceful shutdown

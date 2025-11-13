@@ -5,6 +5,8 @@ import {
   BudgetPeriod,
   DepartmentId,
   CategoryId,
+  BudgetEnforcementType,
+  BudgetThresholds,
 } from "../value-objects/index.js";
 
 export interface BudgetProps {
@@ -15,6 +17,9 @@ export interface BudgetProps {
   fiscalPeriod: FiscalPeriod;
   period: BudgetPeriod;
   isActive: boolean;
+  enforcementType: BudgetEnforcementType;
+  overrideAllowed: boolean;
+  thresholds: BudgetThresholds;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -26,6 +31,9 @@ export interface CreateBudgetProps {
   fiscalPeriod: FiscalPeriod;
   startDate: Date;
   endDate: Date;
+  enforcementType?: BudgetEnforcementType;
+  overrideAllowed?: boolean;
+  thresholds?: BudgetThresholds;
 }
 
 export class Budget {
@@ -44,6 +52,9 @@ export class Budget {
       fiscalPeriod: props.fiscalPeriod,
       period: BudgetPeriod.create(props.startDate, props.endDate),
       isActive: true,
+      enforcementType: props.enforcementType ?? BudgetEnforcementType.soft(),
+      overrideAllowed: props.overrideAllowed ?? true,
+      thresholds: props.thresholds ?? BudgetThresholds.create(),
       createdAt: now,
       updatedAt: now,
     });
@@ -69,6 +80,12 @@ export class Budget {
     }
     if (!this.props.period) {
       throw new Error("Budget period is required");
+    }
+    if (!this.props.enforcementType) {
+      throw new Error("Enforcement type is required");
+    }
+    if (!this.props.thresholds) {
+      throw new Error("Budget thresholds are required");
     }
   }
 
@@ -100,6 +117,18 @@ export class Budget {
     return this.props.isActive;
   }
 
+  get enforcementType(): BudgetEnforcementType {
+    return this.props.enforcementType;
+  }
+
+  get overrideAllowed(): boolean {
+    return this.props.overrideAllowed;
+  }
+
+  get thresholds(): BudgetThresholds {
+    return this.props.thresholds;
+  }
+
   get createdAt(): Date {
     return this.props.createdAt;
   }
@@ -116,6 +145,20 @@ export class Budget {
     }
 
     this.props.amount = this.props.amount.updateBudgetAmount(newAmount);
+    this.props.updatedAt = new Date();
+  }
+
+  updateEnforcement(
+    enforcementType: BudgetEnforcementType,
+    overrideAllowed: boolean
+  ): void {
+    this.props.enforcementType = enforcementType;
+    this.props.overrideAllowed = overrideAllowed;
+    this.props.updatedAt = new Date();
+  }
+
+  updateThresholds(thresholds: BudgetThresholds): void {
+    this.props.thresholds = thresholds;
     this.props.updatedAt = new Date();
   }
 
@@ -177,8 +220,9 @@ export class Budget {
     return this.props.amount.isOverBudget();
   }
 
-  isNearLimit(threshold: number = 80): boolean {
-    return this.props.amount.isNearLimit(threshold);
+  isNearLimit(threshold?: number): boolean {
+    const thresholdToUse = threshold ?? this.props.thresholds.getWarning1();
+    return this.props.amount.isNearLimit(thresholdToUse);
   }
 
   isExhausted(): boolean {
@@ -210,6 +254,19 @@ export class Budget {
     return this.props.fiscalPeriod.equals(fiscalPeriod);
   }
 
+  getExceededThreshold(): { level: string; threshold: number } | null {
+    const utilization = this.getUtilizationPercentage();
+    return this.props.thresholds.getExceededThreshold(utilization);
+  }
+
+  isHardEnforcement(): boolean {
+    return this.props.enforcementType.isHard();
+  }
+
+  isSoftEnforcement(): boolean {
+    return this.props.enforcementType.isSoft();
+  }
+
   equals(other: Budget): boolean {
     if (!other) return false;
     return this.props.id.equals(other.props.id);
@@ -228,6 +285,14 @@ export class Budget {
       startDate: this.props.period.getStartDate(),
       endDate: this.props.period.getEndDate(),
       isActive: this.props.isActive,
+      enforcementType: this.props.enforcementType.getValue(),
+      overrideAllowed: this.props.overrideAllowed,
+      thresholds: {
+        warning1: this.props.thresholds.getWarning1(),
+        warning2: this.props.thresholds.getWarning2(),
+        critical: this.props.thresholds.getCritical(),
+      },
+      exceededThreshold: this.getExceededThreshold(),
       isOverBudget: this.isOverBudget(),
       isNearLimit: this.isNearLimit(),
       isExhausted: this.isExhausted(),
