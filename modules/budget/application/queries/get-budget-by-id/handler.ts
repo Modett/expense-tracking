@@ -14,6 +14,14 @@ export interface BudgetDTO {
   startDate: Date;
   endDate: Date;
   isActive: boolean;
+  enforcementType: string;
+  overrideAllowed: boolean;
+  thresholds: {
+    warning1: number;
+    warning2: number;
+    critical: number;
+  };
+  exceededThreshold: { level: string; threshold: number } | null;
   isOverBudget: boolean;
   isNearLimit: boolean;
   isExhausted: boolean;

@@ -108,7 +108,12 @@ export class BudgetController {
         validatedBody.budgetAmount,
         validatedBody.fiscalPeriod,
         new Date(validatedBody.startDate),
-        new Date(validatedBody.endDate)
+        new Date(validatedBody.endDate),
+        validatedBody.enforcementType,
+        validatedBody.overrideAllowed,
+        validatedBody.warningThreshold1,
+        validatedBody.warningThreshold2,
+        validatedBody.criticalThreshold
       );
 
       const result = await this.createBudgetHandler.handle(command);
@@ -132,7 +137,12 @@ export class BudgetController {
 
       const command = new UpdateBudgetCommand(
         validatedParams.budgetId,
-        validatedBody.budgetAmount
+        validatedBody.budgetAmount,
+        validatedBody.enforcementType,
+        validatedBody.overrideAllowed,
+        validatedBody.warningThreshold1,
+        validatedBody.warningThreshold2,
+        validatedBody.criticalThreshold
       );
 
       const result = await this.updateBudgetHandler.handle(command);

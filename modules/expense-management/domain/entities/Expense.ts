@@ -282,6 +282,30 @@ export class Expense {
     this.props.updatedAt = new Date();
   }
 
+  updateBudgetOverride(budgetOverride: BudgetExceptionType): void {
+    if (!this.status.canBeEdited()) {
+      throw new Error(
+        `Cannot update budget override: expense is ${this.status.toString()}`
+      );
+    }
+    this.props.budgetOverride = budgetOverride;
+    this.props.updatedAt = new Date();
+    // Validate after update
+    this.validate();
+  }
+
+  updateJustification(justification: string | null | undefined): void {
+    if (!this.status.canBeEdited()) {
+      throw new Error(
+        `Cannot update justification: expense is ${this.status.toString()}`
+      );
+    }
+    this.props.justification = justification || undefined;
+    this.props.updatedAt = new Date();
+    // Validate after update
+    this.validate();
+  }
+
   attachReceipt(receipt: Receipt): void {
     if (this.status.isFinal()) {
       throw new Error(

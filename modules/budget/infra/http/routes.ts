@@ -73,6 +73,39 @@ export async function registerBudgetRoutes(
             fiscalPeriod: { type: "string" },
             startDate: { type: "string", format: "date-time" },
             endDate: { type: "string", format: "date-time" },
+            enforcementType: {
+              type: "string",
+              enum: ["soft", "hard"],
+              default: "soft",
+              description:
+                "Budget enforcement type: soft (warning only) or hard (blocking)",
+            },
+            overrideAllowed: {
+              type: "boolean",
+              default: true,
+              description: "Whether budget overrides are allowed",
+            },
+            warningThreshold1: {
+              type: "number",
+              minimum: 0,
+              maximum: 100,
+              default: 80,
+              description: "First warning threshold percentage",
+            },
+            warningThreshold2: {
+              type: "number",
+              minimum: 0,
+              maximum: 100,
+              default: 90,
+              description: "Second warning threshold percentage",
+            },
+            criticalThreshold: {
+              type: "number",
+              minimum: 0,
+              maximum: 100,
+              default: 100,
+              description: "Critical threshold percentage",
+            },
           },
         },
         response: {
@@ -202,7 +235,8 @@ export async function registerBudgetRoutes(
     {
       schema: {
         tags: ["Budgets"],
-        summary: "Update budget amount (Authenticated)",
+        summary:
+          "Update budget amount and enforcement settings (Authenticated)",
         security: [{ bearerAuth: [] }],
         params: {
           type: "object",
@@ -213,9 +247,36 @@ export async function registerBudgetRoutes(
         },
         body: {
           type: "object",
-          required: ["budgetAmount"],
           properties: {
             budgetAmount: { type: "number", minimum: 0 },
+            enforcementType: {
+              type: "string",
+              enum: ["soft", "hard"],
+              description:
+                "Budget enforcement type: soft (warning only) or hard (blocking)",
+            },
+            overrideAllowed: {
+              type: "boolean",
+              description: "Whether budget overrides are allowed",
+            },
+            warningThreshold1: {
+              type: "number",
+              minimum: 0,
+              maximum: 100,
+              description: "First warning threshold percentage",
+            },
+            warningThreshold2: {
+              type: "number",
+              minimum: 0,
+              maximum: 100,
+              description: "Second warning threshold percentage",
+            },
+            criticalThreshold: {
+              type: "number",
+              minimum: 0,
+              maximum: 100,
+              description: "Critical threshold percentage",
+            },
           },
         },
         response: {

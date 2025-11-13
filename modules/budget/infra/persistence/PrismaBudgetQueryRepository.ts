@@ -11,12 +11,14 @@ import {
   BudgetPeriod,
   DepartmentId,
   CategoryId,
+  BudgetEnforcementType,
+  BudgetThresholds,
 } from "../../domain/value-objects/index.js";
 
 export class PrismaBudgetQueryRepository implements IBudgetQueryRepository {
   constructor(private readonly prisma: PrismaClient) {}
 
-  private toDomain(prismaBudget: PrismaBudget): Budget {
+  private toDomain(prismaBudget: any): Budget {
     return Budget.reconstitute({
       id: BudgetId.fromString(prismaBudget.budgetId),
       departmentId: DepartmentId.fromString(prismaBudget.departmentId),
@@ -30,6 +32,15 @@ export class PrismaBudgetQueryRepository implements IBudgetQueryRepository {
       fiscalPeriod: FiscalPeriod.fromString(prismaBudget.fiscalPeriod),
       period: BudgetPeriod.create(prismaBudget.startDate, prismaBudget.endDate),
       isActive: prismaBudget.isActive,
+      enforcementType: prismaBudget.enforcementType
+        ? BudgetEnforcementType.fromString(prismaBudget.enforcementType)
+        : BudgetEnforcementType.soft(),
+      overrideAllowed: prismaBudget.overrideAllowed ?? true,
+      thresholds: BudgetThresholds.create(
+        prismaBudget.warningThreshold1 ?? 80,
+        prismaBudget.warningThreshold2 ?? 90,
+        prismaBudget.criticalThreshold ?? 100
+      ),
       createdAt: prismaBudget.createdAt,
       updatedAt: prismaBudget.updatedAt,
     });

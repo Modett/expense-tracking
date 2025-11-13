@@ -9,6 +9,22 @@ export class PrismaBudgetCommandRepository implements IBudgetCommandRepository {
   async save(budget: Budget): Promise<Budget> {
     const plainObject = budget.toPlainObject();
 
+    const updateData: any = {
+      spentAmount: plainObject.spentAmount,
+      isActive: plainObject.isActive,
+      enforcementType: plainObject.enforcementType,
+      overrideAllowed: plainObject.overrideAllowed,
+      warningThreshold1: plainObject.thresholds.warning1,
+      warningThreshold2: plainObject.thresholds.warning2,
+      criticalThreshold: plainObject.thresholds.critical,
+      updatedAt: plainObject.updatedAt,
+    };
+
+    // Only include budgetAmount if it's defined
+    if (plainObject.budgetAmount !== undefined) {
+      updateData.budgetAmount = plainObject.budgetAmount;
+    }
+
     await this.prisma.budget.upsert({
       where: { budgetId: plainObject.id },
       create: {
@@ -21,15 +37,15 @@ export class PrismaBudgetCommandRepository implements IBudgetCommandRepository {
         startDate: plainObject.startDate,
         endDate: plainObject.endDate,
         isActive: plainObject.isActive,
+        enforcementType: plainObject.enforcementType,
+        overrideAllowed: plainObject.overrideAllowed,
+        warningThreshold1: plainObject.thresholds.warning1,
+        warningThreshold2: plainObject.thresholds.warning2,
+        criticalThreshold: plainObject.thresholds.critical,
         createdAt: plainObject.createdAt,
         updatedAt: plainObject.updatedAt,
       },
-      update: {
-        budgetAmount: plainObject.budgetAmount,
-        spentAmount: plainObject.spentAmount,
-        isActive: plainObject.isActive,
-        updatedAt: plainObject.updatedAt,
-      },
+      update: updateData,
     });
 
     return budget;
@@ -52,6 +68,11 @@ export class PrismaBudgetCommandRepository implements IBudgetCommandRepository {
             startDate: plainObject.startDate,
             endDate: plainObject.endDate,
             isActive: plainObject.isActive,
+            enforcementType: plainObject.enforcementType,
+            overrideAllowed: plainObject.overrideAllowed,
+            warningThreshold1: plainObject.thresholds.warning1,
+            warningThreshold2: plainObject.thresholds.warning2,
+            criticalThreshold: plainObject.thresholds.critical,
             createdAt: plainObject.createdAt,
             updatedAt: plainObject.updatedAt,
           },
@@ -59,6 +80,11 @@ export class PrismaBudgetCommandRepository implements IBudgetCommandRepository {
             budgetAmount: plainObject.budgetAmount,
             spentAmount: plainObject.spentAmount,
             isActive: plainObject.isActive,
+            enforcementType: plainObject.enforcementType,
+            overrideAllowed: plainObject.overrideAllowed,
+            warningThreshold1: plainObject.thresholds.warning1,
+            warningThreshold2: plainObject.thresholds.warning2,
+            criticalThreshold: plainObject.thresholds.critical,
             updatedAt: plainObject.updatedAt,
           },
         });

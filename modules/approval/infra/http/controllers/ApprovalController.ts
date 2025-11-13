@@ -20,6 +20,10 @@ import { GetApprovalsByExpenseQueryHandler } from "../../../application/queries/
 import { GetApprovalsByExpenseQuery as GetApprovalsByExpenseQueryClass } from "../../../application/queries/get-approvals-by-expense/query.js";
 import { GetApprovalsByApproverQueryHandler } from "../../../application/queries/get-approvals-by-approver/handler.js";
 import { GetApprovalsByApproverQuery as GetApprovalsByApproverQueryClass } from "../../../application/queries/get-approvals-by-approver/query.js";
+import { GetRejectedApprovalsVisibleToRoleQueryHandler } from "../../../application/queries/get-rejected-approvals-visible-to-role/handler.js";
+import { GetRejectedApprovalsVisibleToRoleQuery } from "../../../application/queries/get-rejected-approvals-visible-to-role/query.js";
+import { GetRoleBasedDashboardQueryHandler } from "../../../application/queries/get-role-based-dashboard/handler.js";
+import { GetRoleBasedDashboardQuery } from "../../../application/queries/get-role-based-dashboard/query.js";
 
 // Validators
 import {
@@ -52,6 +56,14 @@ import {
   getPendingApprovalsQuerySchema,
   type GetPendingApprovalsQuery,
 } from "../validators/get-pending-approvals.validator.js";
+import {
+  getRejectedVisibleQuerySchema,
+  type GetRejectedVisibleQuery,
+} from "../validators/get-rejected-visible.validator.js";
+import {
+  getDashboardQuerySchema,
+  type GetDashboardQuery,
+} from "../validators/get-dashboard.validator.js";
 
 export class ApprovalController {
   constructor(
@@ -62,7 +74,9 @@ export class ApprovalController {
     private readonly getAllApprovalsHandler: GetAllApprovalsQueryHandler,
     private readonly getPendingApprovalsHandler: GetPendingApprovalsQueryHandler,
     private readonly getApprovalsByExpenseHandler: GetApprovalsByExpenseQueryHandler,
-    private readonly getApprovalsByApproverHandler: GetApprovalsByApproverQueryHandler
+    private readonly getApprovalsByApproverHandler: GetApprovalsByApproverQueryHandler,
+    private readonly getRejectedVisibleHandler: GetRejectedApprovalsVisibleToRoleQueryHandler,
+    private readonly getDashboardHandler: GetRoleBasedDashboardQueryHandler
   ) {}
 
   private handleError(error: unknown, reply: FastifyReply): void {
@@ -291,6 +305,71 @@ export class ApprovalController {
       );
 
       const result = await this.getApprovalsByApproverHandler.handle(query);
+      reply.code(200).send({ success: true, data: result });
+    } catch (error) {
+      this.handleError(error, reply);
+    }
+  }
+
+  async getRejectedVisible(
+    request: FastifyRequest<{ Querystring: GetRejectedVisibleQuery }>,
+    reply: FastifyReply
+  ): Promise<void> {
+    try {
+      // Get authenticated user ID and role from JWT token
+      const authenticatedUser = request.user as any;
+      if (!authenticatedUser || !authenticatedUser.userId || !authenticatedUser.role) {
+        reply
+          .code(401)
+          .send({ error: "Unable to identify authenticated user" });
+        return;
+      }
+
+      const validatedQuery = getRejectedVisibleQuerySchema.parse(request.query);
+
+      // Build filters object with only defined values
+      const filters: any = {};
+      if (validatedQuery.departmentId) filters.departmentId = validatedQuery.departmentId;
+      if (validatedQuery.categoryId) filters.categoryId = validatedQuery.categoryId;
+      if (validatedQuery.dateFrom) filters.dateFrom = new Date(validatedQuery.dateFrom);
+      if (validatedQuery.dateTo) filters.dateTo = new Date(validatedQuery.dateTo);
+      if (validatedQuery.rejectedByRole) filters.rejectedByRole = validatedQuery.rejectedByRole;
+      if (validatedQuery.limit !== undefined) filters.limit = validatedQuery.limit;
+      if (validatedQuery.offset !== undefined) filters.offset = validatedQuery.offset;
+
+      const query = new GetRejectedApprovalsVisibleToRoleQuery(
+        authenticatedUser.userId,
+        authenticatedUser.role,
+        Object.keys(filters).length > 0 ? filters : undefined
+      );
+
+      const result = await this.getRejectedVisibleHandler.handle(query);
+      reply.code(200).send({ success: true, data: result });
+    } catch (error) {
+      this.handleError(error, reply);
+    }
+  }
+
+  async getDashboard(
+    request: FastifyRequest<{ Querystring: GetDashboardQuery }>,
+    reply: FastifyReply
+  ): Promise<void> {
+    try {
+      // Get authenticated user ID and role from JWT token
+      const authenticatedUser = request.user as any;
+      if (!authenticatedUser || !authenticatedUser.userId || !authenticatedUser.role) {
+        reply
+          .code(401)
+          .send({ error: "Unable to identify authenticated user" });
+        return;
+      }
+
+      const query = new GetRoleBasedDashboardQuery(
+        authenticatedUser.userId,
+        authenticatedUser.role
+      );
+
+      const result = await this.getDashboardHandler.handle(query);
       reply.code(200).send({ success: true, data: result });
     } catch (error) {
       this.handleError(error, reply);

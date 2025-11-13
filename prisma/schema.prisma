@@ -109,8 +109,8 @@ model AccessTokenBlacklist {
 
 model Vendor {
   vendorId  String   @id @default(dbgenerated("gen_random_uuid()")) @map("vendor_id") @db.Uuid
-  name      String
-  gstNumber String?  @map("gst_number")
+  name      String   @unique
+  gstNumber String?  @unique @map("gst_number")
   email     String?
   phone     String?
   address   String?
@@ -280,17 +280,25 @@ model Approval {
 // ==========================================
 
 model Budget {
-  budgetId     String   @id @default(dbgenerated("gen_random_uuid()")) @map("budget_id") @db.Uuid
-  departmentId String   @map("department_id") @db.Uuid
-  categoryId   String?  @map("category_id") @db.Uuid
-  budgetAmount Decimal  @map("budget_amount") @db.Decimal(12, 2)
-  spentAmount  Decimal  @default(0) @map("spent_amount") @db.Decimal(12, 2)
-  fiscalPeriod String   @map("fiscal_period")
-  startDate    DateTime @map("start_date") @db.Timestamptz(6)
-  endDate      DateTime @map("end_date") @db.Timestamptz(6)
-  isActive     Boolean  @default(true) @map("is_active")
-  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt    DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  budgetId           String   @id @default(dbgenerated("gen_random_uuid()")) @map("budget_id") @db.Uuid
+  departmentId       String   @map("department_id") @db.Uuid
+  categoryId         String?  @map("category_id") @db.Uuid
+  budgetAmount       Decimal  @map("budget_amount") @db.Decimal(12, 2)
+  spentAmount        Decimal  @default(0) @map("spent_amount") @db.Decimal(12, 2)
+  fiscalPeriod       String   @map("fiscal_period")
+  startDate          DateTime @map("start_date") @db.Timestamptz(6)
+  endDate            DateTime @map("end_date") @db.Timestamptz(6)
+  isActive           Boolean  @default(true) @map("is_active")
+
+  // Budget Enforcement Settings
+  enforcementType    String   @default("soft") @map("enforcement_type") // 'soft' or 'hard'
+  overrideAllowed    Boolean  @default(true) @map("override_allowed")
+  warningThreshold1  Int      @default(80) @map("warning_threshold_1") // First warning at 80%
+  warningThreshold2  Int      @default(90) @map("warning_threshold_2") // Second warning at 90%
+  criticalThreshold  Int      @default(100) @map("critical_threshold") // Critical alert at 100%
+
+  createdAt          DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt          DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   // Relations
   department Department @relation(fields: [departmentId], references: [departmentId])
