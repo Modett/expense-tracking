@@ -66,7 +66,9 @@ export default function DashboardLayout({
                 </svg>
               </div>
               <div>
-                <div className="text-white font-bold text-lg">EX<span className="text-cyan-400">P</span>ensio</div>
+                <div className="text-white font-bold text-lg">
+                  EX<span className="text-cyan-400">P</span>ensio
+                </div>
               </div>
             </div>
             <Button
@@ -82,7 +84,8 @@ export default function DashboardLayout({
           {/* Navigation */}
           <nav className="flex-1 space-y-1 px-4 py-6">
             {navigation.map((item) => {
-              const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
+              const isActive =
+                pathname === item.href || pathname.startsWith(item.href + "/");
               return (
                 <Link
                   key={item.name}
@@ -128,14 +131,14 @@ export default function DashboardLayout({
           >
             <Menu className="h-5 w-5" />
           </Button>
-          <div className="text-white font-bold text-lg">EX<span className="text-cyan-400">P</span>ensio</div>
+          <div className="text-white font-bold text-lg">
+            EX<span className="text-cyan-400">P</span>ensio
+          </div>
           <div className="w-10" />
         </header>
 
         {/* Page content */}
-        <main className="flex-1 overflow-y-auto">
-          {children}
-        </main>
+        <main className="flex-1 overflow-y-auto">{children}</main>
       </div>
     </div>
   );

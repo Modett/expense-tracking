@@ -35,7 +35,10 @@ export function usePendingTasks(options?: { enabled?: boolean }) {
   });
 }
 
-export function useRecentExpenses(limit?: number, options?: { enabled?: boolean }) {
+export function useRecentExpenses(
+  limit?: number,
+  options?: { enabled?: boolean }
+) {
   return useQuery<RecentExpenseItem[]>({
     queryKey: queryKeys.dashboard.recentExpenses(limit),
     queryFn: () => dashboardApi.getRecentExpenses(limit),
@@ -44,7 +47,10 @@ export function useRecentExpenses(limit?: number, options?: { enabled?: boolean 
   });
 }
 
-export function useTeamSpending(period: string = "monthly", options?: { enabled?: boolean }) {
+export function useTeamSpending(
+  period: string = "monthly",
+  options?: { enabled?: boolean }
+) {
   return useQuery<TeamSpendingData[]>({
     queryKey: queryKeys.dashboard.teamSpending(period),
     queryFn: () => dashboardApi.getTeamSpending(period),
@@ -53,7 +59,10 @@ export function useTeamSpending(period: string = "monthly", options?: { enabled?
   });
 }
 
-export function useExpensesByCategory(period: string = "monthly", options?: { enabled?: boolean }) {
+export function useExpensesByCategory(
+  period: string = "monthly",
+  options?: { enabled?: boolean }
+) {
   return useQuery<ExpenseCategoryData[]>({
     queryKey: queryKeys.dashboard.expensesByCategory(period),
     queryFn: () => dashboardApi.getExpensesByCategory(period),

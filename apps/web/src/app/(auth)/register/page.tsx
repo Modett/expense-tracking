@@ -7,19 +7,34 @@ import * as z from "zod";
 import { useRegister } from "@/features/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Loader2 } from "lucide-react";
 
-const registerSchema = z.object({
-  name: z.string().min(2, "Name must be at least 2 characters"),
-  email: z.string().email("Invalid email address"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
-  confirmPassword: z.string(),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords don't match",
-  path: ["confirmPassword"],
-});
+const registerSchema = z
+  .object({
+    name: z.string().min(2, "Name must be at least 2 characters"),
+    email: z.string().email("Invalid email address"),
+    password: z.string().min(6, "Password must be at least 6 characters"),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ["confirmPassword"],
+  });
 
 type RegisterFormData = z.infer<typeof registerSchema>;
 
@@ -55,17 +70,24 @@ export default function RegisterPage() {
             </svg>
           </div>
           <h1 className="text-2xl font-bold">Expensio</h1>
-          <p className="text-sm text-muted-foreground">Create your account to get started</p>
+          <p className="text-sm text-muted-foreground">
+            Create your account to get started
+          </p>
         </div>
 
         <Card className="border-border/50 bg-card">
           <CardHeader>
             <CardTitle>Sign Up</CardTitle>
-            <CardDescription>Create a new account to start managing expenses</CardDescription>
+            <CardDescription>
+              Create a new account to start managing expenses
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="space-y-4"
+              >
                 <FormField
                   control={form.control}
                   name="name"
@@ -158,7 +180,9 @@ export default function RegisterPage() {
                 </Button>
 
                 <div className="text-center text-sm">
-                  <span className="text-muted-foreground">Already have an account? </span>
+                  <span className="text-muted-foreground">
+                    Already have an account?{" "}
+                  </span>
                   <Link
                     href="/login"
                     className="font-medium text-primary hover:underline"

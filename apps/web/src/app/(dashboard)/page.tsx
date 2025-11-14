@@ -39,16 +39,18 @@ export default function DashboardPage() {
   const { user } = useAuth();
   // Temporarily disable queries until backend endpoints are created
   const { data: pendingTasks } = usePendingTasks({ enabled: false });
-  const { data: recentExpenses, isLoading: expensesLoading } = useRecentExpenses(5, {
-    enabled: false,
-  });
-  const { data: teamSpending, isLoading: teamLoading } = useTeamSpending("monthly", {
-    enabled: false,
-  });
-  const { data: categoryExpenses, isLoading: categoryLoading } = useExpensesByCategory(
+  const { data: recentExpenses, isLoading: expensesLoading } =
+    useRecentExpenses(5, {
+      enabled: false,
+    });
+  const { data: teamSpending, isLoading: teamLoading } = useTeamSpending(
     "monthly",
-    { enabled: false }
+    {
+      enabled: false,
+    }
   );
+  const { data: categoryExpenses, isLoading: categoryLoading } =
+    useExpensesByCategory("monthly", { enabled: false });
 
   return (
     <div className="min-h-screen bg-zinc-950 p-6">

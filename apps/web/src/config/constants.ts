@@ -1,13 +1,15 @@
 export const APP_NAME = "Expense Tracker";
 
-export const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+export const API_URL =
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
 export const MAX_FILE_SIZE = parseInt(
   process.env.NEXT_PUBLIC_MAX_FILE_SIZE || "5242880"
 );
 
 export const ALLOWED_FILE_TYPES = (
-  process.env.NEXT_PUBLIC_ALLOWED_FILE_TYPES || "image/jpeg,image/png,application/pdf"
+  process.env.NEXT_PUBLIC_ALLOWED_FILE_TYPES ||
+  "image/jpeg,image/png,application/pdf"
 ).split(",");
 
 export const PAGINATION = {

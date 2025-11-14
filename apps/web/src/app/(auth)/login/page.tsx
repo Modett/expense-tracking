@@ -7,8 +7,21 @@ import * as z from "zod";
 import { useLogin } from "@/features/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Loader2 } from "lucide-react";
 
 const loginSchema = z.object({
@@ -47,17 +60,24 @@ export default function LoginPage() {
             </svg>
           </div>
           <h1 className="text-2xl font-bold">Expensio</h1>
-          <p className="text-sm text-muted-foreground">Welcome back! Please login to continue</p>
+          <p className="text-sm text-muted-foreground">
+            Welcome back! Please login to continue
+          </p>
         </div>
 
         <Card className="border-border/50 bg-card">
           <CardHeader>
             <CardTitle>Login</CardTitle>
-            <CardDescription>Enter your credentials to access your account</CardDescription>
+            <CardDescription>
+              Enter your credentials to access your account
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="space-y-4"
+              >
                 <FormField
                   control={form.control}
                   name="email"
@@ -125,12 +145,16 @@ export default function LoginPage() {
                     <span className="w-full border-t" />
                   </div>
                   <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-card px-2 text-muted-foreground">Or</span>
+                    <span className="bg-card px-2 text-muted-foreground">
+                      Or
+                    </span>
                   </div>
                 </div>
 
                 <div className="text-center text-sm">
-                  <span className="text-muted-foreground">Don't have an account? </span>
+                  <span className="text-muted-foreground">
+                    Don't have an account?{" "}
+                  </span>
                   <Link
                     href="/register"
                     className="font-medium text-primary hover:underline"

@@ -1,7 +1,16 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { authApi } from "../api/index";
-import { LoginRequest, RegisterRequest, ChangePasswordRequest } from "../types/index";
-import { setToken, setRefreshToken, clearToken, getToken } from "@/lib/auth/token";
+import {
+  LoginRequest,
+  RegisterRequest,
+  ChangePasswordRequest,
+} from "../types/index";
+import {
+  setToken,
+  setRefreshToken,
+  clearToken,
+  getToken,
+} from "@/lib/auth/token";
 import { queryKeys } from "@/lib/query/keys";
 import { useRouter } from "next/navigation";
 import { toast } from "@/components/ui/use-toast";
@@ -26,7 +35,8 @@ export function useLogin() {
     onError: (error: any) => {
       toast({
         title: "Login failed",
-        description: error.response?.data?.message || "Invalid email or password",
+        description:
+          error.response?.data?.message || "Invalid email or password",
         variant: "destructive",
       });
     },
@@ -53,7 +63,9 @@ export function useRegister() {
     onError: (error: any) => {
       toast({
         title: "Registration failed",
-        description: error.response?.data?.message || "Failed to create account. Please try again.",
+        description:
+          error.response?.data?.message ||
+          "Failed to create account. Please try again.",
         variant: "destructive",
       });
     },

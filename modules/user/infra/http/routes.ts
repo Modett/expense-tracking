@@ -391,4 +391,3 @@ export async function registerUserRoutes(
       userController.deleteUser(request as any, reply),
   });
 }
-

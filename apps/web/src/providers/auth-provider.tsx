@@ -24,11 +24,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   // Don't block rendering on loading state
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth() {
