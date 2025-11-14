@@ -1,37 +1,36 @@
 "use client";
 
-import React, { createContext, useContext, useEffect } from "react";
-import { useAuthStore } from "@/stores/auth.store";
-import { getUserFromToken, isAuthenticated } from "@/lib/auth";
+import React, { createContext, useContext } from "react";
+import { useMe } from "@/features/auth";
+import { User } from "@/types/common.types";
+import { getToken } from "@/lib/auth/token";
 
 interface AuthContextType {
+  user: User | null | undefined;
   isAuthenticated: boolean;
-  user: ReturnType<typeof getUserFromToken>;
+  isLoading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const { user, setUser } = useAuthStore();
+  const token = getToken();
+  const { data: user, isLoading } = useMe();
 
-  useEffect(() => {
-    if (isAuthenticated()) {
-      const userData = getUserFromToken();
-      setUser(userData);
-    }
-  }, [setUser]);
+  const value: AuthContextType = {
+    user: user || null,
+    isAuthenticated: !!token && !!user,
+    isLoading,
+  };
 
-  return (
-    <AuthContext.Provider value={{ isAuthenticated: !!user, user }}>
-      {children}
-    </AuthContext.Provider>
-  );
+  // Don't block rendering on loading state
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
-export function useAuthContext() {
+export function useAuth() {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error("useAuthContext must be used within AuthProvider");
+    throw new Error("useAuth must be used within AuthProvider");
   }
   return context;
 }

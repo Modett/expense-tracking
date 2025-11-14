@@ -1,4 +1,4 @@
-import type { FastifyInstance } from "fastify";
+import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 import type { PrismaClient } from "@prisma/client";
 import type { AuthController } from "./controllers/AuthController.js";
 import type { UserController } from "./controllers/UserController.js";
@@ -20,9 +20,13 @@ export async function registerUserRoutes(
   // Create authenticate middleware with blacklist checking
   const authenticate = createAuthenticateMiddleware(prisma);
 
+  // Note: Using Fastify route shorthand syntax (compatible with v4 & v5)
+  // TypeScript incorrectly expects 3 arguments, but 2-argument syntax is still valid
+  const app = fastify as any;
+
   // ==================== AUTH ROUTES ====================
 
-  fastify.post("/auth/register", {
+  app.post("/auth/register", {
     schema: {
       tags: ["Auth"],
       summary: "Register a new user",
@@ -50,11 +54,11 @@ export async function registerUserRoutes(
         timeWindow: "15 minutes",
       },
     },
-    handler: async (request, reply) =>
+    handler: async (request: FastifyRequest, reply: FastifyReply) =>
       authController.register(request as any, reply),
   });
 
-  fastify.post("/auth/login", {
+  app.post("/auth/login", {
     schema: {
       tags: ["Auth"],
       summary: "Login user",
@@ -77,11 +81,11 @@ export async function registerUserRoutes(
         timeWindow: "15 minutes",
       },
     },
-    handler: async (request, reply) =>
+    handler: async (request: FastifyRequest, reply: FastifyReply) =>
       authController.login(request as any, reply),
   });
 
-  fastify.post("/auth/refresh-token", {
+  app.post("/auth/refresh-token", {
     schema: {
       tags: ["Auth"],
       summary: "Refresh access token (uses HTTP-only cookie or body)",
@@ -112,11 +116,11 @@ export async function registerUserRoutes(
         timeWindow: "15 minutes",
       },
     },
-    handler: async (request, reply) =>
+    handler: async (request: FastifyRequest, reply: FastifyReply) =>
       authController.refreshToken(request as any, reply),
   });
 
-  fastify.post("/auth/logout", {
+  app.post("/auth/logout", {
     schema: {
       tags: ["Auth"],
       summary: "Logout user (requires authentication)",
@@ -133,11 +137,11 @@ export async function registerUserRoutes(
         timeWindow: "15 minutes",
       },
     },
-    handler: async (request, reply) =>
+    handler: async (request: FastifyRequest, reply: FastifyReply) =>
       authController.logout(request as any, reply),
   });
 
-  fastify.put("/auth/change-password", {
+  app.put("/auth/change-password", {
     schema: {
       tags: ["Auth"],
       summary: "Change user password",
@@ -163,13 +167,13 @@ export async function registerUserRoutes(
         timeWindow: "15 minutes",
       },
     },
-    handler: async (request, reply) =>
+    handler: async (request: FastifyRequest, reply: FastifyReply) =>
       authController.changePassword(request as any, reply),
   });
 
   // ==================== USER QUERY ROUTES ====================
 
-  fastify.get("/users/:userId", {
+  app.get("/users/:userId", {
     schema: {
       tags: ["Users"],
       summary: "Get user by ID",
@@ -187,11 +191,11 @@ export async function registerUserRoutes(
       },
     },
     onRequest: [authenticate],
-    handler: async (request, reply) =>
+    handler: async (request: FastifyRequest, reply: FastifyReply) =>
       userController.getUserById(request as any, reply),
   });
 
-  fastify.get("/users", {
+  app.get("/users", {
     schema: {
       tags: ["Users"],
       summary: "Get all users",
@@ -218,13 +222,13 @@ export async function registerUserRoutes(
       },
     },
     onRequest: [authenticate],
-    handler: async (request, reply) =>
+    handler: async (request: FastifyRequest, reply: FastifyReply) =>
       userController.getAllUsers(request as any, reply),
   });
 
   // ==================== USER MANAGEMENT ROUTES ====================
 
-  fastify.put("/users/:userId", {
+  app.put("/users/:userId", {
     schema: {
       tags: ["Users"],
       summary: "Update user profile (Admin only)",
@@ -257,11 +261,11 @@ export async function registerUserRoutes(
         timeWindow: "1 minute",
       },
     },
-    handler: async (request, reply) =>
+    handler: async (request: FastifyRequest, reply: FastifyReply) =>
       userController.updateProfile(request as any, reply),
   });
 
-  fastify.put("/users/:userId/role", {
+  app.put("/users/:userId/role", {
     schema: {
       tags: ["Users"],
       summary: "Update user role (Admin only)",
@@ -296,11 +300,11 @@ export async function registerUserRoutes(
         timeWindow: "1 minute",
       },
     },
-    handler: async (request, reply) =>
+    handler: async (request: FastifyRequest, reply: FastifyReply) =>
       userController.updateRole(request as any, reply),
   });
 
-  fastify.put("/users/:userId/activate", {
+  app.put("/users/:userId/activate", {
     schema: {
       tags: ["Users"],
       summary: "Activate user (Admin only)",
@@ -325,11 +329,11 @@ export async function registerUserRoutes(
         timeWindow: "1 minute",
       },
     },
-    handler: async (request, reply) =>
+    handler: async (request: FastifyRequest, reply: FastifyReply) =>
       userController.activateUser(request as any, reply),
   });
 
-  fastify.put("/users/:userId/deactivate", {
+  app.put("/users/:userId/deactivate", {
     schema: {
       tags: ["Users"],
       summary: "Deactivate user (Admin only)",
@@ -354,11 +358,11 @@ export async function registerUserRoutes(
         timeWindow: "1 minute",
       },
     },
-    handler: async (request, reply) =>
+    handler: async (request: FastifyRequest, reply: FastifyReply) =>
       userController.deactivateUser(request as any, reply),
   });
 
-  fastify.delete("/users/:userId", {
+  app.delete("/users/:userId", {
     schema: {
       tags: ["Users"],
       summary: "Delete user (Admin only)",
@@ -383,7 +387,7 @@ export async function registerUserRoutes(
         timeWindow: "1 minute",
       },
     },
-    handler: async (request, reply) =>
+    handler: async (request: FastifyRequest, reply: FastifyReply) =>
       userController.deleteUser(request as any, reply),
   });
 }
