@@ -2,6 +2,17 @@ export const queryKeys = {
   auth: {
     me: ["auth", "me"] as const,
   },
+  dashboard: {
+    all: ["dashboard"] as const,
+    stats: ["dashboard", "stats"] as const,
+    pendingTasks: ["dashboard", "pending-tasks"] as const,
+    recentExpenses: (limit?: number) =>
+      ["dashboard", "recent-expenses", limit] as const,
+    teamSpending: (period: string) =>
+      ["dashboard", "team-spending", period] as const,
+    expensesByCategory: (period: string) =>
+      ["dashboard", "expenses-by-category", period] as const,
+  },
   expenses: {
     all: ["expenses"] as const,
     list: (filters?: Record<string, unknown>) =>
