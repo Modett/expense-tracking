@@ -86,7 +86,14 @@ export function useLogout() {
         description: "You have been successfully logged out",
         variant: "default",
       });
-      router.push("/login");
+      // Force hard navigation to login page
+      window.location.href = "/login";
+    },
+    onError: () => {
+      // Even on error, clear token and redirect
+      clearToken();
+      queryClient.clear();
+      window.location.href = "/login";
     },
   });
 }

@@ -1,0 +1,114 @@
+"use client";
+
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { useRouter } from "next/navigation";
+import { useCreateCategory } from "@/features/categories";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { ArrowLeft } from "lucide-react";
+
+const createCategorySchema = z.object({
+  name: z.string().min(1, "Category name is required"),
+  description: z.string().optional(),
+});
+
+type CreateCategoryFormData = z.infer<typeof createCategorySchema>;
+
+export default function CreateCategoryPage(): JSX.Element {
+  const router = useRouter();
+  const createCategoryMutation = useCreateCategory();
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<CreateCategoryFormData>({
+    resolver: zodResolver(createCategorySchema),
+  });
+
+  const onSubmit = (data: CreateCategoryFormData) => {
+    createCategoryMutation.mutate({
+      ...data,
+      description: data.description || undefined,
+    });
+  };
+
+  return (
+    <div className="p-8">
+      <div className="mb-8">
+        <Button
+          variant="ghost"
+          className="text-zinc-400 hover:text-white hover:bg-zinc-800 mb-4"
+          onClick={() => router.back()}
+        >
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Back
+        </Button>
+        <h1 className="text-3xl font-bold text-white">Add Category</h1>
+        <p className="text-zinc-400 mt-2">Create a new expense category</p>
+      </div>
+
+      <Card className="bg-zinc-900 border-zinc-800 max-w-2xl">
+        <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-6">
+          <div>
+            <Label htmlFor="name" className="text-zinc-300">
+              Category Name <span className="text-red-500">*</span>
+            </Label>
+            <Input
+              id="name"
+              placeholder="e.g., Travel, Office Supplies, Marketing"
+              className="mt-2 bg-zinc-800 border-zinc-700 text-white"
+              {...register("name")}
+            />
+            {errors.name && (
+              <p className="text-sm text-red-500 mt-1">{errors.name.message}</p>
+            )}
+          </div>
+
+          <div>
+            <Label htmlFor="description" className="text-zinc-300">
+              Description
+            </Label>
+            <Textarea
+              id="description"
+              placeholder="Enter category description"
+              className="mt-2 bg-zinc-800 border-zinc-700 text-white"
+              rows={3}
+              {...register("description")}
+            />
+            {errors.description && (
+              <p className="text-sm text-red-500 mt-1">
+                {errors.description.message}
+              </p>
+            )}
+          </div>
+
+          <div className="flex gap-3 pt-4">
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => router.back()}
+              className="flex-1 text-zinc-400 hover:text-white hover:bg-zinc-800"
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              disabled={createCategoryMutation.isPending}
+              className="flex-1 bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700"
+            >
+              {createCategoryMutation.isPending
+                ? "Creating..."
+                : "Create Category"}
+            </Button>
+          </div>
+        </form>
+      </Card>
+    </div>
+  );
+}

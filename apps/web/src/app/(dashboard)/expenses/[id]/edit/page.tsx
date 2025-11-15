@@ -1,0 +1,402 @@
+"use client";
+
+import { useEffect } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { useExpense, useUpdateExpense } from "@/features/expenses";
+import { useCategories } from "@/features/categories";
+import { useVendors } from "@/features/vendors";
+import { useDepartments } from "@/features/departments";
+import { ExpenseStatusEnum } from "@/features/expenses/types";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Skeleton } from "@/components/ui/skeleton";
+import { ArrowLeft, Save } from "lucide-react";
+import Link from "next/link";
+
+const updateExpenseSchema = z.object({
+  vendorId: z.string().min(1, "Vendor is required").optional(),
+  categoryId: z.string().min(1, "Category is required").optional(),
+  departmentId: z.string().optional(),
+  description: z.string().min(1, "Description is required").max(1000, "Description too long").optional(),
+  netAmount: z.number().positive("Net amount must be positive").optional(),
+  taxAmount: z.number().min(0, "Tax amount cannot be negative").optional(),
+  totalAmount: z.number().positive("Total amount must be positive").optional(),
+  expenseDate: z.string().min(1, "Date is required").optional(),
+  receiptUrl: z.string().url("Must be a valid URL").optional().or(z.literal("")),
+}).refine((data) => {
+  if (data.netAmount !== undefined && data.taxAmount !== undefined && data.totalAmount !== undefined) {
+    const total = data.netAmount + data.taxAmount;
+    return Math.abs(total - data.totalAmount) < 0.01;
+  }
+  return true;
+}, {
+  message: "Total amount must equal net amount + tax amount",
+  path: ["totalAmount"],
+});
+
+type UpdateExpenseFormData = z.infer<typeof updateExpenseSchema>;
+
+export default function EditExpensePage() {
+  const params = useParams();
+  const router = useRouter();
+  const expenseId = params.id as string;
+
+  const { data: expense, isLoading: expenseLoading } = useExpense(expenseId);
+  const { mutate: updateExpense, isPending } = useUpdateExpense();
+  const { data: categories, isLoading: categoriesLoading } = useCategories();
+  const { data: vendors, isLoading: vendorsLoading } = useVendors();
+  const { data: departments, isLoading: departmentsLoading } = useDepartments();
+
+  const form = useForm<UpdateExpenseFormData>({
+    resolver: zodResolver(updateExpenseSchema),
+    defaultValues: {
+      vendorId: "",
+      categoryId: "",
+      departmentId: "",
+      description: "",
+      netAmount: 0,
+      taxAmount: 0,
+      totalAmount: 0,
+      expenseDate: "",
+      receiptUrl: "",
+    },
+  });
+
+  const netAmount = form.watch("netAmount");
+  const taxAmount = form.watch("taxAmount");
+
+  useEffect(() => {
+    if (expense) {
+      form.reset({
+        vendorId: expense.vendorId,
+        categoryId: expense.categoryId,
+        departmentId: expense.departmentId || "",
+        description: expense.description,
+        netAmount: expense.netAmount,
+        taxAmount: expense.taxAmount,
+        totalAmount: expense.totalAmount,
+        expenseDate: expense.dateOfExpense.split("T")[0],
+        receiptUrl: expense.receiptUrl || "",
+      });
+    }
+  }, [expense, form]);
+
+  useEffect(() => {
+    if (netAmount !== undefined && taxAmount !== undefined) {
+      const total = (netAmount || 0) + (taxAmount || 0);
+      form.setValue("totalAmount", parseFloat(total.toFixed(2)));
+    }
+  }, [netAmount, taxAmount, form]);
+
+  const onSubmit = (data: UpdateExpenseFormData) => {
+    const payload = {
+      ...data,
+      departmentId: data.departmentId || undefined,
+      receiptUrl: data.receiptUrl || undefined,
+    };
+    updateExpense({ expenseId, data: payload });
+  };
+
+  if (expenseLoading) {
+    return (
+      <div className="min-h-screen bg-zinc-950 p-6">
+        <div className="max-w-4xl mx-auto space-y-6">
+          <Skeleton className="h-12 w-64 bg-zinc-800" />
+          <Skeleton className="h-96 bg-zinc-800" />
+          <Skeleton className="h-64 bg-zinc-800" />
+        </div>
+      </div>
+    );
+  }
+
+  if (!expense) {
+    return (
+      <div className="min-h-screen bg-zinc-950 p-6">
+        <div className="max-w-4xl mx-auto text-center py-12">
+          <h2 className="text-2xl font-bold text-white mb-2">Expense Not Found</h2>
+          <p className="text-zinc-400 mb-6">The expense you're looking for doesn't exist.</p>
+          <Link href="/expenses">
+            <Button variant="outline" className="bg-zinc-800 border-zinc-700 text-white hover:bg-zinc-700">
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Expenses
+            </Button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  if (expense.status !== ExpenseStatusEnum.DRAFT) {
+    return (
+      <div className="min-h-screen bg-zinc-950 p-6">
+        <div className="max-w-4xl mx-auto text-center py-12">
+          <h2 className="text-2xl font-bold text-white mb-2">Cannot Edit Expense</h2>
+          <p className="text-zinc-400 mb-6">
+            Only draft expenses can be edited. This expense is {expense.status.toLowerCase()}.
+          </p>
+          <Link href={`/expenses/${expenseId}`}>
+            <Button variant="outline" className="bg-zinc-800 border-zinc-700 text-white hover:bg-zinc-700">
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Expense Details
+            </Button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-zinc-950 p-6">
+      <div className="max-w-4xl mx-auto">
+        <div className="mb-6">
+          <Link href={`/expenses/${expenseId}`}>
+            <Button variant="ghost" className="text-zinc-400 hover:text-white mb-4">
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Expense Details
+            </Button>
+          </Link>
+          <h1 className="text-3xl font-bold text-white">Edit Expense</h1>
+          <p className="text-zinc-400 mt-1">Update expense information</p>
+        </div>
+
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <Card className="bg-zinc-900 border-zinc-800">
+              <CardHeader>
+                <CardTitle className="text-white">Expense Details</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="vendorId"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-zinc-300">Vendor *</FormLabel>
+                        <FormControl>
+                          <select
+                            {...field}
+                            className="w-full px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-md text-white"
+                            disabled={vendorsLoading}
+                          >
+                            <option value="">Select vendor</option>
+                            {vendors?.map((vendor) => (
+                              <option key={vendor.vendorId} value={vendor.vendorId}>
+                                {vendor.name}
+                              </option>
+                            ))}
+                          </select>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="categoryId"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-zinc-300">Category *</FormLabel>
+                        <FormControl>
+                          <select
+                            {...field}
+                            className="w-full px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-md text-white"
+                            disabled={categoriesLoading}
+                          >
+                            <option value="">Select category</option>
+                            {categories?.map((category) => (
+                              <option key={category.categoryId} value={category.categoryId}>
+                                {category.name}
+                              </option>
+                            ))}
+                          </select>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="departmentId"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-zinc-300">Department</FormLabel>
+                        <FormControl>
+                          <select
+                            {...field}
+                            className="w-full px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-md text-white"
+                            disabled={departmentsLoading}
+                          >
+                            <option value="">Select department (optional)</option>
+                            {departments?.map((dept) => (
+                              <option key={dept.departmentId} value={dept.departmentId}>
+                                {dept.name}
+                              </option>
+                            ))}
+                          </select>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="expenseDate"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-zinc-300">Expense Date *</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="date"
+                            {...field}
+                            className="bg-zinc-800 border-zinc-700 text-white"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <FormField
+                  control={form.control}
+                  name="description"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-zinc-300">Description *</FormLabel>
+                      <FormControl>
+                        <textarea
+                          {...field}
+                          rows={3}
+                          placeholder="Enter expense description..."
+                          className="w-full px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-md text-white resize-none"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="netAmount"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-zinc-300">Net Amount *</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            step="0.01"
+                            {...field}
+                            onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                            className="bg-zinc-800 border-zinc-700 text-white"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="taxAmount"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-zinc-300">Tax Amount *</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            step="0.01"
+                            {...field}
+                            onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                            className="bg-zinc-800 border-zinc-700 text-white"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="totalAmount"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-zinc-300">Total Amount *</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            step="0.01"
+                            {...field}
+                            disabled
+                            className="bg-zinc-800 border-zinc-700 text-white"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <FormField
+                  control={form.control}
+                  name="receiptUrl"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-zinc-300">Receipt URL</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="url"
+                          placeholder="https://example.com/receipt.pdf"
+                          {...field}
+                          className="bg-zinc-800 border-zinc-700 text-white"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </CardContent>
+            </Card>
+
+            <div className="flex items-center justify-end gap-4">
+              <Link href={`/expenses/${expenseId}`}>
+                <Button type="button" variant="outline" className="bg-zinc-800 border-zinc-700 text-white hover:bg-zinc-700">
+                  Cancel
+                </Button>
+              </Link>
+              <Button
+                type="submit"
+                disabled={isPending}
+                className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+              >
+                {isPending ? (
+                  <>
+                    <Save className="h-4 w-4 mr-2 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <Save className="h-4 w-4 mr-2" />
+                    Save Changes
+                  </>
+                )}
+              </Button>
+            </div>
+          </form>
+        </Form>
+      </div>
+    </div>
+  );
+}
