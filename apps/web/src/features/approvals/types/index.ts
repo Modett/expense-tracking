@@ -17,10 +17,12 @@ export interface Approval {
   approvalId: string;
   expenseId: string;
   approverId: string;
+  approverRole?: string;
   approvalOrder: number;
   status: ApprovalStatusEnum;
   comments?: string | null;
   approvedAt?: string | null;
+  rejectedAt?: string | null;
   createdAt: string;
   updatedAt: string;
   expense?: {
