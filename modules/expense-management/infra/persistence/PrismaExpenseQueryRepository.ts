@@ -24,14 +24,21 @@ import {
 } from "../../domain/value-objects/index.js";
 import type { Expense as PrismaExpense } from "@prisma/client";
 
+type PrismaExpenseWithTags = PrismaExpense & {
+  expenseTags?: Array<{ tagId: string }>;
+  budgetOverride: string;
+  approvalDeadline: Date | null;
+  linkedPoId: string | null;
+};
+
 export class PrismaExpenseQueryRepository implements IExpenseQueryRepository {
   constructor(private readonly prisma: PrismaClient) {}
 
-  private toDomain(
-    prismaExpense: PrismaExpense & { expenseTags?: Array<{ tagId: string }> }
-  ): Expense {
+  private toDomain(prismaExpense: PrismaExpenseWithTags): Expense {
     const tagIds = prismaExpense.expenseTags
-      ? prismaExpense.expenseTags.map((et) => TagId.fromString(et.tagId))
+      ? prismaExpense.expenseTags.map((et: { tagId: string }) =>
+          TagId.fromString(et.tagId)
+        )
       : [];
 
     return Expense.reconstitute({
@@ -49,9 +56,11 @@ export class PrismaExpenseQueryRepository implements IExpenseQueryRepository {
         Number(prismaExpense.totalAmount)
       ),
       status: ExpenseStatus.fromString(prismaExpense.status),
-      priority: ExpensePriority.fromString(prismaExpense.priority),
+      priority: ExpensePriority.fromString(
+        prismaExpense.priority || "standard"
+      ),
       budgetOverride: BudgetExceptionType.fromString(
-        prismaExpense.budgetOverride
+        prismaExpense.budgetOverride || "none"
       ),
       justification: prismaExpense.justification || undefined,
       approvalDeadline: prismaExpense.approvalDeadline || undefined,
@@ -99,7 +108,9 @@ export class PrismaExpenseQueryRepository implements IExpenseQueryRepository {
       orderBy: { createdAt: "desc" },
     });
 
-    return expenses.map((expense): Expense => this.toDomain(expense));
+    return expenses.map(
+      (expense: PrismaExpenseWithTags): Expense => this.toDomain(expense)
+    );
   }
 
   async findByStatus(status: ExpenseStatus): Promise<Expense[]> {
@@ -113,7 +124,9 @@ export class PrismaExpenseQueryRepository implements IExpenseQueryRepository {
       orderBy: { createdAt: "desc" },
     });
 
-    return expenses.map((expense): Expense => this.toDomain(expense));
+    return expenses.map(
+      (expense: PrismaExpenseWithTags): Expense => this.toDomain(expense)
+    );
   }
 
   async findByCategoryId(categoryId: CategoryId): Promise<Expense[]> {
@@ -127,7 +140,9 @@ export class PrismaExpenseQueryRepository implements IExpenseQueryRepository {
       orderBy: { createdAt: "desc" },
     });
 
-    return expenses.map((expense): Expense => this.toDomain(expense));
+    return expenses.map(
+      (expense: PrismaExpenseWithTags): Expense => this.toDomain(expense)
+    );
   }
 
   async findByDepartmentId(departmentId: DepartmentId): Promise<Expense[]> {
@@ -141,7 +156,9 @@ export class PrismaExpenseQueryRepository implements IExpenseQueryRepository {
       orderBy: { createdAt: "desc" },
     });
 
-    return expenses.map((expense): Expense => this.toDomain(expense));
+    return expenses.map(
+      (expense: PrismaExpenseWithTags): Expense => this.toDomain(expense)
+    );
   }
 
   async findByVendorId(vendorId: VendorId): Promise<Expense[]> {
@@ -155,7 +172,9 @@ export class PrismaExpenseQueryRepository implements IExpenseQueryRepository {
       orderBy: { createdAt: "desc" },
     });
 
-    return expenses.map((expense): Expense => this.toDomain(expense));
+    return expenses.map(
+      (expense: PrismaExpenseWithTags): Expense => this.toDomain(expense)
+    );
   }
 
   async findAll(filters?: ExpenseFilters): Promise<Expense[]> {
@@ -199,7 +218,9 @@ export class PrismaExpenseQueryRepository implements IExpenseQueryRepository {
       orderBy: { createdAt: "desc" },
     });
 
-    return expenses.map((expense): Expense => this.toDomain(expense));
+    return expenses.map(
+      (expense: PrismaExpenseWithTags): Expense => this.toDomain(expense)
+    );
   }
 
   async count(filters?: ExpenseFilters): Promise<number> {

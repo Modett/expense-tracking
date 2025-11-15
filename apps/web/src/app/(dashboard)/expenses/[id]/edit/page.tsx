@@ -18,26 +18,28 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowLeft, Save } from "lucide-react";
 import Link from "next/link";
 
-const updateExpenseSchema = z.object({
-  vendorId: z.string().min(1, "Vendor is required").optional(),
-  categoryId: z.string().min(1, "Category is required").optional(),
-  departmentId: z.string().optional(),
-  description: z.string().min(1, "Description is required").max(1000, "Description too long").optional(),
-  netAmount: z.number().positive("Net amount must be positive").optional(),
-  taxAmount: z.number().min(0, "Tax amount cannot be negative").optional(),
-  totalAmount: z.number().positive("Total amount must be positive").optional(),
-  expenseDate: z.string().min(1, "Date is required").optional(),
-  receiptUrl: z.string().url("Must be a valid URL").optional().or(z.literal("")),
-}).refine((data) => {
-  if (data.netAmount !== undefined && data.taxAmount !== undefined && data.totalAmount !== undefined) {
-    const total = data.netAmount + data.taxAmount;
-    return Math.abs(total - data.totalAmount) < 0.01;
-  }
-  return true;
-}, {
-  message: "Total amount must equal net amount + tax amount",
-  path: ["totalAmount"],
-});
+const updateExpenseSchema = z
+  .object({
+    vendorId: z.string().uuid().optional(),
+    categoryId: z.string().uuid().optional(),
+    departmentId: z.string().uuid().optional(),
+    description: z.string().min(1, "Description is required").max(1000, "Description too long").optional(),
+    netAmount: z.number().positive("Net amount must be positive").optional(),
+    taxAmount: z.number().min(0, "Tax amount cannot be negative").optional(),
+    totalAmount: z.number().positive("Total amount must be positive").optional(),
+    expenseDate: z.string().min(1, "Date is required").optional(),
+    receiptUrl: z.string().url("Must be a valid URL").optional(),
+  })
+  .refine((data) => {
+    if (data.netAmount !== undefined && data.taxAmount !== undefined && data.totalAmount !== undefined) {
+      const total = data.netAmount + data.taxAmount;
+      return Math.abs(total - data.totalAmount) < 0.01;
+    }
+    return true;
+  }, {
+    message: "Total amount must equal net amount + tax amount",
+    path: ["totalAmount"],
+  });
 
 type UpdateExpenseFormData = z.infer<typeof updateExpenseSchema>;
 
@@ -81,7 +83,7 @@ export default function EditExpensePage() {
         taxAmount: expense.taxAmount,
         totalAmount: expense.totalAmount,
         expenseDate: expense.dateOfExpense.split("T")[0],
-        receiptUrl: expense.receiptUrl || "",
+        receiptUrl: expense.receiptUrl || undefined,
       });
     }
   }, [expense, form]);
@@ -94,11 +96,13 @@ export default function EditExpensePage() {
   }, [netAmount, taxAmount, form]);
 
   const onSubmit = (data: UpdateExpenseFormData) => {
-    const payload = {
+    const payload: UpdateExpenseFormData = {
       ...data,
       departmentId: data.departmentId || undefined,
       receiptUrl: data.receiptUrl || undefined,
+      expenseDate: data.expenseDate ? new Date(data.expenseDate).toISOString() : undefined,
     };
+
     updateExpense({ expenseId, data: payload });
   };
 

@@ -85,6 +85,9 @@ export default function NewExpensePage() {
   const onSubmit = (data: CreateExpenseFormData) => {
     const payload = {
       ...data,
+      expenseDate: new Date(data.expenseDate).toISOString(),
+      priority: data.priority?.toLowerCase(),
+      budgetOverride: data.budgetOverride?.toLowerCase(),
       departmentId: data.departmentId || undefined,
       receiptUrl: data.receiptUrl || undefined,
       justification: data.justification || undefined,
