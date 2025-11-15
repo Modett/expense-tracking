@@ -105,10 +105,13 @@ export function useChangePassword() {
 }
 
 export function useMe() {
+  const token = getToken();
+
   return useQuery({
     queryKey: queryKeys.auth.me,
     queryFn: authApi.getMe,
     retry: false,
-    enabled: false, // Disable for now - backend endpoint doesn't exist
+    enabled: !!token, // Only fetch if we have a token
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 }

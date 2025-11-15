@@ -26,6 +26,8 @@ export interface Approval {
   expense?: {
     expenseId: string;
     description: string;
+    amountNet: number;
+    taxAmount: number;
     totalAmount: number;
     status: string;
     priority: string;

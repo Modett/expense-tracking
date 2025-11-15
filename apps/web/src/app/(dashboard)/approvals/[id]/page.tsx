@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useApproval, useApprovalsByExpense, useApproveApproval, useRejectApproval, ApprovalStatusEnum } from "@/features/approvals";
+import { ApprovalChain } from "@/features/approvals/components";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -182,7 +183,7 @@ export default function ApprovalDetailPage() {
                 <div>
                   <label className="text-sm text-zinc-400">Net Amount</label>
                   <p className="text-white mt-1 font-mono">
-                    ${expense?.netAmount ? Number(expense.netAmount).toFixed(2) : "0.00"}
+                    ${expense?.amountNet ? Number(expense.amountNet).toFixed(2) : "0.00"}
                   </p>
                 </div>
                 <div>
@@ -241,46 +242,7 @@ export default function ApprovalDetailPage() {
         </div>
 
         <div className="space-y-6">
-          <Card className="bg-zinc-900 border-zinc-800 p-6">
-            <h2 className="text-xl font-semibold text-white mb-4">Approval Chain</h2>
-            <div className="space-y-4">
-              {allApprovals
-                ?.sort((a, b) => a.approvalOrder - b.approvalOrder)
-                .map((appr, index) => (
-                  <div
-                    key={appr.approvalId}
-                    className={`p-4 rounded-lg border ${
-                      appr.approvalId === approvalId
-                        ? "bg-purple-500/10 border-purple-500/20"
-                        : "bg-zinc-800 border-zinc-700"
-                    }`}
-                  >
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-medium text-white">
-                          Level {appr.approvalOrder}
-                        </span>
-                        {appr.approvalId === approvalId && (
-                          <Badge variant="outline" className="bg-purple-500/10 text-purple-400 border-purple-500/20 text-xs">
-                            You
-                          </Badge>
-                        )}
-                      </div>
-                      {getStatusBadge(appr.status)}
-                    </div>
-                    <div className="text-sm">
-                      <p className="text-white">{appr.approver?.name || "Unknown"}</p>
-                      <p className="text-zinc-500">{appr.approver?.email}</p>
-                    </div>
-                    {appr.comments && (
-                      <div className="mt-2 p-2 bg-zinc-900 rounded text-sm text-zinc-300">
-                        {appr.comments}
-                      </div>
-                    )}
-                  </div>
-                ))}
-            </div>
-          </Card>
+          <ApprovalChain approvals={allApprovals || []} />
 
           <Card className="bg-zinc-900 border-zinc-800 p-6">
             <h2 className="text-xl font-semibold text-white mb-4">Quick Links</h2>

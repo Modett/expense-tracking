@@ -49,9 +49,9 @@ export function useUpdateTag() {
   return useMutation({
     mutationFn: ({ tagId, data }: { tagId: string; data: UpdateTagRequest }) =>
       tagsApi.update(tagId, data),
-    onSuccess: (data) => {
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.tags.all });
-      queryClient.invalidateQueries({ queryKey: ["tags", "detail", data.tagId] });
+      queryClient.invalidateQueries({ queryKey: ["tags", "detail", variables.tagId] });
       toast({
         title: "Tag updated",
         description: "Tag has been updated successfully",
