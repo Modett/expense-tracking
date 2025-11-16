@@ -8,10 +8,10 @@ import { Button } from "@/components/ui/button";
 import {
   Home,
   Receipt,
-  Plane,
+  Layers3,
+  Building2,
   CheckCircle,
   Settings,
-  Phone,
   Menu,
   X,
   LogOut,
@@ -22,10 +22,10 @@ import { useLogout } from "@/features/auth";
 const navigation = [
   { name: "Home", href: "/", icon: Home },
   { name: "Expenses", href: "/expenses", icon: Receipt },
-  { name: "Trips", href: "/trips", icon: Plane },
+  { name: "Categories", href: "/categories", icon: Layers3 },
+  { name: "Departments", href: "/departments", icon: Building2 },
   { name: "Approvals", href: "/approvals", icon: CheckCircle },
   { name: "Settings", href: "/settings", icon: Settings },
-  { name: "Support", href: "/support", icon: Phone },
 ];
 
 export default function DashboardLayout({

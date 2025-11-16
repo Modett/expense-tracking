@@ -51,7 +51,7 @@ export class PrismaApprovalQueryRepository implements IApprovalQueryRepository {
       orderBy: { createdAt: "desc" },
     });
 
-    return approvals.map((approval) => this.toDomain(approval));
+    return approvals.map((approval: PrismaApproval) => this.toDomain(approval));
   }
 
   async findByApproverId(approverId: UserId): Promise<Approval[]> {
@@ -60,7 +60,7 @@ export class PrismaApprovalQueryRepository implements IApprovalQueryRepository {
       orderBy: { createdAt: "desc" },
     });
 
-    return approvals.map((approval) => this.toDomain(approval));
+    return approvals.map((approval: PrismaApproval) => this.toDomain(approval));
   }
 
   async findByStatus(status: ApprovalStatus): Promise<Approval[]> {
@@ -69,16 +69,33 @@ export class PrismaApprovalQueryRepository implements IApprovalQueryRepository {
       orderBy: { createdAt: "desc" },
     });
 
-    return approvals.map((approval) => this.toDomain(approval));
+    return approvals.map((approval: PrismaApproval) => this.toDomain(approval));
   }
 
   async findPendingApprovals(): Promise<Approval[]> {
     const approvals = await this.prisma.approval.findMany({
       where: { status: "pending" },
+      include: {
+        expense: {
+          include: {
+            user: true,
+            vendor: true,
+            category: true,
+            department: true,
+          },
+        },
+        approver: true,
+      },
       orderBy: { createdAt: "asc" },
     });
 
-    return approvals.map((approval) => this.toDomain(approval));
+    return approvals.map((approval: any) => {
+      const domain = this.toDomain(approval as any);
+      // Attach relations for handler to access
+      (domain as any).expense = approval.expense;
+      (domain as any).approver = approval.approver;
+      return domain;
+    });
   }
 
   async findPendingApprovalsByApproverId(
@@ -103,7 +120,13 @@ export class PrismaApprovalQueryRepository implements IApprovalQueryRepository {
       orderBy: { createdAt: "asc" },
     });
 
-    return approvals.map((approval) => this.toDomain(approval));
+    return approvals.map((approval: any) => {
+      const domain = this.toDomain(approval as any);
+      // Attach relations for handler to access
+      (domain as any).expense = approval.expense;
+      (domain as any).approver = approval.approver;
+      return domain;
+    });
   }
 
   async findAll(filters?: ApprovalFilters): Promise<Approval[]> {
@@ -136,7 +159,7 @@ export class PrismaApprovalQueryRepository implements IApprovalQueryRepository {
       orderBy: { createdAt: "desc" },
     });
 
-    return approvals.map((approval) => this.toDomain(approval));
+    return approvals.map((approval: PrismaApproval) => this.toDomain(approval));
   }
 
   async count(filters?: ApprovalFilters): Promise<number> {
@@ -229,7 +252,7 @@ export class PrismaApprovalQueryRepository implements IApprovalQueryRepository {
       },
     });
 
-    const expenseIds = approvedByUser.map((a) => a.expenseId);
+    const expenseIds = approvedByUser.map((a: any) => a.expenseId);
 
     if (expenseIds.length === 0) {
       return [];

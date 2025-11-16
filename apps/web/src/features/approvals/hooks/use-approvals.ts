@@ -52,9 +52,13 @@ export function useApprovalsByApprover(approverId: string) {
   });
 }
 
-export function useRejectedApprovalsVisible(params?: GetRejectedApprovalsParams) {
+export function useRejectedApprovalsVisible(
+  params?: GetRejectedApprovalsParams
+) {
   return useQuery({
-    queryKey: queryKeys.approvals.rejectedVisible(params as Record<string, unknown>),
+    queryKey: queryKeys.approvals.rejectedVisible(
+      params as Record<string, unknown>
+    ),
     queryFn: () => approvalsApi.getRejectedVisible(params),
     staleTime: 60000,
   });
@@ -72,8 +76,13 @@ export function useApproveApproval() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ approvalId, data }: { approvalId: string; data?: ApproveApprovalRequest }) =>
-      approvalsApi.approve(approvalId, data),
+    mutationFn: ({
+      approvalId,
+      data,
+    }: {
+      approvalId: string;
+      data?: ApproveApprovalRequest;
+    }) => approvalsApi.approve(approvalId, data),
     onSuccess: (response) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.approvals.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.expenses.all });
@@ -102,8 +111,13 @@ export function useRejectApproval() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ approvalId, data }: { approvalId: string; data?: RejectApprovalRequest }) =>
-      approvalsApi.reject(approvalId, data),
+    mutationFn: ({
+      approvalId,
+      data,
+    }: {
+      approvalId: string;
+      data?: RejectApprovalRequest;
+    }) => approvalsApi.reject(approvalId, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.approvals.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.expenses.all });
@@ -129,8 +143,13 @@ export function useUpdateApproval() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ approvalId, data }: { approvalId: string; data: UpdateApprovalRequest }) =>
-      approvalsApi.update(approvalId, data),
+    mutationFn: ({
+      approvalId,
+      data,
+    }: {
+      approvalId: string;
+      data: UpdateApprovalRequest;
+    }) => approvalsApi.update(approvalId, data),
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.approvals.all });
       queryClient.invalidateQueries({

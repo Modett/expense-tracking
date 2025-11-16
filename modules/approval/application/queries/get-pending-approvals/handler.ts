@@ -17,19 +17,16 @@ export interface ApprovalDTO {
 }
 
 export class GetPendingApprovalsQueryHandler {
-  constructor(
-    private readonly approvalQueryRepo: IApprovalQueryRepository
-  ) {}
+  constructor(private readonly approvalQueryRepo: IApprovalQueryRepository) {}
 
   async handle(query: GetPendingApprovalsQuery): Promise<ApprovalDTO[]> {
     let approvals;
 
     if (query.approverId) {
       const approverId = UserId.fromString(query.approverId);
-      approvals =
-        await this.approvalQueryRepo.findPendingApprovalsByApproverId(
-          approverId
-        );
+      approvals = await this.approvalQueryRepo.findPendingApprovalsByApproverId(
+        approverId
+      );
     } else {
       approvals = await this.approvalQueryRepo.findPendingApprovals();
     }
