@@ -36,6 +36,7 @@ const createBudgetSchema = z.object({
 });
 
 type CreateBudgetFormData = z.infer<typeof createBudgetSchema>;
+const CATEGORY_ALL_VALUE = "__ALL__";
 
 export default function CreateBudgetPage() {
   const router = useRouter();
@@ -64,6 +65,8 @@ export default function CreateBudgetPage() {
     const payload = {
       ...data,
       categoryId: data.categoryId || null,
+      startDate: new Date(data.startDate).toISOString(),
+      endDate: new Date(data.endDate).toISOString(),
     };
     createBudgetMutation.mutate(payload);
   };
@@ -115,14 +118,20 @@ export default function CreateBudgetPage() {
                 Category (Optional)
               </Label>
               <Select
-                value={watch("categoryId") || ""}
-                onValueChange={(value) => setValue("categoryId", value || null)}
+                value={watch("categoryId") ?? CATEGORY_ALL_VALUE}
+                onValueChange={(value) => {
+                  if (value === CATEGORY_ALL_VALUE) {
+                    setValue("categoryId", null);
+                    return;
+                  }
+                  setValue("categoryId", value);
+                }}
               >
                 <SelectTrigger className="mt-2 bg-zinc-800 border-zinc-700 text-white">
                   <SelectValue placeholder="All categories" />
                 </SelectTrigger>
                 <SelectContent className="bg-zinc-900 border-zinc-800">
-                  <SelectItem value="">All Categories</SelectItem>
+                  <SelectItem value={CATEGORY_ALL_VALUE}>All Categories</SelectItem>
                   {categories?.map((cat) => (
                     <SelectItem key={cat.categoryId} value={cat.categoryId}>
                       {cat.name}

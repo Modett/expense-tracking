@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import {
   useBudgets,
@@ -8,6 +8,8 @@ import {
   useDeactivateBudget,
   useDeleteBudget,
 } from "@/features/budgets";
+import { useDepartments } from "@/features/departments";
+import { useCategories } from "@/features/categories";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -41,9 +43,33 @@ import {
 export default function BudgetsPage() {
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
   const { data: budgets, isLoading } = useBudgets();
+  const { data: departments } = useDepartments();
+  const { data: categories } = useCategories();
   const activateBudgetMutation = useActivateBudget();
   const deactivateBudgetMutation = useDeactivateBudget();
   const deleteBudgetMutation = useDeleteBudget();
+
+  const departmentLookup = useMemo(() => {
+    if (!departments) return {};
+    return departments.reduce<Record<string, (typeof departments)[number]>>(
+      (acc, dept) => {
+        acc[dept.departmentId] = dept;
+        return acc;
+      },
+      {}
+    );
+  }, [departments]);
+
+  const categoryLookup = useMemo(() => {
+    if (!categories) return {};
+    return categories.reduce<Record<string, (typeof categories)[number]>>(
+      (acc, category) => {
+        acc[category.categoryId] = category;
+        return acc;
+      },
+      {}
+    );
+  }, [categories]);
 
   const [deleteDialog, setDeleteDialog] = useState<{
     open: boolean;
@@ -195,21 +221,31 @@ export default function BudgetsPage() {
         </Card>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {filteredBudgets.map((budget) => (
-            <Card
-              key={budget.budgetId}
-              className="bg-zinc-900 border-zinc-800 p-6"
-            >
-              <div className="flex items-start justify-between mb-4">
-                <div>
-                  <h3 className="text-lg font-semibold text-white">
-                    {budget.department?.name || "Unknown Department"}
-                  </h3>
-                  {budget.category && (
-                    <p className="text-sm text-zinc-400 mt-1">
-                      {budget.category.name}
-                    </p>
-                  )}
+          {filteredBudgets.map((budget) => {
+            const departmentInfo =
+              budget.department ?? departmentLookup[budget.departmentId];
+            const departmentName = departmentInfo?.name ?? "Unknown Department";
+            const categoryInfo =
+              budget.category ??
+              (budget.categoryId
+                ? categoryLookup[budget.categoryId]
+                : undefined);
+
+            return (
+              <Card
+                key={budget.budgetId}
+                className="bg-zinc-900 border-zinc-800 p-6"
+              >
+                <div className="flex items-start justify-between mb-4">
+                  <div>
+                    <h3 className="text-lg font-semibold text-white">
+                      {departmentName}
+                    </h3>
+                    {categoryInfo && (
+                      <p className="text-sm text-zinc-400 mt-1">
+                        {categoryInfo.name}
+                      </p>
+                    )}
                   <p className="text-sm text-zinc-500 mt-1">
                     {budget.fiscalPeriod}
                   </p>
@@ -333,11 +369,12 @@ export default function BudgetsPage() {
                     >
                       <Trash2 className="w-4 h-4" />
                     </Button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </Card>
-          ))}
+              </Card>
+            );
+          })}
         </div>
       )}
 
