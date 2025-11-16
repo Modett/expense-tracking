@@ -89,6 +89,17 @@ export class PrismaApprovalQueryRepository implements IApprovalQueryRepository {
         approverId: approverId.getValue(),
         status: "pending",
       },
+      include: {
+        expense: {
+          include: {
+            user: true,
+            vendor: true,
+            category: true,
+            department: true,
+          },
+        },
+        approver: true,
+      },
       orderBy: { createdAt: "asc" },
     });
 

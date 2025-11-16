@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
 import { authApi } from "../api/index";
 import {
   LoginRequest,
@@ -10,6 +11,8 @@ import {
   setRefreshToken,
   clearToken,
   getToken,
+  setStoredUser,
+  getStoredUser,
 } from "@/lib/auth/token";
 import { queryKeys } from "@/lib/query/keys";
 import { useRouter } from "next/navigation";
@@ -24,6 +27,7 @@ export function useLogin() {
     onSuccess: (data) => {
       setToken(data.accessToken);
       setRefreshToken(data.refreshToken);
+      setStoredUser(data.user);
       queryClient.setQueryData(queryKeys.auth.me, data.user);
       toast({
         title: "Login successful!",
@@ -52,6 +56,7 @@ export function useRegister() {
     onSuccess: (data) => {
       setToken(data.accessToken);
       setRefreshToken(data.refreshToken);
+      setStoredUser(data.user);
       queryClient.setQueryData(queryKeys.auth.me, data.user);
       toast({
         title: "Registration successful!",
@@ -105,13 +110,22 @@ export function useChangePassword() {
 }
 
 export function useMe() {
-  const token = getToken();
+  const [hasToken, setHasToken] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      setHasToken(false);
+      return;
+    }
+    setHasToken(!!getToken());
+  }, []);
 
   return useQuery({
     queryKey: queryKeys.auth.me,
-    queryFn: authApi.getMe,
+    queryFn: async () => getStoredUser(),
     retry: false,
-    enabled: !!token, // Only fetch if we have a token
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    enabled: hasToken,
+    staleTime: Infinity,
+    gcTime: Infinity,
   });
 }

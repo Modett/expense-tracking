@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -37,12 +38,22 @@ import {
 } from "recharts";
 
 export default function DashboardPage() {
+  const [mounted, setMounted] = useState(false);
   const { user } = useAuth();
-  const { data: dashboardStats, isLoading: statsLoading } = useDashboardStats();
-  const { data: pendingTasks } = usePendingTasks();
-  const { data: recentExpenses, isLoading: expensesLoading } = useRecentExpenses(5);
-  const { data: teamSpending, isLoading: teamLoading } = useTeamSpending("monthly");
-  const { data: categoryExpenses, isLoading: categoryLoading } = useExpensesByCategory("monthly");
+  // TODO: Backend endpoints not yet implemented - temporarily disabled
+  const { data: dashboardStats, isLoading: statsLoading } = useDashboardStats({ enabled: false });
+  const { data: pendingTasks } = usePendingTasks({ enabled: false });
+  const { data: recentExpenses, isLoading: expensesLoading } = useRecentExpenses(5, { enabled: true });
+  const { data: teamSpending, isLoading: teamLoading } = useTeamSpending("monthly", { enabled: false });
+  const { data: categoryExpenses, isLoading: categoryLoading } = useExpensesByCategory("monthly", { enabled: false });
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-zinc-950 p-6">

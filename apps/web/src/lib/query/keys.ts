@@ -25,7 +25,8 @@ export const queryKeys = {
     list: (filters?: Record<string, unknown>) =>
       ["approvals", "list", filters] as const,
     detail: (id: string) => ["approvals", "detail", id] as const,
-    pending: ["approvals", "pending"] as const,
+    pending: (approverId?: string) =>
+      ["approvals", "pending", approverId ?? "all"] as const,
     dashboard: ["approvals", "dashboard"] as const,
     byExpense: (expenseId: string) => ["approvals", "expense", expenseId] as const,
     byApprover: (approverId: string) => ["approvals", "approver", approverId] as const,

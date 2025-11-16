@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 import Link from "next/link";
 import { usePendingApprovals, useApproveApproval, useRejectApproval } from "@/features/approvals";
+import { useMe } from "@/features/auth";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -36,7 +37,13 @@ import { Check, X, Eye, Clock, AlertCircle, Filter, CheckSquare, XSquare } from 
 import { ApprovalStatusEnum } from "@/features/approvals/types";
 
 export default function PendingApprovalsPage() {
-  const { data: approvals, isLoading } = usePendingApprovals();
+  const { data: currentUser, isLoading: isUserLoading } = useMe();
+  const approverId = currentUser?.userId;
+  const {
+    data: approvals,
+    isLoading: isApprovalsLoading,
+  } = usePendingApprovals(approverId);
+  const isLoading = isUserLoading || isApprovalsLoading;
   const approveApprovalMutation = useApproveApproval();
   const rejectApprovalMutation = useRejectApproval();
 

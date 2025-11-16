@@ -20,9 +20,11 @@ export function useApprovals(params?: GetAllApprovalsParams) {
 
 export function usePendingApprovals(approverId?: string) {
   return useQuery({
-    queryKey: queryKeys.approvals.pending,
+    queryKey: queryKeys.approvals.pending(approverId),
     queryFn: () => approvalsApi.getPending(approverId),
     staleTime: 10000,
+    // Enable the query even without approverId - backend should handle filtering
+    enabled: true,
   });
 }
 

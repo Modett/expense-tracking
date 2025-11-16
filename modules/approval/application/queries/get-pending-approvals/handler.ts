@@ -6,11 +6,14 @@ export interface ApprovalDTO {
   id: string;
   expenseId: string;
   approverId: string;
+  approvalOrder: number;
   status: string;
   comments: string | null;
   approvedAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
+  expense?: any;
+  approver?: any;
 }
 
 export class GetPendingApprovalsQueryHandler {
@@ -31,6 +34,13 @@ export class GetPendingApprovalsQueryHandler {
       approvals = await this.approvalQueryRepo.findPendingApprovals();
     }
 
-    return approvals.map((approval) => approval.toPlainObject());
+    return approvals.map((approval) => {
+      const plainObject = approval.toPlainObject();
+      return {
+        ...plainObject,
+        expense: (approval as any).expense,
+        approver: (approval as any).approver,
+      };
+    });
   }
 }
