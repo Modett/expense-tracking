@@ -1,20 +1,14 @@
-"use client";
+﻿"use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  useDashboardStats,
-  usePendingTasks,
-  useRecentExpenses,
-  useTeamSpending,
-  useExpensesByCategory,
-  type RecentExpenseItem,
-} from "@/features/dashboard";
+import { useRecentExpenses, useTeamSpending, useExpensesByCategory, type RecentExpenseItem } from "@/features/dashboard";
 import { useAuth } from "@/providers/auth-provider";
+import { useApprovalDashboard } from "@/features/approvals";
+import { useExpenseAggregations } from "@/features/expenses";
 import {
-  Plane,
   FileText,
   Clock,
   DollarSign,
@@ -22,30 +16,45 @@ import {
   Plus,
   Receipt,
   FileBarChart,
-  Briefcase,
-  AlertTriangle,
 } from "lucide-react";
 import Link from "next/link";
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  Legend,
-} from "recharts";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
+import { formatCurrency } from "@/lib/utils";
 
 export default function DashboardPage() {
   const [mounted, setMounted] = useState(false);
   const { user } = useAuth();
-  // TODO: Backend endpoints not yet implemented - temporarily disabled
-  const { data: dashboardStats, isLoading: statsLoading } = useDashboardStats({ enabled: false });
-  const { data: pendingTasks } = usePendingTasks({ enabled: false });
+
+  const currentRange = useMemo(() => {
+    const now = new Date();
+    const start = new Date(now.getFullYear(), now.getMonth(), 1);
+    return {
+      startISO: start.toISOString(),
+      endISO: now.toISOString(),
+    };
+  }, []);
+
+  const { data: expenseAggregations, isLoading: expenseAggregationsLoading } = useExpenseAggregations(
+    { dateFrom: currentRange.startISO, dateTo: currentRange.endISO, groupBy: ["department"] },
+    { enabled: true }
+  );
+  const totalExpensesAmount = useMemo(
+    () => expenseAggregations?.reduce((sum, agg) => sum + agg.totalAmount, 0) ?? 0,
+    [expenseAggregations]
+  );
+
+  const { data: approvalsDashboard, isLoading: approvalsDashboardLoading } = useApprovalDashboard();
+  const pendingApprovalTasks = useMemo(
+    () => (approvalsDashboard?.myPendingApprovals ?? []).slice(0, 4),
+    [approvalsDashboard]
+  );
+  const pendingApprovalsCount =
+    approvalsDashboard?.pendingCount ?? approvalsDashboard?.summary?.totalPending ?? 0;
+
   const { data: recentExpenses, isLoading: expensesLoading } = useRecentExpenses(5, { enabled: true });
   const { data: teamSpending, isLoading: teamLoading } = useTeamSpending("monthly", { enabled: false });
   const { data: categoryExpenses, isLoading: categoryLoading } = useExpensesByCategory("monthly", { enabled: false });
+  const statsLoading = expenseAggregationsLoading || approvalsDashboardLoading;
 
   useEffect(() => {
     setMounted(true);
@@ -89,11 +98,9 @@ export default function DashboardPage() {
                   <span className="text-sm text-zinc-400">Total Expenses</span>
                 </div>
                 <p className="text-2xl font-bold text-white">
-                  {dashboardStats?.totalExpenses || 0}
+                  {formatCurrency(totalExpensesAmount)}
                 </p>
-                <p className="text-xs text-zinc-500 mt-1">
-                  This month
-                </p>
+                <p className="text-xs text-zinc-500 mt-1">This month</p>
               </>
             )}
           </CardContent>
@@ -111,12 +118,8 @@ export default function DashboardPage() {
                   </div>
                   <span className="text-sm text-zinc-400">Pending Approvals</span>
                 </div>
-                <p className="text-2xl font-bold text-white">
-                  {dashboardStats?.pendingApprovals || 0}
-                </p>
-                <p className="text-xs text-zinc-500 mt-1">
-                  Awaiting your action
-                </p>
+                <p className="text-2xl font-bold text-white">{pendingApprovalsCount}</p>
+                <p className="text-xs text-zinc-500 mt-1">Awaiting your action</p>
               </>
             )}
           </CardContent>
@@ -134,12 +137,8 @@ export default function DashboardPage() {
                   </div>
                   <span className="text-sm text-zinc-400">Monthly Budget</span>
                 </div>
-                <p className="text-2xl font-bold text-white">
-                  ${(dashboardStats?.monthlyBudget || 0).toLocaleString()}
-                </p>
-                <p className="text-xs text-zinc-500 mt-1">
-                  Allocated budget
-                </p>
+                <p className="text-2xl font-bold text-white">{formatCurrency(0)}</p>
+                <p className="text-xs text-zinc-500 mt-1">Allocated budget</p>
               </>
             )}
           </CardContent>
@@ -157,12 +156,8 @@ export default function DashboardPage() {
                   </div>
                   <span className="text-sm text-zinc-400">Team Members</span>
                 </div>
-                <p className="text-2xl font-bold text-white">
-                  {dashboardStats?.teamMembers || 0}
-                </p>
-                <p className="text-xs text-zinc-500 mt-1">
-                  Active users
-                </p>
+                <p className="text-2xl font-bold text-white">0</p>
+                <p className="text-xs text-zinc-500 mt-1">Active users</p>
               </>
             )}
           </CardContent>
@@ -185,53 +180,30 @@ export default function DashboardPage() {
             </div>
           </CardHeader>
           <CardContent className="space-y-3">
-            {pendingTasks && pendingTasks.length > 0 ? (
-              pendingTasks.map((task) => {
-                const getIcon = () => {
-                  switch (task.type) {
-                    case 'approval':
-                      return <CheckCircle className="h-5 w-5 text-purple-400" />;
-                    case 'expense':
-                      return <FileText className="h-5 w-5 text-blue-400" />;
-                    case 'trip':
-                      return <Plane className="h-5 w-5 text-cyan-400" />;
-                    case 'upcoming':
-                      return <AlertTriangle className="h-5 w-5 text-yellow-400" />;
-                    default:
-                      return <FileText className="h-5 w-5 text-zinc-400" />;
-                  }
-                };
-
-                const getHref = () => {
-                  switch (task.type) {
-                    case 'approval':
-                      return '/approvals';
-                    case 'expense':
-                      return '/expenses';
-                    case 'trip':
-                      return '/trips';
-                    default:
-                      return '/';
-                  }
-                };
-
-                return (
-                  <Link key={task.id} href={getHref()}>
-                    <TaskItem
-                      icon={getIcon()}
-                      label={task.label}
-                      value={task.count}
-                    />
-                  </Link>
-                );
-              })
+            {pendingApprovalTasks.length > 0 ? (
+              pendingApprovalTasks.map((task) => (
+                <Link key={task.approvalId} href={/approvals/}>
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-zinc-800/50 hover:bg-zinc-800 transition-colors">
+                    <div>
+                      <p className="text-sm font-medium text-white">
+                        {task.expenseDescription || "Expense approval"}
+                      </p>
+                      <p className="text-xs text-zinc-500">
+                        {task.priority?.toUpperCase()} • {new Date(task.submittedAt).toLocaleDateString()}
+                      </p>
+                    </div>
+                    <div className="text-sm font-semibold text-white">
+                      {formatCurrency(task.expenseAmount || 0)}
+                    </div>
+                  </div>
+                </Link>
+              ))
             ) : (
-              <div className="text-center text-zinc-500 py-8">
-                No pending tasks
+              <div className="text-center text-sm text-zinc-500 py-6">
+                No pending approvals right now.
               </div>
             )}
-          </CardContent>
-        </Card>
+          </CardContent>        </Card>
 
         {/* Recent Expenses */}
         <Card className="bg-zinc-900 border-zinc-800">
@@ -341,15 +313,15 @@ export default function DashboardPage() {
               </Button>
             </Link>
 
-            <Link href="/trips/new">
+            <Link href="/approvals">
               <Button
                 variant="ghost"
                 className="w-full h-20 bg-zinc-800/50 hover:bg-zinc-800 border-zinc-700 flex flex-col items-center gap-2"
               >
                 <div className="h-10 w-10 rounded-full bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center">
-                  <Briefcase className="h-5 w-5 text-white" />
+                  <CheckCircle className="h-5 w-5 text-white" />
                 </div>
-                <span className="text-white text-sm">Create trip</span>
+                <span className="text-white text-sm">Review approvals</span>
               </Button>
             </Link>
           </div>
@@ -441,22 +413,7 @@ export default function DashboardPage() {
   );
 }
 
-function TaskItem({
-  icon,
-  label,
-  value,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: string | number;
-}) {
-  return (
-    <div className="flex items-center justify-between p-3 rounded-lg bg-zinc-800/50 hover:bg-zinc-800 transition-colors">
-      <div className="flex items-center gap-3">
-        {icon}
-        <span className="text-zinc-300 text-sm">{label}</span>
-      </div>
-      <span className="text-white font-semibold">{value}</span>
-    </div>
-  );
-}
+
+
+
+

@@ -120,3 +120,22 @@ export interface ExpenseFilters {
   maxAmount?: number;
   search?: string;
 }
+
+export interface ExpenseAggregation {
+  groupBy: string;
+  groupId: string;
+  groupName?: string;
+  totalAmount: number;
+  count: number;
+}
+
+export interface ExpenseAggregationParams {
+  status?: ExpenseStatusEnum;
+  userId?: string;
+  vendorId?: string;
+  categoryId?: string;
+  departmentId?: string;
+  dateFrom?: string;
+  dateTo?: string;
+  groupBy?: string[];
+}

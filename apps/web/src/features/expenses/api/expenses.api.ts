@@ -9,6 +9,8 @@ import {
   ExpensePriorityEnum,
   ExpenseStatusEnum,
   BudgetExceptionTypeEnum,
+  ExpenseAggregation,
+  ExpenseAggregationParams,
 } from "../types";
 
 type ExpenseApiResponse = {
@@ -168,5 +170,22 @@ export const expensesApi = {
       `/expenses/${expenseId}/cancel`
     );
     return mapExpense(response.data.data);
+  },
+
+  getAggregations: async (
+    params?: ExpenseAggregationParams
+  ): Promise<ExpenseAggregation[]> => {
+    const query = {
+      ...params,
+      status: params?.status?.toLowerCase(),
+      groupBy: params?.groupBy ? params.groupBy.join(",") : undefined,
+    };
+
+    const response = await apiClient.get<{
+      success: boolean;
+      data: ExpenseAggregation[];
+    }>("/expenses/aggregations", { params: query });
+
+    return response.data.data;
   },
 };
