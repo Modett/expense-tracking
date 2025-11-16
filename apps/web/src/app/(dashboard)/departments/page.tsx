@@ -101,77 +101,95 @@ export default function DepartmentsPage() {
         </Card>
       ) : (
         <Card className="bg-zinc-900 border-zinc-800">
-          <Table>
-            <TableHeader>
-              <TableRow className="border-zinc-800 hover:bg-zinc-800/50">
-                <TableHead className="text-zinc-300">Name</TableHead>
-                <TableHead className="text-zinc-300">Code</TableHead>
-                <TableHead className="text-zinc-300">Status</TableHead>
-                <TableHead className="text-zinc-300 text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {departments.map((department) => (
-                <TableRow key={department.departmentId} className="border-zinc-800 hover:bg-zinc-800/50">
-                  <TableCell className="font-medium text-white">{department.name}</TableCell>
-                  <TableCell className="text-zinc-400">
-                    {department.code ? (
-                      <Badge variant="outline" className="bg-zinc-800 text-zinc-300 border-zinc-700">
-                        {department.code}
-                      </Badge>
-                    ) : (
-                      "-"
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    {department.isActive ? (
-                      <Badge variant="outline" className="bg-green-500/10 text-green-500 border-green-500/20">
-                        Active
-                      </Badge>
-                    ) : (
-                      <Badge variant="outline" className="bg-gray-500/10 text-gray-400 border-gray-500/20">
-                        Inactive
-                      </Badge>
-                    )}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex items-center justify-end gap-2">
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className={
-                          department.isActive
-                            ? "text-gray-500 hover:text-gray-400 hover:bg-gray-500/10"
-                            : "text-green-500 hover:text-green-400 hover:bg-green-500/10"
-                        }
-                        onClick={() => handleToggleActive(department.departmentId, department.isActive)}
-                      >
-                        {department.isActive ? <XCircle className="w-4 h-4" /> : <CheckCircle2 className="w-4 h-4" />}
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="text-blue-500 hover:text-blue-400 hover:bg-blue-500/10"
-                        asChild
-                      >
-                        <Link href={`/departments/${department.departmentId}/edit`}>
-                          <Edit className="w-4 h-4" />
-                        </Link>
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="text-red-500 hover:text-red-400 hover:bg-red-500/10"
-                        onClick={() => setDeleteDialog({ open: true, departmentId: department.departmentId })}
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow className="border-zinc-800/60 bg-zinc-900/40">
+                  <TableHead className="text-xs font-semibold uppercase tracking-wide text-zinc-400">
+                    Name
+                  </TableHead>
+                  <TableHead className="text-xs font-semibold uppercase tracking-wide text-zinc-400">
+                    Code
+                  </TableHead>
+                  <TableHead className="text-xs font-semibold uppercase tracking-wide text-zinc-400">
+                    Status
+                  </TableHead>
+                  <TableHead className="text-xs font-semibold uppercase tracking-wide text-zinc-400 text-right">
+                    Actions
+                  </TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {departments.map((department, index) => (
+                  <TableRow
+                    key={department.departmentId}
+                    className="border-zinc-800/50 hover:bg-zinc-800/40 transition-colors"
+                  >
+                    <TableCell className="font-medium text-white">
+                      <div>
+                        <p>{department.name}</p>
+                        <p className="text-xs text-zinc-500">{department.departmentId.slice(0, 8)}</p>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-zinc-400">
+                      {department.code ? (
+                        <Badge variant="outline" className="bg-zinc-800 text-zinc-300 border-zinc-700">
+                          {department.code}
+                        </Badge>
+                      ) : (
+                        <span className="text-zinc-500">-</span>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {department.isActive ? (
+                        <Badge variant="outline" className="bg-green-500/10 text-green-500 border-green-500/20">
+                          Active
+                        </Badge>
+                      ) : (
+                        <Badge variant="outline" className="bg-gray-500/10 text-gray-400 border-gray-500/20">
+                          Inactive
+                        </Badge>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className={
+                            department.isActive
+                              ? "text-gray-500 hover:text-gray-400 hover:bg-gray-500/10"
+                              : "text-green-500 hover:text-green-400 hover:bg-green-500/10"
+                          }
+                          onClick={() => handleToggleActive(department.departmentId, department.isActive)}
+                        >
+                          {department.isActive ? <XCircle className="w-4 h-4" /> : <CheckCircle2 className="w-4 h-4" />}
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="text-blue-500 hover:text-blue-400 hover:bg-blue-500/10"
+                          asChild
+                        >
+                          <Link href={`/departments/${department.departmentId}/edit`}>
+                            <Edit className="w-4 h-4" />
+                          </Link>
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="text-red-500 hover:text-red-400 hover:bg-red-500/10"
+                          onClick={() => setDeleteDialog({ open: true, departmentId: department.departmentId })}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         </Card>
       )}
 

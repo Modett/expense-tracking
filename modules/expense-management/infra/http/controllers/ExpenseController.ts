@@ -154,6 +154,7 @@ export class ExpenseController {
       const query = new GetAllExpensesQueryClass(
         validatedQuery.userId,
         validatedQuery.status,
+        validatedQuery.priority,
         validatedQuery.categoryId,
         validatedQuery.departmentId,
         validatedQuery.vendorId,

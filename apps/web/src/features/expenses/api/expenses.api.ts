@@ -149,9 +149,16 @@ export const expensesApi = {
   },
 
   submit: async (expenseId: string, data: SubmitExpenseRequest): Promise<Expense> => {
+    const payload = {
+      ...data,
+      ...(data.budgetOverride && {
+        budgetOverride: data.budgetOverride.toLowerCase(),
+      }),
+    };
+
     const response = await apiClient.post<ExpenseSuccessResponse>(
       `/expenses/${expenseId}/submit`,
-      data
+      payload
     );
     return mapExpense(response.data.data);
   },

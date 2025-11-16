@@ -2,6 +2,7 @@ export class GetAllExpensesQuery {
   constructor(
     public readonly userId?: string,
     public readonly status?: string,
+    public readonly priority?: string,
     public readonly categoryId?: string,
     public readonly departmentId?: string,
     public readonly vendorId?: string,

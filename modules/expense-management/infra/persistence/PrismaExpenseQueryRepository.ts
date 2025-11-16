@@ -38,6 +38,26 @@ type PrismaExpenseWithTags = PrismaExpense & {
 export class PrismaExpenseQueryRepository implements IExpenseQueryRepository {
   constructor(private readonly prisma: PrismaClient) {}
 
+  private get relationIncludes() {
+    return {
+      expenseTags: {
+        select: { tagId: true },
+      },
+      vendor: {
+        select: { vendorId: true, name: true },
+      },
+      category: {
+        select: { categoryId: true, name: true },
+      },
+      department: {
+        select: { departmentId: true, name: true },
+      },
+      user: {
+        select: { userId: true, name: true, email: true },
+      },
+    };
+  }
+
   private toDomain(prismaExpense: PrismaExpenseWithTags): Expense {
     const tagIds = prismaExpense.expenseTags
       ? prismaExpense.expenseTags.map((et: { tagId: string }) =>
@@ -99,23 +119,7 @@ export class PrismaExpenseQueryRepository implements IExpenseQueryRepository {
   async findById(expenseId: ExpenseId): Promise<Expense | null> {
     const expense = await this.prisma.expense.findUnique({
       where: { expenseId: expenseId.getValue() },
-      include: {
-        expenseTags: {
-          select: { tagId: true },
-        },
-        vendor: {
-          select: { vendorId: true, name: true },
-        },
-        category: {
-          select: { categoryId: true, name: true },
-        },
-        department: {
-          select: { departmentId: true, name: true },
-        },
-        user: {
-          select: { userId: true, name: true, email: true },
-        },
-      },
+      include: this.relationIncludes,
     });
 
     if (!expense) {
@@ -128,11 +132,7 @@ export class PrismaExpenseQueryRepository implements IExpenseQueryRepository {
   async findByUserId(userId: UserId): Promise<Expense[]> {
     const expenses = await this.prisma.expense.findMany({
       where: { userId: userId.getValue() },
-      include: {
-        expenseTags: {
-          select: { tagId: true },
-        },
-      },
+      include: this.relationIncludes,
       orderBy: { createdAt: "desc" },
     });
 
@@ -144,11 +144,7 @@ export class PrismaExpenseQueryRepository implements IExpenseQueryRepository {
   async findByStatus(status: ExpenseStatus): Promise<Expense[]> {
     const expenses = await this.prisma.expense.findMany({
       where: { status: status.getValue() },
-      include: {
-        expenseTags: {
-          select: { tagId: true },
-        },
-      },
+      include: this.relationIncludes,
       orderBy: { createdAt: "desc" },
     });
 
@@ -160,11 +156,7 @@ export class PrismaExpenseQueryRepository implements IExpenseQueryRepository {
   async findByCategoryId(categoryId: CategoryId): Promise<Expense[]> {
     const expenses = await this.prisma.expense.findMany({
       where: { categoryId: categoryId.getValue() },
-      include: {
-        expenseTags: {
-          select: { tagId: true },
-        },
-      },
+      include: this.relationIncludes,
       orderBy: { createdAt: "desc" },
     });
 
@@ -176,11 +168,7 @@ export class PrismaExpenseQueryRepository implements IExpenseQueryRepository {
   async findByDepartmentId(departmentId: DepartmentId): Promise<Expense[]> {
     const expenses = await this.prisma.expense.findMany({
       where: { departmentId: departmentId.getValue() },
-      include: {
-        expenseTags: {
-          select: { tagId: true },
-        },
-      },
+      include: this.relationIncludes,
       orderBy: { createdAt: "desc" },
     });
 
@@ -192,11 +180,7 @@ export class PrismaExpenseQueryRepository implements IExpenseQueryRepository {
   async findByVendorId(vendorId: VendorId): Promise<Expense[]> {
     const expenses = await this.prisma.expense.findMany({
       where: { vendorId: vendorId.getValue() },
-      include: {
-        expenseTags: {
-          select: { tagId: true },
-        },
-      },
+      include: this.relationIncludes,
       orderBy: { createdAt: "desc" },
     });
 
@@ -217,6 +201,7 @@ export class PrismaExpenseQueryRepository implements IExpenseQueryRepository {
           departmentId: filters.departmentId.getValue(),
         }),
         ...(filters?.status && { status: filters.status.getValue() }),
+        ...(filters?.priority && { priority: filters.priority.getValue() }),
         ...(filters?.dateFrom || filters?.dateTo
           ? {
               dateOfExpense: {
@@ -238,11 +223,7 @@ export class PrismaExpenseQueryRepository implements IExpenseQueryRepository {
             }
           : {}),
       },
-      include: {
-        expenseTags: {
-          select: { tagId: true },
-        },
-      },
+      include: this.relationIncludes,
       orderBy: { createdAt: "desc" },
     });
 
@@ -263,6 +244,7 @@ export class PrismaExpenseQueryRepository implements IExpenseQueryRepository {
           departmentId: filters.departmentId.getValue(),
         }),
         ...(filters?.status && { status: filters.status.getValue() }),
+        ...(filters?.priority && { priority: filters.priority.getValue() }),
         ...(filters?.dateFrom || filters?.dateTo
           ? {
               dateOfExpense: {

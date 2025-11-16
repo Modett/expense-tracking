@@ -2,6 +2,7 @@ import { Expense } from "../entities/Expense.js";
 import {
   ExpenseId,
   ExpenseStatus,
+  ExpensePriority,
   UserId,
   VendorId,
   CategoryId,
@@ -14,6 +15,7 @@ export interface ExpenseFilters {
   categoryId?: CategoryId;
   departmentId?: DepartmentId;
   status?: ExpenseStatus;
+  priority?: ExpensePriority;
   dateFrom?: Date;
   dateTo?: Date;
   minAmount?: number;

@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useExpense, useDeleteExpense, useSubmitExpense, useCancelExpense } from "@/features/expenses";
 import { ExpenseStatusEnum, ExpensePriorityEnum, BudgetExceptionTypeEnum } from "@/features/expenses/types";
+import { toast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -61,11 +62,26 @@ export default function ExpenseDetailPage() {
   };
 
   const handleSubmit = () => {
+    if (!expense) return;
+
+    const requiresJustification =
+      expense.budgetOverride && expense.budgetOverride !== BudgetExceptionTypeEnum.NONE;
+    const justification = expense.justification?.trim();
+
+    if (requiresJustification && (!justification || justification.length < 50)) {
+      toast({
+        title: "Justification required",
+        description: "Provide at least 50 characters explaining the budget override.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     submitExpense({
       expenseId,
       data: {
-        budgetOverride: expense?.budgetOverride,
-        justification: expense?.justification || undefined,
+        budgetOverride: expense.budgetOverride,
+        justification: justification || undefined,
       },
     });
     setShowSubmitDialog(false);

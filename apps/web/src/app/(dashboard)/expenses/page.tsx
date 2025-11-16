@@ -33,6 +33,7 @@ export default function ExpensesPage() {
     page,
     limit: 20,
     status: statusFilter || undefined,
+    priority: priorityFilter || undefined,
   });
 
   const getStatusBadge = (status: ExpenseStatusEnum) => {

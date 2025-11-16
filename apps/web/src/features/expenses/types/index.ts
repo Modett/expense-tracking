@@ -93,6 +93,7 @@ export interface GetAllExpensesParams {
   categoryId?: string;
   departmentId?: string;
   status?: ExpenseStatusEnum;
+  priority?: ExpensePriorityEnum;
   page?: number;
   limit?: number;
 }
