@@ -17,6 +17,11 @@ const normalizeRole = (role: string | undefined): ApproverRoleEnum => {
 const mapRule = (rule: ApprovalRule): ApprovalRule => ({
   ...rule,
   approverRole: normalizeRole(rule.approverRole as unknown as string),
+  isActive: Boolean(
+    typeof (rule as any).isActive === "string"
+      ? (rule as any).isActive === "true" || (rule as any).isActive === "1"
+      : rule.isActive
+  ),
 });
 
 const extractRules = (payload: any): ApprovalRule[] => {

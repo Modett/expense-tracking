@@ -47,6 +47,7 @@ import {
 export default function ApprovalRulesPage() {
   const [roleFilter, setRoleFilter] = useState<ApproverRoleEnum | "ALL">("ALL");
   const [activeFilter, setActiveFilter] = useState<string | "ALL">("ALL");
+  const [togglingRuleId, setTogglingRuleId] = useState<string | null>(null);
 
   const { data: allRules, isLoading, error, isError } = useApprovalRules();
   const deleteRuleMutation = useDeleteApprovalRule();
@@ -73,11 +74,12 @@ export default function ApprovalRulesPage() {
   };
 
   const handleToggleActive = (ruleId: string, isActive: boolean) => {
-    if (isActive) {
-      deactivateRuleMutation.mutate(ruleId);
-    } else {
-      activateRuleMutation.mutate(ruleId);
-    }
+    if (togglingRuleId) return;
+    setTogglingRuleId(ruleId);
+    const mutation = isActive ? deactivateRuleMutation : activateRuleMutation;
+    mutation.mutate(ruleId, {
+      onSettled: () => setTogglingRuleId(null),
+    });
   };
 
   const getRoleBadge = (role: ApproverRoleEnum | `${ApproverRoleEnum}`) => {

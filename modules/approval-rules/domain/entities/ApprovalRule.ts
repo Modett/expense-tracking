@@ -128,8 +128,9 @@ export class ApprovalRule {
   }
 
   activate(): void {
+    // Idempotent: safe to call even if already active
     if (this.isActive) {
-      throw new Error("Approval rule is already active");
+      return; // Already active, nothing to do
     }
 
     this.props.isActive = true;
@@ -137,8 +138,9 @@ export class ApprovalRule {
   }
 
   deactivate(): void {
+    // Idempotent: safe to call even if already inactive
     if (!this.isActive) {
-      throw new Error("Approval rule is already inactive");
+      return; // Already inactive, nothing to do
     }
 
     this.props.isActive = false;

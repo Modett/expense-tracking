@@ -10,9 +10,9 @@ export class PrismaApprovalRuleCommandRepository implements IApprovalRuleCommand
     const plainObject = approvalRule.toPlainObject();
 
     await this.prisma.approvalRule.upsert({
-      where: { ruleId: plainObject.id },
+      where: { ruleId: plainObject.ruleId },
       create: {
-        ruleId: plainObject.id,
+        ruleId: plainObject.ruleId,
         categoryId: plainObject.categoryId,
         minAmount: plainObject.minAmount,
         approverRole: plainObject.approverRole,
@@ -39,9 +39,9 @@ export class PrismaApprovalRuleCommandRepository implements IApprovalRuleCommand
         const plainObject = approvalRule.toPlainObject();
 
         return this.prisma.approvalRule.upsert({
-          where: { ruleId: plainObject.id },
+          where: { ruleId: plainObject.ruleId },
           create: {
-            ruleId: plainObject.id,
+            ruleId: plainObject.ruleId,
             categoryId: plainObject.categoryId,
             minAmount: plainObject.minAmount,
             approverRole: plainObject.approverRole,
