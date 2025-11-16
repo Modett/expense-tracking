@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
@@ -50,7 +50,7 @@ export default function EditApprovalRulePage() {
     if (rule) {
       reset({
         minAmount: Number(rule.minAmount),
-        approverRole: rule.approverRole,
+        approverRole: rule.approverRole as ApproverRoleEnum,
         approvalOrder: rule.approvalOrder,
       });
     }
@@ -187,3 +187,4 @@ export default function EditApprovalRulePage() {
     </div>
   );
 }
+

@@ -189,7 +189,7 @@ export class ApprovalRule {
 
   toPlainObject() {
     return {
-      id: this.props.id.getValue(),
+      ruleId: this.props.id.getValue(),
       categoryId: this.props.categoryId.getValue(),
       minAmount: this.props.minAmount.getValue(),
       approverRole: this.props.approverRole.getValue(),

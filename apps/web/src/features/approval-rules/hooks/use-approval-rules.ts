@@ -12,8 +12,19 @@ import { useRouter } from "next/navigation";
 export function useApprovalRules(params?: GetAllApprovalRulesParams) {
   return useQuery({
     queryKey: queryKeys.approvalRules.list(params as Record<string, unknown>),
-    queryFn: () => approvalRulesApi.getAll(params),
+    queryFn: async () => {
+      console.log("Fetching approval rules...");
+      try {
+        const result = await approvalRulesApi.getAll(params);
+        console.log("Approval rules fetched:", result);
+        return result;
+      } catch (error) {
+        console.error("Error fetching approval rules:", error);
+        throw error;
+      }
+    },
     staleTime: 60000,
+    retry: 1,
   });
 }
 
@@ -69,8 +80,13 @@ export function useUpdateApprovalRule() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ ruleId, data }: { ruleId: string; data: UpdateApprovalRuleRequest }) =>
-      approvalRulesApi.update(ruleId, data),
+    mutationFn: ({
+      ruleId,
+      data,
+    }: {
+      ruleId: string;
+      data: UpdateApprovalRuleRequest;
+    }) => approvalRulesApi.update(ruleId, data),
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.approvalRules.all });
       queryClient.invalidateQueries({

@@ -1,4 +1,7 @@
-import type { PrismaClient, ApprovalRule as PrismaApprovalRule } from "@prisma/client";
+import type {
+  PrismaClient,
+  ApprovalRule as PrismaApprovalRule,
+} from "@prisma/client";
 import type {
   IApprovalRuleQueryRepository,
   ApprovalRuleFilters,
@@ -12,7 +15,9 @@ import {
   CategoryId,
 } from "../../domain/value-objects/index.js";
 
-export class PrismaApprovalRuleQueryRepository implements IApprovalRuleQueryRepository {
+export class PrismaApprovalRuleQueryRepository
+  implements IApprovalRuleQueryRepository
+{
   constructor(private readonly prisma: PrismaClient) {}
 
   private toDomain(prismaApprovalRule: PrismaApprovalRule): ApprovalRule {
@@ -43,28 +48,51 @@ export class PrismaApprovalRuleQueryRepository implements IApprovalRuleQueryRepo
   async findByCategory(categoryId: CategoryId): Promise<ApprovalRule[]> {
     const approvalRules = await this.prisma.approvalRule.findMany({
       where: { categoryId: categoryId.getValue() },
+      include: {
+        category: true,
+      },
       orderBy: { approvalOrder: "asc" },
     });
 
-    return approvalRules.map((rule) => this.toDomain(rule));
+    return approvalRules.map((rule: any) => {
+      const domain = this.toDomain(rule);
+      (domain as any).category = rule.category;
+      return domain;
+    });
   }
 
-  async findByApproverRole(approverRole: ApproverRole): Promise<ApprovalRule[]> {
+  async findByApproverRole(
+    approverRole: ApproverRole
+  ): Promise<ApprovalRule[]> {
     const approvalRules = await this.prisma.approvalRule.findMany({
       where: { approverRole: approverRole.getValue() },
+      include: {
+        category: true,
+      },
       orderBy: { approvalOrder: "asc" },
     });
 
-    return approvalRules.map((rule) => this.toDomain(rule));
+    return approvalRules.map((rule: any) => {
+      const domain = this.toDomain(rule);
+      (domain as any).category = rule.category;
+      return domain;
+    });
   }
 
   async findActive(): Promise<ApprovalRule[]> {
     const approvalRules = await this.prisma.approvalRule.findMany({
       where: { isActive: true },
+      include: {
+        category: true,
+      },
       orderBy: [{ categoryId: "asc" }, { approvalOrder: "asc" }],
     });
 
-    return approvalRules.map((rule) => this.toDomain(rule));
+    return approvalRules.map((rule: any) => {
+      const domain = this.toDomain(rule);
+      (domain as any).category = rule.category;
+      return domain;
+    });
   }
 
   async findApplicableRules(
@@ -79,13 +107,21 @@ export class PrismaApprovalRuleQueryRepository implements IApprovalRuleQueryRepo
           lte: amount,
         },
       },
+      include: {
+        category: true,
+      },
       orderBy: { approvalOrder: "asc" },
     });
 
-    return approvalRules.map((rule) => this.toDomain(rule));
+    return approvalRules.map((rule: any) => {
+      const domain = this.toDomain(rule);
+      (domain as any).category = rule.category;
+      return domain;
+    });
   }
 
   async findAll(filters?: ApprovalRuleFilters): Promise<ApprovalRule[]> {
+    console.log("Repository findAll called with filters:", filters);
     const where: any = {};
 
     if (filters?.categoryId) {
@@ -114,12 +150,24 @@ export class PrismaApprovalRuleQueryRepository implements IApprovalRuleQueryRepo
       };
     }
 
+    console.log("Prisma query where:", where);
     const approvalRules = await this.prisma.approvalRule.findMany({
       where,
+      include: {
+        category: true,
+      },
       orderBy: [{ categoryId: "asc" }, { approvalOrder: "asc" }],
     });
 
-    return approvalRules.map((rule) => this.toDomain(rule));
+    console.log("Prisma returned:", approvalRules.length, "rules");
+    const mapped = approvalRules.map((rule: any) => {
+      const domain = this.toDomain(rule);
+      // Attach category for handler to access
+      (domain as any).category = rule.category;
+      return domain;
+    });
+    console.log("Mapped to domain:", mapped.length, "rules");
+    return mapped;
   }
 
   async count(filters?: ApprovalRuleFilters): Promise<number> {

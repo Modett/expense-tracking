@@ -9,7 +9,7 @@ export interface ApprovalRule {
   ruleId: string;
   categoryId: string;
   minAmount: number;
-  approverRole: ApproverRoleEnum;
+  approverRole: ApproverRoleEnum | `${ApproverRoleEnum}`;
   approvalOrder: number;
   isActive: boolean;
   createdAt: string;
@@ -24,7 +24,7 @@ export interface ApprovalRule {
 export interface CreateApprovalRuleRequest {
   categoryId: string;
   minAmount: number;
-  approverRole: ApproverRoleEnum;
+  approverRole: ApproverRoleEnum | `${ApproverRoleEnum}`;
   approvalOrder: number;
 }
 

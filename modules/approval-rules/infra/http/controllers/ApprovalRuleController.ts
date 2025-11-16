@@ -124,7 +124,9 @@ export class ApprovalRuleController {
     reply: FastifyReply
   ): Promise<void> {
     try {
-      const validatedParams = updateApprovalRuleParamsSchema.parse(request.params);
+      const validatedParams = updateApprovalRuleParamsSchema.parse(
+        request.params
+      );
       const validatedBody = updateApprovalRuleBodySchema.parse(request.body);
 
       const command = new UpdateApprovalRuleCommand(
@@ -146,7 +148,9 @@ export class ApprovalRuleController {
     reply: FastifyReply
   ): Promise<void> {
     try {
-      const validatedParams = deleteApprovalRuleParamsSchema.parse(request.params);
+      const validatedParams = deleteApprovalRuleParamsSchema.parse(
+        request.params
+      );
 
       const command = new DeleteApprovalRuleCommand(validatedParams.id);
 
@@ -162,7 +166,9 @@ export class ApprovalRuleController {
     reply: FastifyReply
   ): Promise<void> {
     try {
-      const validatedParams = activateApprovalRuleParamsSchema.parse(request.params);
+      const validatedParams = activateApprovalRuleParamsSchema.parse(
+        request.params
+      );
 
       const command = new ActivateApprovalRuleCommand(validatedParams.id);
 
@@ -178,7 +184,9 @@ export class ApprovalRuleController {
     reply: FastifyReply
   ): Promise<void> {
     try {
-      const validatedParams = deactivateApprovalRuleParamsSchema.parse(request.params);
+      const validatedParams = deactivateApprovalRuleParamsSchema.parse(
+        request.params
+      );
 
       const command = new DeactivateApprovalRuleCommand(validatedParams.id);
 
@@ -194,7 +202,9 @@ export class ApprovalRuleController {
     reply: FastifyReply
   ): Promise<void> {
     try {
-      const validatedParams = getApprovalRuleByIdParamsSchema.parse(request.params);
+      const validatedParams = getApprovalRuleByIdParamsSchema.parse(
+        request.params
+      );
 
       const query = new GetApprovalRuleByIdQuery(validatedParams.id);
       const result = await this.getApprovalRuleByIdHandler.handle(query);
@@ -215,7 +225,9 @@ export class ApprovalRuleController {
     reply: FastifyReply
   ): Promise<void> {
     try {
-      const validatedQuery = getAllApprovalRulesQuerySchema.parse(request.query);
+      const validatedQuery = getAllApprovalRulesQuerySchema.parse(
+        request.query
+      );
 
       const query = new GetAllApprovalRulesQueryClass(
         validatedQuery.categoryId,
@@ -226,8 +238,11 @@ export class ApprovalRuleController {
       );
 
       const result = await this.getAllApprovalRulesHandler.handle(query);
+      console.log("GetAll Handler Result:", result.length, "rules");
+      console.log("First rule:", result[0]);
       reply.code(200).send({ success: true, data: result });
     } catch (error) {
+      console.error("GetAll Error:", error);
       this.handleError(error, reply);
     }
   }
@@ -237,9 +252,13 @@ export class ApprovalRuleController {
     reply: FastifyReply
   ): Promise<void> {
     try {
-      const validatedParams = getApprovalRulesByCategoryParamsSchema.parse(request.params);
+      const validatedParams = getApprovalRulesByCategoryParamsSchema.parse(
+        request.params
+      );
 
-      const query = new GetApprovalRulesByCategoryQuery(validatedParams.categoryId);
+      const query = new GetApprovalRulesByCategoryQuery(
+        validatedParams.categoryId
+      );
       const result = await this.getApprovalRulesByCategoryHandler.handle(query);
 
       reply.code(200).send({ success: true, data: result });
