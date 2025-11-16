@@ -106,7 +106,6 @@ export default function DepartmentsPage() {
               <TableRow className="border-zinc-800 hover:bg-zinc-800/50">
                 <TableHead className="text-zinc-300">Name</TableHead>
                 <TableHead className="text-zinc-300">Code</TableHead>
-                <TableHead className="text-zinc-300">Description</TableHead>
                 <TableHead className="text-zinc-300">Status</TableHead>
                 <TableHead className="text-zinc-300 text-right">Actions</TableHead>
               </TableRow>
@@ -124,7 +123,6 @@ export default function DepartmentsPage() {
                       "-"
                     )}
                   </TableCell>
-                  <TableCell className="text-zinc-400">{department.description || "-"}</TableCell>
                   <TableCell>
                     {department.isActive ? (
                       <Badge variant="outline" className="bg-green-500/10 text-green-500 border-green-500/20">

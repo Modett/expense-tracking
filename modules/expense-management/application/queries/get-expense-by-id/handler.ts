@@ -24,6 +24,24 @@ export interface GetExpenseByIdResponse {
   tagIds: string[];
   createdAt: Date;
   updatedAt: Date;
+  // Nested relations for frontend display
+  vendor?: {
+    vendorId: string;
+    name: string;
+  } | null;
+  category?: {
+    categoryId: string;
+    name: string;
+  } | null;
+  department?: {
+    departmentId: string;
+    name: string;
+  } | null;
+  user?: {
+    userId: string;
+    name: string;
+    email: string;
+  } | null;
 }
 
 export class GetExpenseByIdQueryHandler {
@@ -68,6 +86,33 @@ export class GetExpenseByIdQueryHandler {
     }
     if (plainObject.inventoryDropId) {
       response.inventoryDropId = plainObject.inventoryDropId;
+    }
+
+    // Add nested relations if available (populated by query repository)
+    if (plainObject.vendor) {
+      response.vendor = {
+        vendorId: plainObject.vendor.vendorId,
+        name: plainObject.vendor.name,
+      };
+    }
+    if (plainObject.category) {
+      response.category = {
+        categoryId: plainObject.category.categoryId,
+        name: plainObject.category.name,
+      };
+    }
+    if (plainObject.department) {
+      response.department = {
+        departmentId: plainObject.department.departmentId,
+        name: plainObject.department.name,
+      };
+    }
+    if (plainObject.user) {
+      response.user = {
+        userId: plainObject.user.userId,
+        name: plainObject.user.name,
+        email: plainObject.user.email,
+      };
     }
 
     return response;

@@ -1,4 +1,5 @@
 import Fastify from "fastify";
+import type { FastifyRequest, FastifyReply } from "fastify";
 import fastifyJwt from "@fastify/jwt";
 import fastifyRateLimit from "@fastify/rate-limit";
 import fastifyCookie from "@fastify/cookie";
@@ -123,117 +124,125 @@ export async function buildApp() {
   await fastify.register(fastifyCors, {
     origin: true, // Allow all origins in development (configure for production)
     credentials: true, // Allow cookies to be sent
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
   });
 
   // Global Error Handler
-  fastify.setErrorHandler((error, request, reply) => {
-    fastify.log.error({
-      err: error,
-      url: request.url,
-      method: request.method,
-    });
+  fastify.setErrorHandler(
+    (
+      error: Error & { statusCode?: number; name?: string },
+      request: FastifyRequest,
+      reply: FastifyReply
+    ) => {
+      fastify.log.error({
+        err: error,
+        url: request.url,
+        method: request.method,
+      });
 
-    // Zod validation errors
-    if (error.name === "ZodError") {
-      return reply.code(400).send({
-        statusCode: 400,
-        error: "Validation Error",
-        message: "Request validation failed",
-        details: (error as any).issues || (error as any).errors || [],
+      // Zod validation errors
+      if (error.name === "ZodError") {
+        return reply.code(400).send({
+          statusCode: 400,
+          error: "Validation Error",
+          message: "Request validation failed",
+          details: (error as any).issues || (error as any).errors || [],
+        });
+      }
+
+      // JWT errors
+      if (
+        error.name === "UnauthorizedError" ||
+        error.message.includes("No Authorization")
+      ) {
+        return reply.code(401).send({
+          statusCode: 401,
+          error: "Unauthorized",
+          message: "Authentication required",
+        });
+      }
+
+      if (error.message.includes("jwt") || error.message.includes("token")) {
+        return reply.code(401).send({
+          statusCode: 401,
+          error: "Unauthorized",
+          message: "Invalid or expired token",
+        });
+      }
+
+      // Business logic errors based on message patterns
+      if (error.message.includes("already exists")) {
+        return reply.code(409).send({
+          statusCode: 409,
+          error: "Conflict",
+          message: error.message,
+        });
+      }
+
+      if (error.message.includes("not found")) {
+        return reply.code(404).send({
+          statusCode: 404,
+          error: "Not Found",
+          message: error.message,
+        });
+      }
+
+      if (
+        error.message.includes("Invalid credentials") ||
+        error.message.includes("Invalid email or password")
+      ) {
+        return reply.code(401).send({
+          statusCode: 401,
+          error: "Unauthorized",
+          message: error.message,
+        });
+      }
+
+      if (
+        error.message.includes("forbidden") ||
+        error.message.includes("not authorized") ||
+        error.message.includes("permission")
+      ) {
+        return reply.code(403).send({
+          statusCode: 403,
+          error: "Forbidden",
+          message: error.message,
+        });
+      }
+
+      // Prisma errors
+      if (
+        error.message.includes("Prisma") ||
+        error.message.includes("PrismaClient")
+      ) {
+        return reply.code(500).send({
+          statusCode: 500,
+          error: "Database Error",
+          message: "A database error occurred",
+        });
+      }
+
+      // Rate limit errors
+      if (error.statusCode === 429) {
+        return reply.code(429).send({
+          statusCode: 429,
+          error: "Too Many Requests",
+          message: "Rate limit exceeded. Please try again later.",
+        });
+      }
+
+      // Default 500 error
+      return reply.code(error.statusCode || 500).send({
+        statusCode: error.statusCode || 500,
+        error: error.name || "Internal Server Error",
+        message:
+          process.env.NODE_ENV === "production"
+            ? "An unexpected error occurred"
+            : error.message,
       });
     }
-
-    // JWT errors
-    if (
-      error.name === "UnauthorizedError" ||
-      error.message.includes("No Authorization")
-    ) {
-      return reply.code(401).send({
-        statusCode: 401,
-        error: "Unauthorized",
-        message: "Authentication required",
-      });
-    }
-
-    if (error.message.includes("jwt") || error.message.includes("token")) {
-      return reply.code(401).send({
-        statusCode: 401,
-        error: "Unauthorized",
-        message: "Invalid or expired token",
-      });
-    }
-
-    // Business logic errors based on message patterns
-    if (error.message.includes("already exists")) {
-      return reply.code(409).send({
-        statusCode: 409,
-        error: "Conflict",
-        message: error.message,
-      });
-    }
-
-    if (error.message.includes("not found")) {
-      return reply.code(404).send({
-        statusCode: 404,
-        error: "Not Found",
-        message: error.message,
-      });
-    }
-
-    if (
-      error.message.includes("Invalid credentials") ||
-      error.message.includes("Invalid email or password")
-    ) {
-      return reply.code(401).send({
-        statusCode: 401,
-        error: "Unauthorized",
-        message: error.message,
-      });
-    }
-
-    if (
-      error.message.includes("forbidden") ||
-      error.message.includes("not authorized") ||
-      error.message.includes("permission")
-    ) {
-      return reply.code(403).send({
-        statusCode: 403,
-        error: "Forbidden",
-        message: error.message,
-      });
-    }
-
-    // Prisma errors
-    if (
-      error.message.includes("Prisma") ||
-      error.message.includes("PrismaClient")
-    ) {
-      return reply.code(500).send({
-        statusCode: 500,
-        error: "Database Error",
-        message: "A database error occurred",
-      });
-    }
-
-    // Rate limit errors
-    if (error.statusCode === 429) {
-      return reply.code(429).send({
-        statusCode: 429,
-        error: "Too Many Requests",
-        message: "Rate limit exceeded. Please try again later.",
-      });
-    }
-
-    // Default 500 error
-    return reply.code(error.statusCode || 500).send({
-      statusCode: error.statusCode || 500,
-      error: error.name || "Internal Server Error",
-      message:
-        process.env.NODE_ENV === "production"
-          ? "An unexpected error occurred"
-          : error.message,
-    });
-  });
+  );
 
   // Health check route
   fastify.get("/health", async () => {

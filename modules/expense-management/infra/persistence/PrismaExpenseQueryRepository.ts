@@ -29,6 +29,10 @@ type PrismaExpenseWithTags = PrismaExpense & {
   budgetOverride: string;
   approvalDeadline: Date | null;
   linkedPoId: string | null;
+  vendor?: { vendorId: string; name: string } | null;
+  category?: { categoryId: string; name: string } | null;
+  department?: { departmentId: string; name: string } | null;
+  user?: { userId: string; name: string; email: string } | null;
 };
 
 export class PrismaExpenseQueryRepository implements IExpenseQueryRepository {
@@ -41,7 +45,7 @@ export class PrismaExpenseQueryRepository implements IExpenseQueryRepository {
         )
       : [];
 
-    return Expense.reconstitute({
+    const expense = Expense.reconstitute({
       id: ExpenseId.fromString(prismaExpense.expenseId),
       userId: UserId.fromString(prismaExpense.userId),
       vendorId: VendorId.fromString(prismaExpense.vendorId),
@@ -78,6 +82,18 @@ export class PrismaExpenseQueryRepository implements IExpenseQueryRepository {
       createdAt: prismaExpense.createdAt,
       updatedAt: prismaExpense.updatedAt,
     });
+
+    // Attach relations metadata for query use cases
+    if (prismaExpense.vendor || prismaExpense.category || prismaExpense.department || prismaExpense.user) {
+      (expense as any)._relations = {
+        vendor: prismaExpense.vendor,
+        category: prismaExpense.category,
+        department: prismaExpense.department,
+        user: prismaExpense.user,
+      };
+    }
+
+    return expense;
   }
 
   async findById(expenseId: ExpenseId): Promise<Expense | null> {
@@ -86,6 +102,18 @@ export class PrismaExpenseQueryRepository implements IExpenseQueryRepository {
       include: {
         expenseTags: {
           select: { tagId: true },
+        },
+        vendor: {
+          select: { vendorId: true, name: true },
+        },
+        category: {
+          select: { categoryId: true, name: true },
+        },
+        department: {
+          select: { departmentId: true, name: true },
+        },
+        user: {
+          select: { userId: true, name: true, email: true },
         },
       },
     });
