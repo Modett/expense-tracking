@@ -172,6 +172,38 @@ export const expensesApi = {
     return mapExpense(response.data.data);
   },
 
+  downloadMonthlyReport: async (params: { month: number; year: number }): Promise<Blob> => {
+    try {
+      const response = await apiClient.get("/expenses/reports/monthly", {
+        params,
+        responseType: "blob",
+      });
+
+      const blob = response.data as Blob;
+
+      // Check if the response is actually an error JSON disguised as a blob
+      if (blob.type === 'application/json') {
+        const text = await blob.text();
+        const errorData = JSON.parse(text);
+        throw new Error(errorData.error || errorData.message || 'Failed to download report');
+      }
+
+      return blob;
+    } catch (error: any) {
+      // If it's an axios error, try to extract the error message
+      if (error.response?.data instanceof Blob) {
+        const text = await error.response.data.text();
+        try {
+          const errorData = JSON.parse(text);
+          throw new Error(errorData.error || errorData.message || 'Failed to download report');
+        } catch {
+          throw new Error('Failed to download report: ' + text);
+        }
+      }
+      throw error;
+    }
+  },
+
   getAggregations: async (
     params?: ExpenseAggregationParams
   ): Promise<ExpenseAggregation[]> => {

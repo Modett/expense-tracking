@@ -2,13 +2,21 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useExpenses } from "@/features/expenses";
+import { useDeleteExpense, useExpenses } from "@/features/expenses";
 import { ExpenseStatusEnum, ExpensePriorityEnum } from "@/features/expenses/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   Plus,
   Search,
@@ -28,6 +36,11 @@ export default function ExpensesPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<ExpenseStatusEnum | "">("");
   const [priorityFilter, setPriorityFilter] = useState<ExpensePriorityEnum | "">("");
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; expenseId: string | null }>({
+    open: false,
+    expenseId: null,
+  });
 
   const { data, isLoading } = useExpenses({
     page,
@@ -35,6 +48,7 @@ export default function ExpensesPage() {
     status: statusFilter || undefined,
     priority: priorityFilter || undefined,
   });
+  const deleteExpenseMutation = useDeleteExpense();
 
   const getStatusBadge = (status: ExpenseStatusEnum) => {
     const variants: Record<ExpenseStatusEnum, string> = {
@@ -65,6 +79,18 @@ export default function ExpensesPage() {
         {priority.charAt(0) + priority.slice(1).toLowerCase()}
       </Badge>
     );
+  };
+
+  const confirmDelete = () => {
+    if (!deleteDialog.expenseId || deletingId) return;
+    const expenseId = deleteDialog.expenseId;
+    setDeletingId(expenseId);
+    deleteExpenseMutation.mutate(expenseId, {
+      onSettled: () => {
+        setDeletingId(null);
+        setDeleteDialog({ open: false, expenseId: null });
+      },
+    });
   };
 
   return (
@@ -230,6 +256,10 @@ export default function ExpensesPage() {
                                   variant="ghost"
                                   size="sm"
                                   className="h-8 w-8 p-0 text-zinc-400 hover:text-red-400"
+                                  onClick={() =>
+                                    setDeleteDialog({ open: true, expenseId: expense.expenseId })
+                                  }
+                                  disabled={deletingId === expense.expenseId || deleteExpenseMutation.isPending}
                                 >
                                   <Trash2 className="h-4 w-4" />
                                 </Button>
@@ -307,6 +337,40 @@ export default function ExpensesPage() {
           )}
         </CardContent>
       </Card>
+      <Dialog
+        open={deleteDialog.open}
+        onOpenChange={(open) =>
+          setDeleteDialog({
+            open,
+            expenseId: open ? deleteDialog.expenseId : null,
+          })
+        }
+      >
+        <DialogContent className="bg-zinc-900 border-zinc-800 text-white">
+          <DialogHeader>
+            <DialogTitle>Delete Expense</DialogTitle>
+            <DialogDescription className="text-zinc-400">
+              This action cannot be undone. Are you sure you want to delete this expense?
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="ghost"
+              onClick={() => setDeleteDialog({ open: false, expenseId: null })}
+              className="text-zinc-400 hover:text-white hover:bg-zinc-800"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={confirmDelete}
+              disabled={deleteExpenseMutation.isPending}
+              className="bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700"
+            >
+              {deleteExpenseMutation.isPending ? "Deleting..." : "Delete"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

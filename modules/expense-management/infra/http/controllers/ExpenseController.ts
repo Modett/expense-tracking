@@ -449,6 +449,20 @@ export class ExpenseController {
 
       // Stream the file
       const fs = await import("fs");
+      const path = await import("path");
+
+      // Verify file exists before streaming
+      if (!fs.existsSync(filePath)) {
+        reply.code(500).send({
+          error: "Report file was generated but could not be found",
+          details: filePath
+        });
+        return;
+      }
+
+      const fileStats = fs.statSync(filePath);
+      console.log(`Sending report file: ${filePath} (${fileStats.size} bytes)`);
+
       const fileStream = fs.createReadStream(filePath);
 
       const monthName = new Date(year, month - 1).toLocaleString("default", {
@@ -456,10 +470,17 @@ export class ExpenseController {
       });
 
       reply.header("Content-Type", "text/csv");
+      reply.header("Content-Length", fileStats.size.toString());
       reply.header(
         "Content-Disposition",
         `attachment; filename="monthly-report-${monthName}-${year}.csv"`
       );
+
+      fileStream.on('error', (error) => {
+        console.error('Error reading file stream:', error);
+        reply.code(500).send({ error: "Failed to stream report file" });
+      });
+
       reply.send(fileStream);
     } catch (error) {
       this.handleError(error, reply);

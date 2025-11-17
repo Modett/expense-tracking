@@ -122,26 +122,11 @@ export async function buildApp() {
 
   // Register CORS (to allow credentials/cookies from frontend)
   await fastify.register(fastifyCors, {
-    origin: (
-      origin: string | undefined,
-      cb: (err: Error | null, allow?: boolean) => void
-    ) => {
-      // Allow requests with no origin (like mobile apps or Postman)
-      if (!origin) return cb(null, true);
-
-      // Allow localhost origins in development
-      const allowedOrigins = [
-        "http://localhost:3000",
-        "http://127.0.0.1:3000",
-        "http://localhost:3001",
-      ];
-
-      if (allowedOrigins.includes(origin)) {
-        cb(null, true);
-      } else {
-        cb(new Error("Not allowed by CORS"), false);
-      }
-    },
+    origin: [
+      "http://localhost:3000",
+      "http://127.0.0.1:3000",
+      "http://localhost:3001",
+    ],
     credentials: true, // Allow cookies to be sent
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],

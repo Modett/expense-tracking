@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,6 +8,7 @@ import { useRecentExpenses, useTeamSpending, useExpensesByCategory, type RecentE
 import { useAuth } from "@/providers/auth-provider";
 import { useApprovalDashboard } from "@/features/approvals";
 import { useExpenseAggregations } from "@/features/expenses";
+import { expensesApi } from "@/features/expenses/api/expenses.api";
 import {
   FileText,
   Clock,
@@ -20,10 +21,12 @@ import {
 import Link from "next/link";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import { formatCurrency } from "@/lib/utils";
+import { toast } from "@/components/ui/use-toast";
 
 export default function DashboardPage() {
   const [mounted, setMounted] = useState(false);
   const { user } = useAuth();
+  const [isDownloadingReport, setIsDownloadingReport] = useState(false);
 
   const currentRange = useMemo(() => {
     const now = new Date();
@@ -55,6 +58,57 @@ export default function DashboardPage() {
   const { data: teamSpending, isLoading: teamLoading } = useTeamSpending("monthly", { enabled: false });
   const { data: categoryExpenses, isLoading: categoryLoading } = useExpensesByCategory("monthly", { enabled: false });
   const statsLoading = expenseAggregationsLoading || approvalsDashboardLoading;
+
+  const handleGenerateReport = async () => {
+    try {
+      setIsDownloadingReport(true);
+      const now = new Date();
+      const month = now.getMonth() + 1;
+      const year = now.getFullYear();
+      const monthName = now.toLocaleString("default", { month: "long" });
+      const blob = await expensesApi.downloadMonthlyReport({ month, year });
+
+      const url = window.URL.createObjectURL(new Blob([blob], { type: 'text/csv' }));
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `monthly-report-${monthName}-${year}.csv`;
+      document.body.appendChild(link);
+      link.click();
+
+      // Clean up after a short delay to ensure download starts
+      setTimeout(() => {
+        link.remove();
+        window.URL.revokeObjectURL(url);
+      }, 100);
+
+      toast({
+        title: "Report generated",
+        description: `Monthly expense report for ${monthName} ${year} has been downloaded.`,
+      });
+    } catch (error: any) {
+      console.error("Error generating report:", error);
+
+      let errorMessage = "Please try again later.";
+      if (error.message) {
+        errorMessage = error.message;
+      } else if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      }
+
+      // Check if it's a permission error
+      if (errorMessage.includes("Forbidden") || errorMessage.includes("Manager access required")) {
+        errorMessage = "You need Manager or Admin role to generate reports. Please contact your administrator.";
+      }
+
+      toast({
+        title: "Failed to generate report",
+        description: errorMessage,
+        variant: "destructive",
+      });
+    } finally {
+      setIsDownloadingReport(false);
+    }
+  };
 
   useEffect(() => {
     setMounted(true);
@@ -182,14 +236,14 @@ export default function DashboardPage() {
           <CardContent className="space-y-3">
             {pendingApprovalTasks.length > 0 ? (
               pendingApprovalTasks.map((task) => (
-                <Link key={task.approvalId} href={/approvals/}>
+                <Link key={task.approvalId} href={`/approvals/${task.approvalId}`}>
                   <div className="flex items-center justify-between p-3 rounded-lg bg-zinc-800/50 hover:bg-zinc-800 transition-colors">
                     <div>
                       <p className="text-sm font-medium text-white">
                         {task.expenseDescription || "Expense approval"}
                       </p>
                       <p className="text-xs text-zinc-500">
-                        {task.priority?.toUpperCase()} • {new Date(task.submittedAt).toLocaleDateString()}
+                        {task.priority?.toUpperCase()} � {new Date(task.submittedAt).toLocaleDateString()}
                       </p>
                     </div>
                     <div className="text-sm font-semibold text-white">
@@ -301,17 +355,19 @@ export default function DashboardPage() {
               </Button>
             </Link>
 
-            <Link href="/expenses/reports">
-              <Button
-                variant="ghost"
-                className="w-full h-20 bg-zinc-800/50 hover:bg-zinc-800 border-zinc-700 flex flex-col items-center gap-2"
-              >
-                <div className="h-10 w-10 rounded-full bg-gradient-to-br from-cyan-500 to-cyan-600 flex items-center justify-center">
-                  <FileBarChart className="h-5 w-5 text-white" />
-                </div>
-                <span className="text-white text-sm">Create report</span>
-              </Button>
-            </Link>
+            <Button
+              variant="ghost"
+              className="w-full h-20 bg-zinc-800/50 hover:bg-zinc-800 border-zinc-700 flex flex-col items-center gap-2"
+              onClick={handleGenerateReport}
+              disabled={isDownloadingReport}
+            >
+              <div className="h-10 w-10 rounded-full bg-gradient-to-br from-cyan-500 to-cyan-600 flex items-center justify-center">
+                <FileBarChart className="h-5 w-5 text-white" />
+              </div>
+              <span className="text-white text-sm">
+                {isDownloadingReport ? "Preparing..." : "Create report"}
+              </span>
+            </Button>
 
             <Link href="/approvals">
               <Button
@@ -412,6 +468,7 @@ export default function DashboardPage() {
     </div>
   );
 }
+
 
 
 
