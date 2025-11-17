@@ -158,7 +158,7 @@ export async function registerExpenseRoutes(
     {
       schema: {
         tags: ["Expenses"],
-        summary: "Get expense aggregations (Admin Only)",
+        summary: "Get expense aggregations",
         security: [{ bearerAuth: [] }],
         querystring: {
           type: "object",
@@ -186,7 +186,7 @@ export async function registerExpenseRoutes(
           403: errorSchema,
         },
       },
-      onRequest: [authenticate, authorizeAdmin],
+      onRequest: [authenticate],
     },
     async (request, reply) =>
       expenseController.getAggregations(request as any, reply)

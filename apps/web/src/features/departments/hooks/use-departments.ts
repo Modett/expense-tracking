@@ -104,9 +104,12 @@ export function useActivateDepartment() {
       });
     },
     onError: (error: any) => {
+      const isForbidden = error?.response?.status === 403;
       toast({
         title: "Failed to activate department",
-        description: error.response?.data?.message || "Please try again",
+        description: isForbidden
+          ? "You don't have permission to activate departments. Please contact an administrator."
+          : error.response?.data?.message || "Please try again",
         variant: "destructive",
       });
     },
@@ -126,9 +129,12 @@ export function useDeactivateDepartment() {
       });
     },
     onError: (error: any) => {
+      const isForbidden = error?.response?.status === 403;
       toast({
         title: "Failed to deactivate department",
-        description: error.response?.data?.message || "Please try again",
+        description: isForbidden
+          ? "You don't have permission to deactivate departments. Please contact an administrator."
+          : error.response?.data?.message || "Please try again",
         variant: "destructive",
       });
     },

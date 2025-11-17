@@ -8,6 +8,8 @@ import { useRecentExpenses, useTeamSpending, useExpensesByCategory, type RecentE
 import { useAuth } from "@/providers/auth-provider";
 import { useApprovalDashboard } from "@/features/approvals";
 import { useExpenseAggregations } from "@/features/expenses";
+import { useDepartments } from "@/features/departments";
+import { useCategories } from "@/features/categories";
 import { expensesApi } from "@/features/expenses/api/expenses.api";
 import {
   FileText,
@@ -17,6 +19,7 @@ import {
   Plus,
   Receipt,
   FileBarChart,
+  Building2,
 } from "lucide-react";
 import Link from "next/link";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
@@ -57,7 +60,21 @@ export default function DashboardPage() {
   const { data: recentExpenses, isLoading: expensesLoading } = useRecentExpenses(5, { enabled: true });
   const { data: teamSpending, isLoading: teamLoading } = useTeamSpending("monthly", { enabled: false });
   const { data: categoryExpenses, isLoading: categoryLoading } = useExpensesByCategory("monthly", { enabled: false });
-  const statsLoading = expenseAggregationsLoading || approvalsDashboardLoading;
+  const { data: departments, isLoading: departmentsLoading } = useDepartments();
+  const activeDepartmentsCount = useMemo(
+    () => departments?.filter((dept) => dept.isActive).length ?? 0,
+    [departments]
+  );
+  const { data: categories, isLoading: categoriesLoading } = useCategories();
+  const activeCategoriesCount = useMemo(
+    () => categories?.filter((category) => category.isActive).length ?? 0,
+    [categories]
+  );
+  const statsLoading =
+    expenseAggregationsLoading ||
+    approvalsDashboardLoading ||
+    departmentsLoading ||
+    categoriesLoading;
 
   const handleGenerateReport = async () => {
     try {
@@ -187,12 +204,12 @@ export default function DashboardPage() {
               <>
                 <div className="flex items-center gap-3 mb-3">
                   <div className="p-2 bg-green-500/10 rounded-lg">
-                    <DollarSign className="w-5 h-5 text-green-500" />
+                    <Building2 className="w-5 h-5 text-green-500" />
                   </div>
-                  <span className="text-sm text-zinc-400">Monthly Budget</span>
+                  <span className="text-sm text-zinc-400">Active Departments</span>
                 </div>
-                <p className="text-2xl font-bold text-white">{formatCurrency(0)}</p>
-                <p className="text-xs text-zinc-500 mt-1">Allocated budget</p>
+                <p className="text-2xl font-bold text-white">{activeDepartmentsCount}</p>
+                <p className="text-xs text-zinc-500 mt-1">Currently active</p>
               </>
             )}
           </CardContent>
@@ -208,10 +225,10 @@ export default function DashboardPage() {
                   <div className="p-2 bg-blue-500/10 rounded-lg">
                     <FileText className="w-5 h-5 text-blue-500" />
                   </div>
-                  <span className="text-sm text-zinc-400">Team Members</span>
+                  <span className="text-sm text-zinc-400">Active Categories</span>
                 </div>
-                <p className="text-2xl font-bold text-white">0</p>
-                <p className="text-xs text-zinc-500 mt-1">Active users</p>
+                <p className="text-2xl font-bold text-white">{activeCategoriesCount}</p>
+                <p className="text-xs text-zinc-500 mt-1">Available for expenses</p>
               </>
             )}
           </CardContent>

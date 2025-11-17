@@ -104,9 +104,12 @@ export function useActivateCategory() {
       });
     },
     onError: (error: any) => {
+      const isForbidden = error?.response?.status === 403;
       toast({
         title: "Failed to activate category",
-        description: error.response?.data?.message || "Please try again",
+        description: isForbidden
+          ? "You don't have permission to activate categories. Please contact an administrator."
+          : error.response?.data?.message || "Please try again",
         variant: "destructive",
       });
     },
@@ -126,9 +129,12 @@ export function useDeactivateCategory() {
       });
     },
     onError: (error: any) => {
+      const isForbidden = error?.response?.status === 403;
       toast({
         title: "Failed to deactivate category",
-        description: error.response?.data?.message || "Please try again",
+        description: isForbidden
+          ? "You don't have permission to deactivate categories. Please contact an administrator."
+          : error.response?.data?.message || "Please try again",
         variant: "destructive",
       });
     },

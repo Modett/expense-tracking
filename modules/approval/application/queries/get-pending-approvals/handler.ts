@@ -31,13 +31,6 @@ export class GetPendingApprovalsQueryHandler {
       approvals = await this.approvalQueryRepo.findPendingApprovals();
     }
 
-    return approvals.map((approval) => {
-      const plainObject = approval.toPlainObject();
-      return {
-        ...plainObject,
-        expense: (approval as any).expense,
-        approver: (approval as any).approver,
-      };
-    });
+    return approvals.map((approval) => approval.toPlainObject());
   }
 }
