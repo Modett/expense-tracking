@@ -2,7 +2,7 @@ import type { FastifyInstance } from "fastify";
 import type { ExpenseController } from "./controllers/ExpenseController.js";
 import type { ExpenseTagController } from "./controllers/ExpenseTagController.js";
 import { authenticate } from "../../../user/infra/http/middleware/authenticate.js";
-import { authorizeAdmin } from "../../../user/infra/http/middleware/authorize.js";
+import { authorizeAdmin, authorizeManager } from "../../../user/infra/http/middleware/authorize.js";
 
 const errorSchema = {
   type: "object",
@@ -158,7 +158,7 @@ export async function registerExpenseRoutes(
     {
       schema: {
         tags: ["Expenses"],
-        summary: "Get expense aggregations (Admin Only)",
+        summary: "Get expense aggregations",
         security: [{ bearerAuth: [] }],
         querystring: {
           type: "object",
@@ -186,7 +186,7 @@ export async function registerExpenseRoutes(
           403: errorSchema,
         },
       },
-      onRequest: [authenticate, authorizeAdmin],
+      onRequest: [authenticate],
     },
     async (request, reply) =>
       expenseController.getAggregations(request as any, reply)
@@ -198,7 +198,7 @@ export async function registerExpenseRoutes(
     {
       schema: {
         tags: ["Expenses"],
-        summary: "Export expenses to CSV (Admin Only)",
+        summary: "Export expenses to CSV (Manager & Admin)",
         security: [{ bearerAuth: [] }],
         querystring: {
           type: "object",
@@ -219,7 +219,7 @@ export async function registerExpenseRoutes(
           403: errorSchema,
         },
       },
-      onRequest: [authenticate, authorizeAdmin],
+      onRequest: [authenticate, authorizeManager],
     },
     async (request, reply) =>
       expenseController.exportToCSV(request as any, reply)
@@ -253,7 +253,7 @@ export async function registerExpenseRoutes(
     {
       schema: {
         tags: ["Expenses"],
-        summary: "Generate monthly report with advanced filters (Admin Only)",
+        summary: "Generate monthly report with advanced filters (Manager & Admin)",
         security: [{ bearerAuth: [] }],
         querystring: {
           type: "object",
@@ -284,7 +284,7 @@ export async function registerExpenseRoutes(
           403: errorSchema,
         },
       },
-      onRequest: [authenticate, authorizeAdmin],
+      onRequest: [authenticate, authorizeManager],
     },
     async (request, reply) =>
       expenseController.generateMonthlyReport(request as any, reply)
@@ -333,7 +333,7 @@ export async function registerExpenseRoutes(
     {
       schema: {
         tags: ["Expenses"],
-        summary: "Get all expenses with filters (Admin Only)",
+        summary: "Get all expenses with filters (Manager & Admin)",
         security: [{ bearerAuth: [] }],
         querystring: {
           type: "object",
@@ -356,7 +356,7 @@ export async function registerExpenseRoutes(
           403: errorSchema,
         },
       },
-      onRequest: [authenticate, authorizeAdmin],
+      onRequest: [authenticate, authorizeManager],
     },
     async (request, reply) => expenseController.getAll(request as any, reply)
   );

@@ -8,22 +8,24 @@ import { Button } from "@/components/ui/button";
 import {
   Home,
   Receipt,
-  Plane,
+  Layers3,
+  Building2,
   CheckCircle,
   Settings,
-  Phone,
   Menu,
   X,
+  LogOut,
 } from "lucide-react";
 import { useAuth } from "@/providers/auth-provider";
+import { useLogout } from "@/features/auth";
 
 const navigation = [
   { name: "Home", href: "/", icon: Home },
   { name: "Expenses", href: "/expenses", icon: Receipt },
-  { name: "Trips", href: "/trips", icon: Plane },
+  { name: "Categories", href: "/categories", icon: Layers3 },
+  { name: "Departments", href: "/departments", icon: Building2 },
   { name: "Approvals", href: "/approvals", icon: CheckCircle },
   { name: "Settings", href: "/settings", icon: Settings },
-  { name: "Support", href: "/support", icon: Phone },
 ];
 
 export default function DashboardLayout({
@@ -34,6 +36,7 @@ export default function DashboardLayout({
   const pathname = usePathname();
   const { user } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const logoutMutation = useLogout();
 
   return (
     <div className="flex h-screen bg-zinc-950">
@@ -105,16 +108,30 @@ export default function DashboardLayout({
             })}
           </nav>
 
-          {/* Footer branding */}
-          <div className="border-t border-zinc-800 p-6">
-            <div className="flex items-center gap-2 text-zinc-500 text-xs">
-              <div className="flex items-center gap-1">
-                <div className="h-2 w-2 rounded-full bg-cyan-400 animate-pulse" />
-                <div className="h-2 w-2 rounded-full bg-cyan-400 animate-pulse delay-75" />
-                <div className="h-2 w-2 rounded-full bg-cyan-400 animate-pulse delay-150" />
+          {/* User info and logout */}
+          <div className="border-t border-zinc-800 p-4 space-y-3">
+            {user && (
+              <div className="flex items-center gap-3 px-2">
+                <div className="h-8 w-8 rounded-full bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center text-white text-sm font-semibold">
+                  {user.name?.charAt(0).toUpperCase() || "U"}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-white truncate">
+                    {user.name}
+                  </p>
+                  <p className="text-xs text-zinc-500 truncate">{user.email}</p>
+                </div>
               </div>
-              <span className="font-mono">EXPensio</span>
-            </div>
+            )}
+            <Button
+              variant="ghost"
+              className="w-full justify-start text-zinc-400 hover:text-red-400 hover:bg-red-500/10"
+              onClick={() => logoutMutation.mutate()}
+              disabled={logoutMutation.isPending}
+            >
+              <LogOut className="h-4 w-4 mr-3" />
+              {logoutMutation.isPending ? "Logging out..." : "Logout"}
+            </Button>
           </div>
         </div>
       </aside>

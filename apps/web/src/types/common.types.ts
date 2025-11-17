@@ -155,6 +155,7 @@ export interface Budget {
   updatedAt: string;
   department?: Department;
   category?: Category;
+  notes?: string;
 }
 
 export interface ApprovalRule {
@@ -218,3 +219,14 @@ export interface DateRange {
   from: Date | undefined;
   to: Date | undefined;
 }
+
+// Additional common types
+export type Status = "active" | "inactive" | "pending" | "archived";
+
+export interface BaseEntity {
+  id: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type Role = RoleEnum;

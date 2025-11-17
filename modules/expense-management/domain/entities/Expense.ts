@@ -485,7 +485,7 @@ export class Expense {
   }
 
   toPlainObject() {
-    return {
+    const plainObject: any = {
       id: this.props.id.getValue(),
       userId: this.props.userId.getValue(),
       vendorId: this.props.vendorId.getValue(),
@@ -508,5 +508,24 @@ export class Expense {
       createdAt: this.props.createdAt,
       updatedAt: this.props.updatedAt,
     };
+
+    // Include relations metadata if available (populated by query repository)
+    const relations = (this as any)._relations;
+    if (relations) {
+      if (relations.vendor) {
+        plainObject.vendor = relations.vendor;
+      }
+      if (relations.category) {
+        plainObject.category = relations.category;
+      }
+      if (relations.department) {
+        plainObject.department = relations.department;
+      }
+      if (relations.user) {
+        plainObject.user = relations.user;
+      }
+    }
+
+    return plainObject;
   }
 }

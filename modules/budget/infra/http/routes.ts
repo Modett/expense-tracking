@@ -26,22 +26,14 @@ const createBudgetResponseSchema = {
   properties: {
     success: { type: "boolean" },
     budgetId: { type: "string", format: "uuid" },
-    departmentId: { type: "string", format: "uuid" },
+    departmentId: { type: ["string", "null"], format: "uuid" },
     categoryId: { type: ["string", "null"], format: "uuid" },
     budgetAmount: { type: "number" },
     fiscalPeriod: { type: "string" },
     startDate: { type: "string", format: "date-time" },
     endDate: { type: "string", format: "date-time" },
   },
-  required: [
-    "success",
-    "budgetId",
-    "departmentId",
-    "budgetAmount",
-    "fiscalPeriod",
-    "startDate",
-    "endDate",
-  ],
+  required: ["success", "budgetId", "budgetAmount", "fiscalPeriod", "startDate", "endDate"],
   additionalProperties: false,
 };
 
@@ -59,15 +51,9 @@ export async function registerBudgetRoutes(
         security: [{ bearerAuth: [] }],
         body: {
           type: "object",
-          required: [
-            "departmentId",
-            "budgetAmount",
-            "fiscalPeriod",
-            "startDate",
-            "endDate",
-          ],
+          required: ["budgetAmount", "fiscalPeriod", "startDate", "endDate"],
           properties: {
-            departmentId: { type: "string", format: "uuid" },
+            departmentId: { type: ["string", "null"], format: "uuid" },
             categoryId: { type: ["string", "null"], format: "uuid" },
             budgetAmount: { type: "number", minimum: 0 },
             fiscalPeriod: { type: "string" },

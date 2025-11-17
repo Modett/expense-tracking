@@ -1,19 +1,17 @@
 "use client";
 
+import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  useDashboardStats,
-  usePendingTasks,
-  useRecentExpenses,
-  useTeamSpending,
-  useExpensesByCategory,
-  type RecentExpenseItem,
-} from "@/features/dashboard";
+import { useRecentExpenses, useTeamSpending, useExpensesByCategory, type RecentExpenseItem } from "@/features/dashboard";
 import { useAuth } from "@/providers/auth-provider";
+import { useApprovalDashboard } from "@/features/approvals";
+import { useExpenseAggregations } from "@/features/expenses";
+import { useDepartments } from "@/features/departments";
+import { useCategories } from "@/features/categories";
+import { expensesApi } from "@/features/expenses/api/expenses.api";
 import {
-  Plane,
   FileText,
   Clock,
   DollarSign,
@@ -21,36 +19,121 @@ import {
   Plus,
   Receipt,
   FileBarChart,
-  Briefcase,
+  Building2,
 } from "lucide-react";
 import Link from "next/link";
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  Legend,
-} from "recharts";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
+import { formatCurrency } from "@/lib/utils";
+import { toast } from "@/components/ui/use-toast";
 
 export default function DashboardPage() {
+  const [mounted, setMounted] = useState(false);
   const { user } = useAuth();
-  // Temporarily disable queries until backend endpoints are created
-  const { data: pendingTasks } = usePendingTasks({ enabled: false });
-  const { data: recentExpenses, isLoading: expensesLoading } =
-    useRecentExpenses(5, {
-      enabled: false,
-    });
-  const { data: teamSpending, isLoading: teamLoading } = useTeamSpending(
-    "monthly",
-    {
-      enabled: false,
-    }
+  const [isDownloadingReport, setIsDownloadingReport] = useState(false);
+
+  const currentRange = useMemo(() => {
+    const now = new Date();
+    const start = new Date(now.getFullYear(), now.getMonth(), 1);
+    return {
+      startISO: start.toISOString(),
+      endISO: now.toISOString(),
+    };
+  }, []);
+
+  const { data: expenseAggregations, isLoading: expenseAggregationsLoading } = useExpenseAggregations(
+    { dateFrom: currentRange.startISO, dateTo: currentRange.endISO, groupBy: ["department"] },
+    { enabled: true }
   );
-  const { data: categoryExpenses, isLoading: categoryLoading } =
-    useExpensesByCategory("monthly", { enabled: false });
+  const totalExpensesAmount = useMemo(
+    () => expenseAggregations?.reduce((sum, agg) => sum + agg.totalAmount, 0) ?? 0,
+    [expenseAggregations]
+  );
+
+  const { data: approvalsDashboard, isLoading: approvalsDashboardLoading } = useApprovalDashboard();
+  const pendingApprovalTasks = useMemo(
+    () => (approvalsDashboard?.myPendingApprovals ?? []).slice(0, 4),
+    [approvalsDashboard]
+  );
+  const pendingApprovalsCount =
+    approvalsDashboard?.pendingCount ?? approvalsDashboard?.summary?.totalPending ?? 0;
+
+  const { data: recentExpenses, isLoading: expensesLoading } = useRecentExpenses(5, { enabled: true });
+  const { data: teamSpending, isLoading: teamLoading } = useTeamSpending("monthly", { enabled: false });
+  const { data: categoryExpenses, isLoading: categoryLoading } = useExpensesByCategory("monthly", { enabled: false });
+  const { data: departments, isLoading: departmentsLoading } = useDepartments();
+  const activeDepartmentsCount = useMemo(
+    () => departments?.filter((dept) => dept.isActive).length ?? 0,
+    [departments]
+  );
+  const { data: categories, isLoading: categoriesLoading } = useCategories();
+  const activeCategoriesCount = useMemo(
+    () => categories?.filter((category) => category.isActive).length ?? 0,
+    [categories]
+  );
+  const statsLoading =
+    expenseAggregationsLoading ||
+    approvalsDashboardLoading ||
+    departmentsLoading ||
+    categoriesLoading;
+
+  const handleGenerateReport = async () => {
+    try {
+      setIsDownloadingReport(true);
+      const now = new Date();
+      const month = now.getMonth() + 1;
+      const year = now.getFullYear();
+      const monthName = now.toLocaleString("default", { month: "long" });
+      const blob = await expensesApi.downloadMonthlyReport({ month, year });
+
+      const url = window.URL.createObjectURL(new Blob([blob], { type: 'text/csv' }));
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `monthly-report-${monthName}-${year}.csv`;
+      document.body.appendChild(link);
+      link.click();
+
+      // Clean up after a short delay to ensure download starts
+      setTimeout(() => {
+        link.remove();
+        window.URL.revokeObjectURL(url);
+      }, 100);
+
+      toast({
+        title: "Report generated",
+        description: `Monthly expense report for ${monthName} ${year} has been downloaded.`,
+      });
+    } catch (error: any) {
+      console.error("Error generating report:", error);
+
+      let errorMessage = "Please try again later.";
+      if (error.message) {
+        errorMessage = error.message;
+      } else if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      }
+
+      // Check if it's a permission error
+      if (errorMessage.includes("Forbidden") || errorMessage.includes("Manager access required")) {
+        errorMessage = "You need Manager or Admin role to generate reports. Please contact your administrator.";
+      }
+
+      toast({
+        title: "Failed to generate report",
+        description: errorMessage,
+        variant: "destructive",
+      });
+    } finally {
+      setIsDownloadingReport(false);
+    }
+  };
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-zinc-950 p-6">
@@ -59,42 +142,139 @@ export default function DashboardPage() {
         <div className="flex items-center gap-4 mb-2">
           <div className="h-16 w-16 rounded-full bg-gradient-to-br from-cyan-400 to-blue-500 overflow-hidden">
             <div className="flex h-full w-full items-center justify-center text-white font-semibold text-xl">
-              U
+              {user?.name?.charAt(0).toUpperCase() || "U"}
             </div>
           </div>
           <div>
-            <h1 className="text-3xl font-bold text-white">Welcome</h1>
-            <p className="text-zinc-400">Dashboard</p>
+            <h1 className="text-3xl font-bold text-white">
+              Welcome back, {user?.name?.split(" ")[0] || "User"}
+            </h1>
+            <p className="text-zinc-400">Here's what's happening today</p>
           </div>
         </div>
+      </div>
+
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+        <Card className="bg-zinc-900 border-zinc-800">
+          <CardContent className="p-6">
+            {statsLoading ? (
+              <Skeleton className="h-24 bg-zinc-800" />
+            ) : (
+              <>
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="p-2 bg-purple-500/10 rounded-lg">
+                    <DollarSign className="w-5 h-5 text-purple-500" />
+                  </div>
+                  <span className="text-sm text-zinc-400">Total Expenses</span>
+                </div>
+                <p className="text-2xl font-bold text-white">
+                  {formatCurrency(totalExpensesAmount)}
+                </p>
+                <p className="text-xs text-zinc-500 mt-1">This month</p>
+              </>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card className="bg-zinc-900 border-zinc-800">
+          <CardContent className="p-6">
+            {statsLoading ? (
+              <Skeleton className="h-24 bg-zinc-800" />
+            ) : (
+              <>
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="p-2 bg-yellow-500/10 rounded-lg">
+                    <Clock className="w-5 h-5 text-yellow-500" />
+                  </div>
+                  <span className="text-sm text-zinc-400">Pending Approvals</span>
+                </div>
+                <p className="text-2xl font-bold text-white">{pendingApprovalsCount}</p>
+                <p className="text-xs text-zinc-500 mt-1">Awaiting your action</p>
+              </>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card className="bg-zinc-900 border-zinc-800">
+          <CardContent className="p-6">
+            {statsLoading ? (
+              <Skeleton className="h-24 bg-zinc-800" />
+            ) : (
+              <>
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="p-2 bg-green-500/10 rounded-lg">
+                    <Building2 className="w-5 h-5 text-green-500" />
+                  </div>
+                  <span className="text-sm text-zinc-400">Active Departments</span>
+                </div>
+                <p className="text-2xl font-bold text-white">{activeDepartmentsCount}</p>
+                <p className="text-xs text-zinc-500 mt-1">Currently active</p>
+              </>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card className="bg-zinc-900 border-zinc-800">
+          <CardContent className="p-6">
+            {statsLoading ? (
+              <Skeleton className="h-24 bg-zinc-800" />
+            ) : (
+              <>
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="p-2 bg-blue-500/10 rounded-lg">
+                    <FileText className="w-5 h-5 text-blue-500" />
+                  </div>
+                  <span className="text-sm text-zinc-400">Active Categories</span>
+                </div>
+                <p className="text-2xl font-bold text-white">{activeCategoriesCount}</p>
+                <p className="text-xs text-zinc-500 mt-1">Available for expenses</p>
+              </>
+            )}
+          </CardContent>
+        </Card>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
         {/* Pending Tasks */}
         <Card className="bg-zinc-900 border-zinc-800 col-span-1 lg:col-span-2">
           <CardHeader>
-            <CardTitle className="text-white font-semibold text-lg">
-              Pending Tasks
-            </CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-white font-semibold text-lg">
+                Pending Tasks
+              </CardTitle>
+              <Link href="/approvals">
+                <Button variant="ghost" size="sm" className="text-zinc-400 hover:text-white">
+                  View All
+                </Button>
+              </Link>
+            </div>
           </CardHeader>
           <CardContent className="space-y-3">
-            <TaskItem
-              icon={<CheckCircle className="h-5 w-5 text-purple-400" />}
-              label="Pending Approvals"
-              value={5}
-            />
-            <TaskItem
-              icon={<Plane className="h-5 w-5 text-purple-400" />}
-              label="New Trips Registered"
-              value={1}
-            />
-            <TaskItem
-              icon={<FileText className="h-5 w-5 text-purple-400" />}
-              label="Unreported Expenses"
-              value={4}
-            />
-          </CardContent>
-        </Card>
+            {pendingApprovalTasks.length > 0 ? (
+              pendingApprovalTasks.map((task) => (
+                <Link key={task.approvalId} href={`/approvals/${task.approvalId}`}>
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-zinc-800/50 hover:bg-zinc-800 transition-colors">
+                    <div>
+                      <p className="text-sm font-medium text-white">
+                        {task.expenseDescription || "Expense approval"}
+                      </p>
+                      <p className="text-xs text-zinc-500">
+                        {task.priority?.toUpperCase()} � {new Date(task.submittedAt).toLocaleDateString()}
+                      </p>
+                    </div>
+                    <div className="text-sm font-semibold text-white">
+                      {formatCurrency(task.expenseAmount || 0)}
+                    </div>
+                  </div>
+                </Link>
+              ))
+            ) : (
+              <div className="text-center text-sm text-zinc-500 py-6">
+                No pending approvals right now.
+              </div>
+            )}
+          </CardContent>        </Card>
 
         {/* Recent Expenses */}
         <Card className="bg-zinc-900 border-zinc-800">
@@ -192,27 +372,29 @@ export default function DashboardPage() {
               </Button>
             </Link>
 
-            <Link href="/expenses/reports">
-              <Button
-                variant="ghost"
-                className="w-full h-20 bg-zinc-800/50 hover:bg-zinc-800 border-zinc-700 flex flex-col items-center gap-2"
-              >
-                <div className="h-10 w-10 rounded-full bg-gradient-to-br from-cyan-500 to-cyan-600 flex items-center justify-center">
-                  <FileBarChart className="h-5 w-5 text-white" />
-                </div>
-                <span className="text-white text-sm">Create report</span>
-              </Button>
-            </Link>
+            <Button
+              variant="ghost"
+              className="w-full h-20 bg-zinc-800/50 hover:bg-zinc-800 border-zinc-700 flex flex-col items-center gap-2"
+              onClick={handleGenerateReport}
+              disabled={isDownloadingReport}
+            >
+              <div className="h-10 w-10 rounded-full bg-gradient-to-br from-cyan-500 to-cyan-600 flex items-center justify-center">
+                <FileBarChart className="h-5 w-5 text-white" />
+              </div>
+              <span className="text-white text-sm">
+                {isDownloadingReport ? "Preparing..." : "Create report"}
+              </span>
+            </Button>
 
-            <Link href="/trips/new">
+            <Link href="/approvals">
               <Button
                 variant="ghost"
                 className="w-full h-20 bg-zinc-800/50 hover:bg-zinc-800 border-zinc-700 flex flex-col items-center gap-2"
               >
                 <div className="h-10 w-10 rounded-full bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center">
-                  <Briefcase className="h-5 w-5 text-white" />
+                  <CheckCircle className="h-5 w-5 text-white" />
                 </div>
-                <span className="text-white text-sm">Create trip</span>
+                <span className="text-white text-sm">Review approvals</span>
               </Button>
             </Link>
           </div>
@@ -304,22 +486,8 @@ export default function DashboardPage() {
   );
 }
 
-function TaskItem({
-  icon,
-  label,
-  value,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: string | number;
-}) {
-  return (
-    <div className="flex items-center justify-between p-3 rounded-lg bg-zinc-800/50 hover:bg-zinc-800 transition-colors">
-      <div className="flex items-center gap-3">
-        {icon}
-        <span className="text-zinc-300 text-sm">{label}</span>
-      </div>
-      <span className="text-white font-semibold">{value}</span>
-    </div>
-  );
-}
+
+
+
+
+

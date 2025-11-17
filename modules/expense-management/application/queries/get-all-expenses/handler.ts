@@ -5,6 +5,7 @@ import type {
 import {
   UserId,
   ExpenseStatus,
+  ExpensePriority,
   CategoryId,
   DepartmentId,
   VendorId,
@@ -32,6 +33,24 @@ export interface ExpenseListItem {
   tagIds: string[];
   createdAt: Date;
   updatedAt: Date;
+  // Nested relations for frontend display
+  vendor?: {
+    vendorId: string;
+    name: string;
+  } | null;
+  category?: {
+    categoryId: string;
+    name: string;
+  } | null;
+  department?: {
+    departmentId: string;
+    name: string;
+  } | null;
+  user?: {
+    userId: string;
+    name: string;
+    email: string;
+  } | null;
 }
 
 export interface GetAllExpensesResponse {
@@ -72,6 +91,9 @@ export class GetAllExpensesQueryHandler {
     }
     if (query.categoryId) {
       filters.categoryId = CategoryId.fromString(query.categoryId);
+    }
+    if (query.priority) {
+      filters.priority = ExpensePriority.fromString(query.priority);
     }
     if (query.departmentId) {
       filters.departmentId = DepartmentId.fromString(query.departmentId);
@@ -124,6 +146,33 @@ export class GetAllExpensesQueryHandler {
       }
       if (plainObject.inventoryDropId) {
         item.inventoryDropId = plainObject.inventoryDropId;
+      }
+
+      // Add nested relations if available (populated by query repository)
+      if (plainObject.vendor) {
+        item.vendor = {
+          vendorId: plainObject.vendor.vendorId,
+          name: plainObject.vendor.name,
+        };
+      }
+      if (plainObject.category) {
+        item.category = {
+          categoryId: plainObject.category.categoryId,
+          name: plainObject.category.name,
+        };
+      }
+      if (plainObject.department) {
+        item.department = {
+          departmentId: plainObject.department.departmentId,
+          name: plainObject.department.name,
+        };
+      }
+      if (plainObject.user) {
+        item.user = {
+          userId: plainObject.user.userId,
+          name: plainObject.user.name,
+          email: plainObject.user.email,
+        };
       }
 
       return item;

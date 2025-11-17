@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { Home, Receipt, Plane, CheckCircle, Settings, Phone } from "lucide-react";
+import { Home, Receipt, Layers3, Building2, CheckCircle, Settings } from "lucide-react";
 import { NavItem } from "./nav-item";
 import { UserProfile } from "./user-profile";
 import { Separator } from "@/components/ui/separator";
@@ -9,10 +9,10 @@ import { Separator } from "@/components/ui/separator";
 const navigationItems = [
   { href: "/", icon: Home, label: "Home" },
   { href: "/expenses", icon: Receipt, label: "Expenses" },
-  { href: "/trips", icon: Plane, label: "Trips" },
+  { href: "/categories", icon: Layers3, label: "Categories" },
+  { href: "/departments", icon: Building2, label: "Departments" },
   { href: "/approvals", icon: CheckCircle, label: "Approvals" },
   { href: "/settings", icon: Settings, label: "Settings" },
-  { href: "/support", icon: Phone, label: "Support" },
 ];
 
 export function Sidebar() {

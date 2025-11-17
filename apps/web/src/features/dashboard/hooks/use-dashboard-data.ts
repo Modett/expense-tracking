@@ -18,11 +18,12 @@ export function useDashboardData() {
   });
 }
 
-export function useDashboardStats() {
+export function useDashboardStats(options?: { enabled?: boolean }) {
   return useQuery<DashboardStats>({
     queryKey: queryKeys.dashboard.stats,
     queryFn: dashboardApi.getStats,
     staleTime: 1000 * 60 * 5,
+    enabled: options?.enabled ?? true,
   });
 }
 

@@ -27,10 +27,17 @@ export interface CreateApprovalProps {
   comments?: ApprovalComments;
 }
 
+export interface ApprovalRelations {
+  expense?: unknown;
+  approver?: unknown;
+}
+
 export class Approval {
   private constructor(private props: ApprovalProps) {
     this.validate();
   }
+
+  private relations: ApprovalRelations = {};
 
   static create(props: CreateApprovalProps): Approval {
     const now = new Date();
@@ -196,6 +203,13 @@ export class Approval {
     return this.props.comments !== undefined && this.props.comments.hasValue();
   }
 
+  attachRelations(relations: ApprovalRelations): void {
+    this.relations = {
+      ...this.relations,
+      ...relations,
+    };
+  }
+
   equals(other: Approval): boolean {
     if (!other) return false;
     return this.props.id.equals(other.props.id);
@@ -212,6 +226,8 @@ export class Approval {
       approvedAt: this.props.approvedAt || null,
       createdAt: this.props.createdAt,
       updatedAt: this.props.updatedAt,
+      expense: this.relations.expense,
+      approver: this.relations.approver,
     };
   }
 }

@@ -1,9 +1,12 @@
-import type { IApprovalRuleQueryRepository, ApprovalRuleFilters } from "../../../domain/repositories/IApprovalRuleQueryRepository.js";
+import type {
+  IApprovalRuleQueryRepository,
+  ApprovalRuleFilters,
+} from "../../../domain/repositories/IApprovalRuleQueryRepository.js";
 import { CategoryId, ApproverRole } from "../../../domain/index.js";
 import type { GetAllApprovalRulesQuery } from "./query.js";
 
 export interface ApprovalRuleDTO {
-  id: string;
+  ruleId: string;
   categoryId: string;
   minAmount: number;
   approverRole: string;
@@ -11,6 +14,7 @@ export interface ApprovalRuleDTO {
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
+  category?: any;
 }
 
 export class GetAllApprovalRulesQueryHandler {
@@ -43,6 +47,12 @@ export class GetAllApprovalRulesQueryHandler {
 
     const approvalRules = await this.approvalRuleQueryRepo.findAll(filters);
 
-    return approvalRules.map((rule) => rule.toPlainObject());
+    return approvalRules.map((rule) => {
+      const plainObject = rule.toPlainObject();
+      return {
+        ...plainObject,
+        category: (rule as any).category,
+      };
+    });
   }
 }

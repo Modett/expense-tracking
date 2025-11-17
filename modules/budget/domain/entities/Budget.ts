@@ -11,7 +11,7 @@ import {
 
 export interface BudgetProps {
   id: BudgetId;
-  departmentId: DepartmentId;
+  departmentId: DepartmentId | null;
   categoryId: CategoryId | null; // Optional for backward compatibility
   amount: BudgetAmount;
   fiscalPeriod: FiscalPeriod;
@@ -25,7 +25,7 @@ export interface BudgetProps {
 }
 
 export interface CreateBudgetProps {
-  departmentId: DepartmentId;
+  departmentId: DepartmentId | null;
   categoryId?: CategoryId | null; // Optional - department-based budgets
   budgetAmount: number;
   fiscalPeriod: FiscalPeriod;
@@ -68,9 +68,7 @@ export class Budget {
     if (!this.props.id) {
       throw new Error("Budget ID is required");
     }
-    if (!this.props.departmentId) {
-      throw new Error("Department ID is required");
-    }
+    // departmentId can be null for organization-wide budgets
     // CategoryId is now optional for department-based budgets
     if (!this.props.amount) {
       throw new Error("Budget amount is required");
@@ -93,7 +91,7 @@ export class Budget {
     return this.props.id;
   }
 
-  get departmentId(): DepartmentId {
+  get departmentId(): DepartmentId | null {
     return this.props.departmentId;
   }
 
@@ -242,6 +240,7 @@ export class Budget {
   }
 
   belongsToDepartment(departmentId: DepartmentId): boolean {
+    if (!this.props.departmentId) return false;
     return this.props.departmentId.equals(departmentId);
   }
 
@@ -275,7 +274,7 @@ export class Budget {
   toPlainObject() {
     return {
       id: this.props.id.getValue(),
-      departmentId: this.props.departmentId.getValue(),
+      departmentId: this.props.departmentId?.getValue() ?? null,
       categoryId: this.props.categoryId?.getValue() ?? null,
       budgetAmount: this.props.amount.getBudgetAmount(),
       spentAmount: this.props.amount.getSpentAmount(),

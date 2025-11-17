@@ -24,17 +24,48 @@ import {
 } from "../../domain/value-objects/index.js";
 import type { Expense as PrismaExpense } from "@prisma/client";
 
+type PrismaExpenseWithTags = PrismaExpense & {
+  expenseTags?: Array<{ tagId: string }>;
+  budgetOverride: string;
+  approvalDeadline: Date | null;
+  linkedPoId: string | null;
+  vendor?: { vendorId: string; name: string } | null;
+  category?: { categoryId: string; name: string } | null;
+  department?: { departmentId: string; name: string } | null;
+  user?: { userId: string; name: string; email: string } | null;
+};
+
 export class PrismaExpenseQueryRepository implements IExpenseQueryRepository {
   constructor(private readonly prisma: PrismaClient) {}
 
-  private toDomain(
-    prismaExpense: PrismaExpense & { expenseTags?: Array<{ tagId: string }> }
-  ): Expense {
+  private get relationIncludes() {
+    return {
+      expenseTags: {
+        select: { tagId: true },
+      },
+      vendor: {
+        select: { vendorId: true, name: true },
+      },
+      category: {
+        select: { categoryId: true, name: true },
+      },
+      department: {
+        select: { departmentId: true, name: true },
+      },
+      user: {
+        select: { userId: true, name: true, email: true },
+      },
+    };
+  }
+
+  private toDomain(prismaExpense: PrismaExpenseWithTags): Expense {
     const tagIds = prismaExpense.expenseTags
-      ? prismaExpense.expenseTags.map((et) => TagId.fromString(et.tagId))
+      ? prismaExpense.expenseTags.map((et: { tagId: string }) =>
+          TagId.fromString(et.tagId)
+        )
       : [];
 
-    return Expense.reconstitute({
+    const expense = Expense.reconstitute({
       id: ExpenseId.fromString(prismaExpense.expenseId),
       userId: UserId.fromString(prismaExpense.userId),
       vendorId: VendorId.fromString(prismaExpense.vendorId),
@@ -49,9 +80,11 @@ export class PrismaExpenseQueryRepository implements IExpenseQueryRepository {
         Number(prismaExpense.totalAmount)
       ),
       status: ExpenseStatus.fromString(prismaExpense.status),
-      priority: ExpensePriority.fromString(prismaExpense.priority),
+      priority: ExpensePriority.fromString(
+        prismaExpense.priority || "standard"
+      ),
       budgetOverride: BudgetExceptionType.fromString(
-        prismaExpense.budgetOverride
+        prismaExpense.budgetOverride || "none"
       ),
       justification: prismaExpense.justification || undefined,
       approvalDeadline: prismaExpense.approvalDeadline || undefined,
@@ -69,16 +102,24 @@ export class PrismaExpenseQueryRepository implements IExpenseQueryRepository {
       createdAt: prismaExpense.createdAt,
       updatedAt: prismaExpense.updatedAt,
     });
+
+    // Attach relations metadata for query use cases
+    if (prismaExpense.vendor || prismaExpense.category || prismaExpense.department || prismaExpense.user) {
+      (expense as any)._relations = {
+        vendor: prismaExpense.vendor,
+        category: prismaExpense.category,
+        department: prismaExpense.department,
+        user: prismaExpense.user,
+      };
+    }
+
+    return expense;
   }
 
   async findById(expenseId: ExpenseId): Promise<Expense | null> {
     const expense = await this.prisma.expense.findUnique({
       where: { expenseId: expenseId.getValue() },
-      include: {
-        expenseTags: {
-          select: { tagId: true },
-        },
-      },
+      include: this.relationIncludes,
     });
 
     if (!expense) {
@@ -91,71 +132,61 @@ export class PrismaExpenseQueryRepository implements IExpenseQueryRepository {
   async findByUserId(userId: UserId): Promise<Expense[]> {
     const expenses = await this.prisma.expense.findMany({
       where: { userId: userId.getValue() },
-      include: {
-        expenseTags: {
-          select: { tagId: true },
-        },
-      },
+      include: this.relationIncludes,
       orderBy: { createdAt: "desc" },
     });
 
-    return expenses.map((expense): Expense => this.toDomain(expense));
+    return expenses.map(
+      (expense: PrismaExpenseWithTags): Expense => this.toDomain(expense)
+    );
   }
 
   async findByStatus(status: ExpenseStatus): Promise<Expense[]> {
     const expenses = await this.prisma.expense.findMany({
       where: { status: status.getValue() },
-      include: {
-        expenseTags: {
-          select: { tagId: true },
-        },
-      },
+      include: this.relationIncludes,
       orderBy: { createdAt: "desc" },
     });
 
-    return expenses.map((expense): Expense => this.toDomain(expense));
+    return expenses.map(
+      (expense: PrismaExpenseWithTags): Expense => this.toDomain(expense)
+    );
   }
 
   async findByCategoryId(categoryId: CategoryId): Promise<Expense[]> {
     const expenses = await this.prisma.expense.findMany({
       where: { categoryId: categoryId.getValue() },
-      include: {
-        expenseTags: {
-          select: { tagId: true },
-        },
-      },
+      include: this.relationIncludes,
       orderBy: { createdAt: "desc" },
     });
 
-    return expenses.map((expense): Expense => this.toDomain(expense));
+    return expenses.map(
+      (expense: PrismaExpenseWithTags): Expense => this.toDomain(expense)
+    );
   }
 
   async findByDepartmentId(departmentId: DepartmentId): Promise<Expense[]> {
     const expenses = await this.prisma.expense.findMany({
       where: { departmentId: departmentId.getValue() },
-      include: {
-        expenseTags: {
-          select: { tagId: true },
-        },
-      },
+      include: this.relationIncludes,
       orderBy: { createdAt: "desc" },
     });
 
-    return expenses.map((expense): Expense => this.toDomain(expense));
+    return expenses.map(
+      (expense: PrismaExpenseWithTags): Expense => this.toDomain(expense)
+    );
   }
 
   async findByVendorId(vendorId: VendorId): Promise<Expense[]> {
     const expenses = await this.prisma.expense.findMany({
       where: { vendorId: vendorId.getValue() },
-      include: {
-        expenseTags: {
-          select: { tagId: true },
-        },
-      },
+      include: this.relationIncludes,
       orderBy: { createdAt: "desc" },
     });
 
-    return expenses.map((expense): Expense => this.toDomain(expense));
+    return expenses.map(
+      (expense: PrismaExpenseWithTags): Expense => this.toDomain(expense)
+    );
   }
 
   async findAll(filters?: ExpenseFilters): Promise<Expense[]> {
@@ -170,6 +201,7 @@ export class PrismaExpenseQueryRepository implements IExpenseQueryRepository {
           departmentId: filters.departmentId.getValue(),
         }),
         ...(filters?.status && { status: filters.status.getValue() }),
+        ...(filters?.priority && { priority: filters.priority.getValue() }),
         ...(filters?.dateFrom || filters?.dateTo
           ? {
               dateOfExpense: {
@@ -191,15 +223,13 @@ export class PrismaExpenseQueryRepository implements IExpenseQueryRepository {
             }
           : {}),
       },
-      include: {
-        expenseTags: {
-          select: { tagId: true },
-        },
-      },
+      include: this.relationIncludes,
       orderBy: { createdAt: "desc" },
     });
 
-    return expenses.map((expense): Expense => this.toDomain(expense));
+    return expenses.map(
+      (expense: PrismaExpenseWithTags): Expense => this.toDomain(expense)
+    );
   }
 
   async count(filters?: ExpenseFilters): Promise<number> {
@@ -214,6 +244,7 @@ export class PrismaExpenseQueryRepository implements IExpenseQueryRepository {
           departmentId: filters.departmentId.getValue(),
         }),
         ...(filters?.status && { status: filters.status.getValue() }),
+        ...(filters?.priority && { priority: filters.priority.getValue() }),
         ...(filters?.dateFrom || filters?.dateTo
           ? {
               dateOfExpense: {
