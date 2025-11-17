@@ -103,7 +103,7 @@ export class BudgetController {
       console.log("[BudgetController] Validation passed, creating command...");
 
       const command = new CreateBudgetCommand(
-        validatedBody.departmentId,
+        validatedBody.departmentId ?? null,
         validatedBody.categoryId ?? null,
         validatedBody.budgetAmount,
         validatedBody.fiscalPeriod,

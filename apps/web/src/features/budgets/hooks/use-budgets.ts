@@ -72,24 +72,31 @@ export function useCreateBudget() {
 
 export function useUpdateBudget() {
   const queryClient = useQueryClient();
+  const router = useRouter();
 
   return useMutation({
     mutationFn: ({ budgetId, data }: { budgetId: string; data: UpdateBudgetRequest }) =>
       budgetsApi.update(budgetId, data),
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.budgets.all });
-      queryClient.invalidateQueries({
+    onSuccess: async (data) => {
+      await queryClient.invalidateQueries({ queryKey: queryKeys.budgets.all });
+      await queryClient.invalidateQueries({
         queryKey: queryKeys.budgets.detail(data.budgetId),
       });
       toast({
         title: "Budget updated",
         description: "Budget has been updated successfully",
       });
+      router.push("/budgets");
     },
     onError: (error: any) => {
+      const message =
+        error.response?.data?.error ||
+        error.response?.data?.message ||
+        "Please try again";
+      console.error("Failed to update budget:", error.response?.data || error);
       toast({
         title: "Failed to update budget",
-        description: error.response?.data?.message || "Please try again",
+        description: message,
         variant: "destructive",
       });
     },

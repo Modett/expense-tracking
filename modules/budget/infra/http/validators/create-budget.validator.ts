@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export const createBudgetBodySchema = z.object({
-  departmentId: z.string().uuid(),
+  departmentId: z.string().uuid().optional().nullable(),
   categoryId: z.string().uuid().nullable().optional(), // Optional for department-based budgets
   budgetAmount: z.number().positive(),
   fiscalPeriod: z

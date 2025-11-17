@@ -14,7 +14,7 @@ import {
 type BudgetApiResponse = {
   id?: string;
   budgetId?: string;
-  departmentId: string;
+  departmentId?: string | null;
   categoryId?: string | null;
   budgetAmount: number;
   spentAmount: number;
@@ -100,7 +100,7 @@ const mapBudget = (budget: BudgetApiResponse): Budget => {
 
   return {
     budgetId: budget.budgetId ?? budget.id ?? "",
-    departmentId: budget.departmentId,
+    departmentId: budget.departmentId ?? null,
     categoryId: budget.categoryId ?? undefined,
     budgetAmount,
     spentAmount,
@@ -159,17 +159,26 @@ export const budgetsApi = {
   },
 
   create: async (data: CreateBudgetRequest): Promise<CreateBudgetResponse> => {
+    const payload = {
+      ...data,
+      departmentId: data.departmentId || null,
+    };
     const response = await apiClient.post<{ success: boolean; data: CreateBudgetResponse }>(
       "/budgets",
-      data
+      payload
     );
     return response.data.data;
   },
 
   update: async (budgetId: string, data: UpdateBudgetRequest): Promise<Budget> => {
+    const payload: UpdateBudgetRequest = {
+      ...data,
+      enforcementType: data.enforcementType?.toLowerCase() as UpdateBudgetRequest["enforcementType"],
+    };
+
     const response = await apiClient.patch<{ success: boolean; data: { budgetId: string } }>(
       `/budgets/${budgetId}`,
-      data
+      payload
     );
     return budgetsApi.getById(budgetId);
   },

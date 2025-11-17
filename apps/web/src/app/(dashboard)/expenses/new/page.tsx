@@ -9,7 +9,6 @@ import { useCreateExpense } from "@/features/expenses";
 import { useCategories } from "@/features/categories";
 import { useVendors } from "@/features/vendors";
 import { useDepartments } from "@/features/departments";
-import { ExpensePriorityEnum, BudgetExceptionTypeEnum } from "@/features/expenses/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -27,23 +26,12 @@ const createExpenseSchema = z.object({
   totalAmount: z.number().positive("Total amount must be positive"),
   expenseDate: z.string().min(1, "Date is required"),
   receiptUrl: z.string().url("Must be a valid URL").optional().or(z.literal("")),
-  priority: z.nativeEnum(ExpensePriorityEnum).optional(),
-  budgetOverride: z.nativeEnum(BudgetExceptionTypeEnum).optional(),
-  justification: z.string().optional(),
 }).refine((data) => {
   const total = data.netAmount + data.taxAmount;
   return Math.abs(total - data.totalAmount) < 0.01;
 }, {
   message: "Total amount must equal net amount + tax amount",
   path: ["totalAmount"],
-}).refine((data) => {
-  if (data.budgetOverride && data.budgetOverride !== BudgetExceptionTypeEnum.NONE) {
-    return data.justification && data.justification.trim().length >= 50;
-  }
-  return true;
-}, {
-  message: "Justification is required when budget override is selected (minimum 50 characters)",
-  path: ["justification"],
 });
 
 type CreateExpenseFormData = z.infer<typeof createExpenseSchema>;
@@ -67,15 +55,11 @@ export default function NewExpensePage() {
       totalAmount: 0,
       expenseDate: new Date().toISOString().split("T")[0],
       receiptUrl: "",
-      priority: ExpensePriorityEnum.STANDARD,
-      budgetOverride: BudgetExceptionTypeEnum.NONE,
-      justification: "",
     },
   });
 
   const netAmount = form.watch("netAmount");
   const taxAmount = form.watch("taxAmount");
-  const budgetOverride = form.watch("budgetOverride");
 
   useEffect(() => {
     const total = (netAmount || 0) + (taxAmount || 0);
@@ -86,11 +70,8 @@ export default function NewExpensePage() {
     const payload = {
       ...data,
       expenseDate: new Date(data.expenseDate).toISOString(),
-      priority: data.priority,
-      budgetOverride: data.budgetOverride,
       departmentId: data.departmentId || undefined,
       receiptUrl: data.receiptUrl || undefined,
-      justification: data.justification || undefined,
     };
     createExpense(payload);
   };
@@ -312,82 +293,6 @@ export default function NewExpensePage() {
                     </FormItem>
                   )}
                 />
-              </CardContent>
-            </Card>
-
-            <Card className="bg-zinc-900 border-zinc-800">
-              <CardHeader>
-                <CardTitle className="text-white">Additional Options</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="priority"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-zinc-300">Priority</FormLabel>
-                        <FormControl>
-                          <select
-                            {...field}
-                            className="w-full px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-md text-white"
-                          >
-                            {Object.values(ExpensePriorityEnum).map((priority) => (
-                              <option key={priority} value={priority}>
-                                {priority.charAt(0) + priority.slice(1).toLowerCase()}
-                              </option>
-                            ))}
-                          </select>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="budgetOverride"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-zinc-300">Budget Override</FormLabel>
-                        <FormControl>
-                          <select
-                            {...field}
-                            className="w-full px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-md text-white"
-                          >
-                            {Object.values(BudgetExceptionTypeEnum).map((type) => (
-                              <option key={type} value={type}>
-                                {type.charAt(0) + type.slice(1).toLowerCase()}
-                              </option>
-                            ))}
-                          </select>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                {budgetOverride && budgetOverride !== BudgetExceptionTypeEnum.NONE && (
-                  <FormField
-                    control={form.control}
-                    name="justification"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-zinc-300">Justification *</FormLabel>
-                        <FormControl>
-                          <textarea
-                            {...field}
-                            rows={3}
-                            placeholder="Enter justification for budget override (minimum 50 characters)..."
-                            className="w-full px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-md text-white resize-none"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                )}
               </CardContent>
             </Card>
 

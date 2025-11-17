@@ -21,7 +21,9 @@ export class PrismaBudgetQueryRepository implements IBudgetQueryRepository {
   private toDomain(prismaBudget: any): Budget {
     return Budget.reconstitute({
       id: BudgetId.fromString(prismaBudget.budgetId),
-      departmentId: DepartmentId.fromString(prismaBudget.departmentId),
+      departmentId: prismaBudget.departmentId
+        ? DepartmentId.fromString(prismaBudget.departmentId)
+        : null,
       categoryId: prismaBudget.categoryId
         ? CategoryId.fromString(prismaBudget.categoryId)
         : null,

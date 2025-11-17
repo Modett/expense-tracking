@@ -11,7 +11,7 @@ export interface BudgetThresholds {
 
 export interface Budget {
   budgetId: string;
-  departmentId: string;
+  departmentId: string | null;
   categoryId?: string | null;
   budgetAmount: number;
   spentAmount: number;
@@ -46,7 +46,7 @@ export interface Budget {
 }
 
 export interface CreateBudgetRequest {
-  departmentId: string;
+  departmentId?: string | null;
   categoryId?: string | null;
   budgetAmount: number;
   fiscalPeriod: string;
@@ -97,7 +97,7 @@ export interface BudgetStatus {
 export interface CreateBudgetResponse {
   success: boolean;
   budgetId: string;
-  departmentId: string;
+  departmentId: string | null;
   categoryId?: string | null;
   budgetAmount: number;
   fiscalPeriod: string;

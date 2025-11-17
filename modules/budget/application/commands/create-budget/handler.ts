@@ -13,7 +13,7 @@ import type { CreateBudgetCommand } from "./command.js";
 export interface CreateBudgetResponse {
   success: boolean;
   budgetId: string;
-  departmentId: string;
+  departmentId: string | null;
   categoryId: string | null;
   budgetAmount: number;
   fiscalPeriod: string;
@@ -28,14 +28,16 @@ export class CreateBudgetCommandHandler {
   ) {}
 
   async handle(command: CreateBudgetCommand): Promise<CreateBudgetResponse> {
-    const departmentId = DepartmentId.fromString(command.departmentId);
+    const departmentId = command.departmentId
+      ? DepartmentId.fromString(command.departmentId)
+      : null;
     const categoryId = command.categoryId
       ? CategoryId.fromString(command.categoryId)
       : null;
     const fiscalPeriod = FiscalPeriod.fromString(command.fiscalPeriod);
 
     // Check if budget already exists for this combination
-    if (categoryId) {
+    if (departmentId && categoryId) {
       const existingBudget =
         await this.budgetQueryRepo.findByDepartmentAndCategoryAndPeriod(
           departmentId,
@@ -48,7 +50,7 @@ export class CreateBudgetCommandHandler {
           `Budget already exists for department ${command.departmentId}, category ${command.categoryId}, and fiscal period ${command.fiscalPeriod}`
         );
       }
-    } else {
+    } else if (departmentId) {
       const existingBudget =
         await this.budgetQueryRepo.findActiveDepartmentBudget(
           departmentId,
@@ -96,7 +98,7 @@ export class CreateBudgetCommandHandler {
     return {
       success: true,
       budgetId: budget.id.getValue(),
-      departmentId: command.departmentId,
+      departmentId: command.departmentId ?? null,
       categoryId: command.categoryId ?? null,
       budgetAmount: command.budgetAmount,
       fiscalPeriod: command.fiscalPeriod,

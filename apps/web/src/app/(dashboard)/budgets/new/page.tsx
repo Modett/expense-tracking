@@ -22,7 +22,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { ArrowLeft } from "lucide-react";
 
 const createBudgetSchema = z.object({
-  departmentId: z.string().min(1, "Department is required"),
+  departmentId: z.string().uuid().optional().nullable(),
   categoryId: z.string().optional().nullable(),
   budgetAmount: z.number().min(1, "Budget amount must be greater than 0"),
   fiscalPeriod: z.string().min(1, "Fiscal period is required"),
@@ -37,6 +37,7 @@ const createBudgetSchema = z.object({
 
 type CreateBudgetFormData = z.infer<typeof createBudgetSchema>;
 const CATEGORY_ALL_VALUE = "__ALL__";
+const ORG_LEVEL_VALUE = "__ORG_WIDE__";
 
 export default function CreateBudgetPage() {
   const router = useRouter();
@@ -65,6 +66,7 @@ export default function CreateBudgetPage() {
     const payload = {
       ...data,
       categoryId: data.categoryId || null,
+      departmentId: data.departmentId || null,
       startDate: new Date(data.startDate).toISOString(),
       endDate: new Date(data.endDate).toISOString(),
     };
@@ -91,16 +93,23 @@ export default function CreateBudgetPage() {
           <div className="grid grid-cols-2 gap-6">
             <div>
               <Label htmlFor="departmentId" className="text-zinc-300">
-                Department <span className="text-red-500">*</span>
+                Department (Optional)
               </Label>
               <Select
-                value={watch("departmentId")}
-                onValueChange={(value) => setValue("departmentId", value)}
+                value={watch("departmentId") ?? ORG_LEVEL_VALUE}
+                onValueChange={(value) => {
+                  if (value === ORG_LEVEL_VALUE) {
+                    setValue("departmentId", null);
+                    return;
+                  }
+                  setValue("departmentId", value);
+                }}
               >
                 <SelectTrigger className="mt-2 bg-zinc-800 border-zinc-700 text-white">
-                  <SelectValue placeholder="Select department" />
+                  <SelectValue placeholder="Organization-wide" />
                 </SelectTrigger>
                 <SelectContent className="bg-zinc-900 border-zinc-800">
+                  <SelectItem value={ORG_LEVEL_VALUE}>Organization-wide (no department)</SelectItem>
                   {departments?.map((dept) => (
                     <SelectItem key={dept.departmentId} value={dept.departmentId}>
                       {dept.name}
@@ -108,9 +117,6 @@ export default function CreateBudgetPage() {
                   ))}
                 </SelectContent>
               </Select>
-              {errors.departmentId && (
-                <p className="text-sm text-red-500 mt-1">{errors.departmentId.message}</p>
-              )}
             </div>
 
             <div>
