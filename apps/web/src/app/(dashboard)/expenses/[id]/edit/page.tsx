@@ -9,14 +9,21 @@ import { useExpense, useUpdateExpense } from "@/features/expenses";
 import { useCategories } from "@/features/categories";
 import { useVendors } from "@/features/vendors";
 import { useDepartments } from "@/features/departments";
+import { useTags } from "@/features/tags";
 import { ExpenseStatusEnum } from "@/features/expenses/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowLeft, Save } from "lucide-react";
+import { ArrowLeft, Save, ChevronsUpDown } from "lucide-react";
 import Link from "next/link";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuCheckboxItem,
+} from "@/components/ui/dropdown-menu";
 
 const updateExpenseSchema = z
   .object({
@@ -29,6 +36,7 @@ const updateExpenseSchema = z
     totalAmount: z.number().positive("Total amount must be positive").optional(),
     expenseDate: z.string().min(1, "Date is required").optional(),
     receiptUrl: z.string().url("Must be a valid URL").optional(),
+    tagIds: z.array(z.string().uuid()).optional(),
   })
   .refine((data) => {
     if (data.netAmount !== undefined && data.taxAmount !== undefined && data.totalAmount !== undefined) {
@@ -53,6 +61,7 @@ export default function EditExpensePage() {
   const { data: categories, isLoading: categoriesLoading } = useCategories();
   const { data: vendors, isLoading: vendorsLoading } = useVendors();
   const { data: departments, isLoading: departmentsLoading } = useDepartments();
+  const { data: tags, isLoading: tagsLoading } = useTags();
 
   const form = useForm<UpdateExpenseFormData>({
     resolver: zodResolver(updateExpenseSchema),
@@ -66,6 +75,7 @@ export default function EditExpensePage() {
       totalAmount: 0,
       expenseDate: "",
       receiptUrl: "",
+      tagIds: [],
     },
   });
 
@@ -84,6 +94,7 @@ export default function EditExpensePage() {
         totalAmount: expense.totalAmount,
         expenseDate: expense.dateOfExpense.split("T")[0],
         receiptUrl: expense.receiptUrl || undefined,
+        tagIds: expense.tagIds ?? [],
       });
     }
   }, [expense, form]);
@@ -101,6 +112,7 @@ export default function EditExpensePage() {
       departmentId: data.departmentId || undefined,
       receiptUrl: data.receiptUrl || undefined,
       expenseDate: data.expenseDate ? new Date(data.expenseDate).toISOString() : undefined,
+      tagIds: data.tagIds ?? [],
     };
 
     updateExpense({ expenseId, data: payload });
@@ -370,6 +382,77 @@ export default function EditExpensePage() {
                       <FormMessage />
                     </FormItem>
                   )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="tagIds"
+                  render={({ field }) => {
+                    const selectedTagIds = field.value ?? [];
+                    const selectedTags =
+                      tags?.filter((tag) => selectedTagIds.includes(tag.tagId)) ?? [];
+
+                    const summaryLabel = () => {
+                      if (tagsLoading) return "Loading tags...";
+                      if (!tags || tags.length === 0) return "No tags available";
+                      if (selectedTags.length === 0) return "Select tags";
+                      const preview = selectedTags.slice(0, 2).map((tag) => tag.name).join(", ");
+                      const remaining = selectedTags.length - 2;
+                      return remaining > 0 ? `${preview} +${remaining} more` : preview;
+                    };
+
+                    const toggleTag = (tagId: string, checked: boolean) => {
+                      const nextValue = checked
+                        ? [...selectedTagIds, tagId]
+                        : selectedTagIds.filter((id) => id !== tagId);
+                      field.onChange(nextValue);
+                    };
+
+                    return (
+                      <FormItem>
+                        <FormLabel className="text-zinc-300">
+                          Tags <span className="text-xs text-zinc-500">(optional)</span>
+                        </FormLabel>
+                        <FormControl>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button
+                                type="button"
+                                variant="outline"
+                                className="w-full justify-between bg-zinc-800 border-zinc-700 text-zinc-200 hover:bg-zinc-800/80"
+                                disabled={tagsLoading || !tags || tags.length === 0}
+                              >
+                                <span className="truncate text-left">{summaryLabel()}</span>
+                                <ChevronsUpDown className="h-4 w-4 opacity-60" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent
+                              className="w-64 max-h-64 overflow-y-auto bg-zinc-900 border-zinc-800 text-white"
+                              align="start"
+                              side="bottom"
+                            >
+                              {tags?.map((tag) => {
+                                const isSelected = selectedTagIds.includes(tag.tagId);
+                                return (
+                                  <DropdownMenuCheckboxItem
+                                    key={tag.tagId}
+                                    checked={isSelected}
+                                    onCheckedChange={(checked) =>
+                                      toggleTag(tag.tagId, Boolean(checked))
+                                    }
+                                    className="capitalize text-sm focus:bg-zinc-800"
+                                  >
+                                    {tag.name}
+                                  </DropdownMenuCheckboxItem>
+                                );
+                              })}
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    );
+                  }}
                 />
               </CardContent>
             </Card>

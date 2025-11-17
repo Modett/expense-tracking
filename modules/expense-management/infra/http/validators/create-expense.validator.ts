@@ -19,6 +19,7 @@ export const createExpenseBodySchema = z.object({
     .optional()
     .default("none"),
   justification: z.string().min(10).max(2000).optional().nullable(),
+  tagIds: z.array(z.string().uuid()).optional().default([]),
 });
 
 export type CreateExpenseBody = z.infer<typeof createExpenseBodySchema>;

@@ -1,6 +1,10 @@
 import type { IBudgetCommandRepository } from "../../../domain/repositories/IBudgetCommandRepository.js";
 import type { IBudgetQueryRepository } from "../../../domain/repositories/IBudgetQueryRepository.js";
-import { BudgetId, BudgetEnforcementType } from "../../../domain/index.js";
+import {
+  BudgetId,
+  BudgetEnforcementType,
+  BudgetThresholds,
+} from "../../../domain/index.js";
 import type { UpdateBudgetCommand } from "./command.js";
 
 export interface UpdateBudgetResponse {
@@ -43,11 +47,12 @@ export class UpdateBudgetCommandHandler {
       command.criticalThreshold !== undefined
     ) {
       const currentThresholds = budget.thresholds;
-      budget.updateThresholds({
-        warning1: command.warningThreshold1 ?? currentThresholds.warning1,
-        warning2: command.warningThreshold2 ?? currentThresholds.warning2,
-        critical: command.criticalThreshold ?? currentThresholds.critical,
-      });
+      const updatedThresholds = BudgetThresholds.create(
+        command.warningThreshold1 ?? currentThresholds.getWarning1(),
+        command.warningThreshold2 ?? currentThresholds.getWarning2(),
+        command.criticalThreshold ?? currentThresholds.getCritical()
+      );
+      budget.updateThresholds(updatedThresholds);
     }
 
     await this.budgetCommandRepo.save(budget);

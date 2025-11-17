@@ -93,7 +93,8 @@ export async function registerExpenseManagementModule(
 
   // Initialize Expense Command Handlers
   const createExpenseHandler = new CreateExpenseCommandHandler(
-    expenseCommandRepo
+    expenseCommandRepo,
+    expenseTagCommandRepo
   );
   const updateExpenseHandler = new UpdateExpenseCommandHandler(
     expenseQueryRepo,

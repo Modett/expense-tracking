@@ -53,6 +53,7 @@ export interface Expense {
   vendor?: Vendor;
   category?: Category;
   department?: Department;
+  tagIds?: string[];
 }
 
 export interface CreateExpenseRequest {
@@ -68,6 +69,7 @@ export interface CreateExpenseRequest {
   priority?: ExpensePriorityEnum;
   budgetOverride?: BudgetExceptionTypeEnum;
   justification?: string | null;
+  tagIds?: string[];
 }
 
 export interface UpdateExpenseRequest {
@@ -80,6 +82,7 @@ export interface UpdateExpenseRequest {
   totalAmount?: number;
   expenseDate?: string;
   receiptUrl?: string | null;
+  tagIds?: string[];
 }
 
 export interface SubmitExpenseRequest {

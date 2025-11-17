@@ -115,7 +115,8 @@ export class ExpenseController {
         undefined, // priority
         undefined, // budgetOverride
         undefined, // justification
-        validatedBody.receiptUrl ?? undefined // Convert null to undefined
+        validatedBody.receiptUrl ?? undefined, // Convert null to undefined
+        validatedBody.tagIds ?? []
       );
 
       const result = await this.createExpenseHandler.handle(command);

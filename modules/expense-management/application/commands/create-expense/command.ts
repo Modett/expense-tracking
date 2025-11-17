@@ -12,6 +12,7 @@ export class CreateExpenseCommand {
     public readonly priority?: string, // 'routine' | 'standard' | 'urgent' | 'emergency'
     public readonly budgetOverride?: string, // 'none' | 'emergency' | 'annual' | 'recurring'
     public readonly justification?: string,
-    public readonly receiptUrl?: string
+    public readonly receiptUrl?: string,
+    public readonly tagIds: string[] = []
   ) {}
 }

@@ -110,6 +110,7 @@ const mapExpense = (expense: ExpenseApiResponse): Expense => ({
   vendor: expense.vendor,
   category: expense.category,
   department: expense.department,
+  tagIds: expense.tagIds ?? [],
 });
 
 export const expensesApi = {
@@ -151,8 +152,16 @@ export const expensesApi = {
   },
 
   update: async (expenseId: string, data: UpdateExpenseRequest): Promise<Expense> => {
-    const response = await apiClient.put<ExpenseSuccessResponse>(`/expenses/${expenseId}`, data);
-    return mapExpense(response.data.data);
+    const { tagIds, ...rest } = data;
+    const response = await apiClient.put<ExpenseSuccessResponse>(`/expenses/${expenseId}`, rest);
+    let updatedExpense = mapExpense(response.data.data);
+
+    if (tagIds !== undefined) {
+      await apiClient.put(`/expenses/${expenseId}/tags`, { tagIds });
+      updatedExpense = { ...updatedExpense, tagIds };
+    }
+
+    return updatedExpense;
   },
 
   delete: async (expenseId: string): Promise<void> => {
@@ -228,5 +237,9 @@ export const expensesApi = {
     }>("/expenses/aggregations", { params: query });
 
     return response.data.data;
+  },
+
+  replaceTags: async (expenseId: string, tagIds: string[]): Promise<void> => {
+    await apiClient.put(`/expenses/${expenseId}/tags`, { tagIds });
   },
 };
