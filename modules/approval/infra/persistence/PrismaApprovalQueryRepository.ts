@@ -14,8 +14,25 @@ import {
   UserId,
 } from "../../domain/value-objects/index.js";
 
+type PrismaApprovalWithRelations = PrismaApproval & {
+  expense?: any;
+  approver?: any;
+};
+
 export class PrismaApprovalQueryRepository implements IApprovalQueryRepository {
   constructor(private readonly prisma: PrismaClient) {}
+
+  private readonly relationInclude = {
+    expense: {
+      include: {
+        user: true,
+        vendor: true,
+        category: true,
+        department: true,
+      },
+    },
+    approver: true,
+  };
 
   private toDomain(prismaApproval: PrismaApproval): Approval {
     return Approval.reconstitute({
@@ -33,69 +50,72 @@ export class PrismaApprovalQueryRepository implements IApprovalQueryRepository {
     });
   }
 
+  private mapApprovalRecord(
+    prismaApproval: PrismaApprovalWithRelations
+  ): Approval {
+    const approval = this.toDomain(prismaApproval);
+    if (prismaApproval.expense || prismaApproval.approver) {
+      approval.attachRelations({
+        expense: prismaApproval.expense,
+        approver: prismaApproval.approver,
+      });
+    }
+    return approval;
+  }
+
   async findById(approvalId: ApprovalId): Promise<Approval | null> {
     const approval = await this.prisma.approval.findUnique({
       where: { approvalId: approvalId.getValue() },
+      include: this.relationInclude,
     });
 
     if (!approval) {
       return null;
     }
 
-    return this.toDomain(approval);
+    return this.mapApprovalRecord(approval);
   }
 
   async findByExpenseId(expenseId: ExpenseId): Promise<Approval[]> {
     const approvals = await this.prisma.approval.findMany({
       where: { expenseId: expenseId.getValue() },
       orderBy: { createdAt: "desc" },
+      include: this.relationInclude,
     });
 
-    return approvals.map((approval: PrismaApproval) => this.toDomain(approval));
+    return approvals.map((approval) => this.mapApprovalRecord(approval));
   }
 
   async findByApproverId(approverId: UserId): Promise<Approval[]> {
     const approvals = await this.prisma.approval.findMany({
       where: { approverId: approverId.getValue() },
       orderBy: { createdAt: "desc" },
+      include: this.relationInclude,
     });
 
-    return approvals.map((approval: PrismaApproval) => this.toDomain(approval));
+    return approvals.map((approval) => this.mapApprovalRecord(approval));
   }
 
   async findByStatus(status: ApprovalStatus): Promise<Approval[]> {
     const approvals = await this.prisma.approval.findMany({
       where: { status: status.getValue() as any },
       orderBy: { createdAt: "desc" },
+      include: this.relationInclude,
     });
 
-    return approvals.map((approval: PrismaApproval) => this.toDomain(approval));
+    return approvals.map((approval) => this.mapApprovalRecord(approval));
   }
 
   async findPendingApprovals(): Promise<Approval[]> {
     const approvals = await this.prisma.approval.findMany({
       where: { status: "pending" },
-      include: {
-        expense: {
-          include: {
-            user: true,
-            vendor: true,
-            category: true,
-            department: true,
-          },
-        },
-        approver: true,
-      },
+      include: this.relationInclude,
       orderBy: { createdAt: "asc" },
     });
 
-    return approvals.map((approval: any) => {
-      const domain = this.toDomain(approval as any);
-      // Attach relations for handler to access
-      (domain as any).expense = approval.expense;
-      (domain as any).approver = approval.approver;
-      return domain;
-    });
+    return approvals.map((approval: any) =>
+      this.mapApprovalRecord(approval as PrismaApprovalWithRelations)
+    );
   }
 
   async findPendingApprovalsByApproverId(
@@ -106,27 +126,13 @@ export class PrismaApprovalQueryRepository implements IApprovalQueryRepository {
         approverId: approverId.getValue(),
         status: "pending",
       },
-      include: {
-        expense: {
-          include: {
-            user: true,
-            vendor: true,
-            category: true,
-            department: true,
-          },
-        },
-        approver: true,
-      },
+      include: this.relationInclude,
       orderBy: { createdAt: "asc" },
     });
 
-    return approvals.map((approval: any) => {
-      const domain = this.toDomain(approval as any);
-      // Attach relations for handler to access
-      (domain as any).expense = approval.expense;
-      (domain as any).approver = approval.approver;
-      return domain;
-    });
+    return approvals.map((approval: any) =>
+      this.mapApprovalRecord(approval as PrismaApprovalWithRelations)
+    );
   }
 
   async findAll(filters?: ApprovalFilters): Promise<Approval[]> {
