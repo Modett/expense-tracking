@@ -137,7 +137,16 @@ export const expensesApi = {
   },
 
   create: async (data: CreateExpenseRequest): Promise<Expense> => {
-    const response = await apiClient.post<ExpenseSuccessResponse>("/expenses", data);
+    const payload: Omit<CreateExpenseRequest, "priority" | "budgetOverride"> & {
+      priority?: string;
+      budgetOverride?: string;
+    } = {
+      ...data,
+      ...(data.priority && { priority: data.priority.toLowerCase() }),
+      ...(data.budgetOverride && { budgetOverride: data.budgetOverride.toLowerCase() }),
+    };
+
+    const response = await apiClient.post<ExpenseSuccessResponse>("/expenses", payload);
     return mapExpense(response.data.data);
   },
 

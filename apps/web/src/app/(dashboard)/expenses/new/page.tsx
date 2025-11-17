@@ -38,11 +38,11 @@ const createExpenseSchema = z.object({
   path: ["totalAmount"],
 }).refine((data) => {
   if (data.budgetOverride && data.budgetOverride !== BudgetExceptionTypeEnum.NONE) {
-    return data.justification && data.justification.length >= 10;
+    return data.justification && data.justification.trim().length >= 50;
   }
   return true;
 }, {
-  message: "Justification is required when budget override is selected (min 10 characters)",
+  message: "Justification is required when budget override is selected (minimum 50 characters)",
   path: ["justification"],
 });
 
@@ -86,8 +86,8 @@ export default function NewExpensePage() {
     const payload = {
       ...data,
       expenseDate: new Date(data.expenseDate).toISOString(),
-      priority: data.priority?.toLowerCase(),
-      budgetOverride: data.budgetOverride?.toLowerCase(),
+      priority: data.priority,
+      budgetOverride: data.budgetOverride,
       departmentId: data.departmentId || undefined,
       receiptUrl: data.receiptUrl || undefined,
       justification: data.justification || undefined,
@@ -379,7 +379,7 @@ export default function NewExpensePage() {
                           <textarea
                             {...field}
                             rows={3}
-                            placeholder="Enter justification for budget override (minimum 10 characters)..."
+                            placeholder="Enter justification for budget override (minimum 50 characters)..."
                             className="w-full px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-md text-white resize-none"
                           />
                         </FormControl>

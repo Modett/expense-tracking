@@ -1,16 +1,43 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { useExpense, useDeleteExpense, useSubmitExpense, useCancelExpense } from "@/features/expenses";
-import { ExpenseStatusEnum, ExpensePriorityEnum, BudgetExceptionTypeEnum } from "@/features/expenses/types";
+import {
+  useExpense,
+  useDeleteExpense,
+  useSubmitExpense,
+  useCancelExpense,
+} from "@/features/expenses";
+import {
+  ExpenseStatusEnum,
+  ExpensePriorityEnum,
+  BudgetExceptionTypeEnum,
+} from "@/features/expenses/types";
 import { toast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowLeft, Edit, Trash2, Send, XCircle, ExternalLink, Calendar, DollarSign } from "lucide-react";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  ArrowLeft,
+  Edit,
+  Trash2,
+  Send,
+  XCircle,
+  ExternalLink,
+  Calendar,
+  DollarSign,
+} from "lucide-react";
 import { format } from "date-fns";
 
 export default function ExpenseDetailPage() {
@@ -25,14 +52,29 @@ export default function ExpenseDetailPage() {
 
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showSubmitDialog, setShowSubmitDialog] = useState(false);
+  const [submitBudgetOverride, setSubmitBudgetOverride] =
+    useState<BudgetExceptionTypeEnum>(BudgetExceptionTypeEnum.NONE);
+  const [submitJustification, setSubmitJustification] = useState("");
+
+  useEffect(() => {
+    if (expense) {
+      setSubmitBudgetOverride(expense.budgetOverride ?? BudgetExceptionTypeEnum.NONE);
+      setSubmitJustification(expense.justification ?? "");
+    }
+  }, [expense]);
 
   const getStatusBadge = (status: ExpenseStatusEnum) => {
     const variants: Record<ExpenseStatusEnum, string> = {
-      [ExpenseStatusEnum.DRAFT]: "bg-zinc-500/20 text-zinc-300 border-zinc-500/30",
-      [ExpenseStatusEnum.SUBMITTED]: "bg-blue-500/20 text-blue-300 border-blue-500/30",
-      [ExpenseStatusEnum.APPROVED]: "bg-green-500/20 text-green-300 border-green-500/30",
-      [ExpenseStatusEnum.REJECTED]: "bg-red-500/20 text-red-300 border-red-500/30",
-      [ExpenseStatusEnum.CANCELLED]: "bg-gray-500/20 text-gray-300 border-gray-500/30",
+      [ExpenseStatusEnum.DRAFT]:
+        "bg-zinc-500/20 text-zinc-300 border-zinc-500/30",
+      [ExpenseStatusEnum.SUBMITTED]:
+        "bg-blue-500/20 text-blue-300 border-blue-500/30",
+      [ExpenseStatusEnum.APPROVED]:
+        "bg-green-500/20 text-green-300 border-green-500/30",
+      [ExpenseStatusEnum.REJECTED]:
+        "bg-red-500/20 text-red-300 border-red-500/30",
+      [ExpenseStatusEnum.CANCELLED]:
+        "bg-gray-500/20 text-gray-300 border-gray-500/30",
     };
 
     return (
@@ -44,10 +86,14 @@ export default function ExpenseDetailPage() {
 
   const getPriorityBadge = (priority: ExpensePriorityEnum) => {
     const variants: Record<ExpensePriorityEnum, string> = {
-      [ExpensePriorityEnum.ROUTINE]: "bg-zinc-600/20 text-zinc-300 border-zinc-600/30",
-      [ExpensePriorityEnum.STANDARD]: "bg-cyan-500/20 text-cyan-300 border-cyan-500/30",
-      [ExpensePriorityEnum.URGENT]: "bg-orange-500/20 text-orange-300 border-orange-500/30",
-      [ExpensePriorityEnum.EMERGENCY]: "bg-red-500/20 text-red-300 border-red-500/30",
+      [ExpensePriorityEnum.ROUTINE]:
+        "bg-zinc-600/20 text-zinc-300 border-zinc-600/30",
+      [ExpensePriorityEnum.STANDARD]:
+        "bg-cyan-500/20 text-cyan-300 border-cyan-500/30",
+      [ExpensePriorityEnum.URGENT]:
+        "bg-orange-500/20 text-orange-300 border-orange-500/30",
+      [ExpensePriorityEnum.EMERGENCY]:
+        "bg-red-500/20 text-red-300 border-red-500/30",
     };
 
     return (
@@ -65,13 +111,17 @@ export default function ExpenseDetailPage() {
     if (!expense) return;
 
     const requiresJustification =
-      expense.budgetOverride && expense.budgetOverride !== BudgetExceptionTypeEnum.NONE;
-    const justification = expense.justification?.trim();
+      submitBudgetOverride !== BudgetExceptionTypeEnum.NONE;
+    const justification = submitJustification.trim();
 
-    if (requiresJustification && (!justification || justification.length < 50)) {
+    if (
+      requiresJustification &&
+      (!justification || justification.length < 50)
+    ) {
       toast({
         title: "Justification required",
-        description: "Provide at least 50 characters explaining the budget override.",
+        description:
+          "Provide at least 50 characters explaining the budget override.",
         variant: "destructive",
       });
       return;
@@ -80,7 +130,7 @@ export default function ExpenseDetailPage() {
     submitExpense({
       expenseId,
       data: {
-        budgetOverride: expense.budgetOverride,
+        budgetOverride: submitBudgetOverride,
         justification: justification || undefined,
       },
     });
@@ -107,10 +157,17 @@ export default function ExpenseDetailPage() {
     return (
       <div className="min-h-screen bg-zinc-950 p-6">
         <div className="max-w-5xl mx-auto text-center py-12">
-          <h2 className="text-2xl font-bold text-white mb-2">Expense Not Found</h2>
-          <p className="text-zinc-400 mb-6">The expense you're looking for doesn't exist.</p>
+          <h2 className="text-2xl font-bold text-white mb-2">
+            Expense Not Found
+          </h2>
+          <p className="text-zinc-400 mb-6">
+            The expense you're looking for doesn't exist.
+          </p>
           <Link href="/expenses">
-            <Button variant="outline" className="bg-zinc-800 border-zinc-700 text-white hover:bg-zinc-700">
+            <Button
+              variant="outline"
+              className="bg-zinc-800 border-zinc-700 text-white hover:bg-zinc-700"
+            >
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Expenses
             </Button>
@@ -125,15 +182,22 @@ export default function ExpenseDetailPage() {
       <div className="max-w-5xl mx-auto">
         <div className="mb-6">
           <Link href="/expenses">
-            <Button variant="ghost" className="text-zinc-400 hover:text-white mb-4">
+            <Button
+              variant="ghost"
+              className="text-zinc-400 hover:text-white mb-4"
+            >
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Expenses
             </Button>
           </Link>
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-white mb-2">Expense Details</h1>
-              <p className="text-zinc-400">View and manage expense information</p>
+              <h1 className="text-3xl font-bold text-white mb-2">
+                Expense Details
+              </h1>
+              <p className="text-zinc-400">
+                View and manage expense information
+              </p>
             </div>
             <div className="flex items-center gap-3">
               {getStatusBadge(expense.status)}
@@ -151,7 +215,9 @@ export default function ExpenseDetailPage() {
                 </div>
                 <div>
                   <p className="text-sm text-zinc-400">Total Amount</p>
-                  <p className="text-2xl font-bold text-white">${expense.totalAmount.toFixed(2)}</p>
+                  <p className="text-2xl font-bold text-white">
+                    ${expense.totalAmount.toFixed(2)}
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -204,11 +270,15 @@ export default function ExpenseDetailPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-sm text-zinc-400">Vendor</label>
-                  <p className="text-white mt-1">{expense.vendor?.name || "-"}</p>
+                  <p className="text-white mt-1">
+                    {expense.vendor?.name || "-"}
+                  </p>
                 </div>
                 <div>
                   <label className="text-sm text-zinc-400">Category</label>
-                  <p className="text-white mt-1">{expense.category?.name || "-"}</p>
+                  <p className="text-white mt-1">
+                    {expense.category?.name || "-"}
+                  </p>
                 </div>
               </div>
 
@@ -247,28 +317,40 @@ export default function ExpenseDetailPage() {
             <CardContent className="space-y-4">
               <div className="flex justify-between items-center pb-3 border-b border-zinc-800">
                 <span className="text-zinc-400">Net Amount</span>
-                <span className="text-white font-semibold">${expense.netAmount.toFixed(2)}</span>
+                <span className="text-white font-semibold">
+                  ${expense.netAmount.toFixed(2)}
+                </span>
               </div>
               <div className="flex justify-between items-center pb-3 border-b border-zinc-800">
                 <span className="text-zinc-400">Tax Amount</span>
-                <span className="text-white font-semibold">${expense.taxAmount.toFixed(2)}</span>
+                <span className="text-white font-semibold">
+                  ${expense.taxAmount.toFixed(2)}
+                </span>
               </div>
               <div className="flex justify-between items-center pt-2">
                 <span className="text-white font-semibold">Total Amount</span>
-                <span className="text-2xl font-bold text-white">${expense.totalAmount.toFixed(2)}</span>
+                <span className="text-2xl font-bold text-white">
+                  ${expense.totalAmount.toFixed(2)}
+                </span>
               </div>
 
-              {expense.budgetOverride && expense.budgetOverride !== BudgetExceptionTypeEnum.NONE && (
-                <div className="pt-4 border-t border-zinc-800">
-                  <label className="text-sm text-zinc-400">Budget Override</label>
-                  <Badge className="bg-orange-500/20 text-orange-400 border-0 mt-1">
-                    {expense.budgetOverride.charAt(0) + expense.budgetOverride.slice(1).toLowerCase()}
-                  </Badge>
-                  {expense.justification && (
-                    <p className="text-sm text-zinc-300 mt-2">{expense.justification}</p>
-                  )}
-                </div>
-              )}
+              {expense.budgetOverride &&
+                expense.budgetOverride !== BudgetExceptionTypeEnum.NONE && (
+                  <div className="pt-4 border-t border-zinc-800">
+                    <label className="text-sm text-zinc-400">
+                      Budget Override
+                    </label>
+                    <Badge className="bg-orange-500/20 text-orange-400 border-0 mt-1">
+                      {expense.budgetOverride.charAt(0) +
+                        expense.budgetOverride.slice(1).toLowerCase()}
+                    </Badge>
+                    {expense.justification && (
+                      <p className="text-sm text-zinc-300 mt-2">
+                        {expense.justification}
+                      </p>
+                    )}
+                  </div>
+                )}
             </CardContent>
           </Card>
         </div>
@@ -289,7 +371,13 @@ export default function ExpenseDetailPage() {
                   </Link>
 
                   <Button
-                    onClick={() => setShowSubmitDialog(true)}
+                    onClick={() => {
+                      setSubmitBudgetOverride(
+                        expense.budgetOverride ?? BudgetExceptionTypeEnum.NONE
+                      );
+                      setSubmitJustification(expense.justification ?? "");
+                      setShowSubmitDialog(true);
+                    }}
                     disabled={isSubmitting}
                     className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
                   >
@@ -317,7 +405,8 @@ export default function ExpenseDetailPage() {
                 </>
               )}
 
-              {(expense.status === ExpenseStatusEnum.SUBMITTED || expense.status === ExpenseStatusEnum.DRAFT) && (
+              {(expense.status === ExpenseStatusEnum.SUBMITTED ||
+                expense.status === ExpenseStatusEnum.DRAFT) && (
                 <Button
                   onClick={handleCancel}
                   disabled={isCancelling}
@@ -342,7 +431,8 @@ export default function ExpenseDetailPage() {
                 expense.status === ExpenseStatusEnum.REJECTED ||
                 expense.status === ExpenseStatusEnum.CANCELLED) && (
                 <p className="text-zinc-400 text-sm">
-                  This expense is {expense.status.toLowerCase()} and cannot be modified.
+                  This expense is {expense.status.toLowerCase()} and cannot be
+                  modified.
                 </p>
               )}
             </div>
@@ -357,7 +447,8 @@ export default function ExpenseDetailPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <p className="text-zinc-300">
-                  Are you sure you want to delete this expense? This action cannot be undone.
+                  Are you sure you want to delete this expense? This action
+                  cannot be undone.
                 </p>
                 <div className="flex items-center gap-3 justify-end">
                   <Button
@@ -384,12 +475,72 @@ export default function ExpenseDetailPage() {
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
             <Card className="bg-zinc-900 border-zinc-800 max-w-md mx-4">
               <CardHeader>
-                <CardTitle className="text-white">Submit for Approval</CardTitle>
+                <CardTitle className="text-white">
+                  Submit for Approval
+                </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <p className="text-zinc-300">
-                  Are you sure you want to submit this expense for approval? You won't be able to edit it after submission.
+                  Are you sure you want to submit this expense for approval? You
+                  won't be able to edit it after submission.
                 </p>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label className="text-zinc-200">Budget Override</Label>
+                    <Select
+                      value={submitBudgetOverride}
+                      onValueChange={(value) =>
+                        setSubmitBudgetOverride(value as BudgetExceptionTypeEnum)
+                      }
+                    >
+                      <SelectTrigger className="bg-zinc-800 border-zinc-700 text-white">
+                        <SelectValue placeholder="Select override" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-zinc-900 border-zinc-800 text-white">
+                        <SelectItem value={BudgetExceptionTypeEnum.NONE}>
+                          No override
+                        </SelectItem>
+                        <SelectItem value={BudgetExceptionTypeEnum.EMERGENCY}>
+                          Emergency
+                        </SelectItem>
+                        <SelectItem value={BudgetExceptionTypeEnum.ANNUAL}>
+                          Annual
+                        </SelectItem>
+                        <SelectItem value={BudgetExceptionTypeEnum.RECURRING}>
+                          Recurring
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <p className="text-xs text-zinc-500">
+                      Choose an override type if this expense exceeds the
+                      allocated budget.
+                    </p>
+                  </div>
+
+                  {submitBudgetOverride !== BudgetExceptionTypeEnum.NONE && (
+                    <div className="space-y-2">
+                      <Label className="text-zinc-200">Justification</Label>
+                      <Textarea
+                        rows={4}
+                        value={submitJustification}
+                        onChange={(event) =>
+                          setSubmitJustification(event.target.value)
+                        }
+                        placeholder="Explain why this expense should exceed the budget (minimum 50 characters)"
+                        className="bg-zinc-800 border-zinc-700 text-white"
+                      />
+                      <p
+                        className={`text-xs ${
+                          submitJustification.trim().length < 50
+                            ? "text-red-400"
+                            : "text-zinc-500"
+                        }`}
+                      >
+                        {submitJustification.trim().length}/50 characters
+                      </p>
+                    </div>
+                  )}
+                </div>
                 <div className="flex items-center gap-3 justify-end">
                   <Button
                     onClick={() => setShowSubmitDialog(false)}

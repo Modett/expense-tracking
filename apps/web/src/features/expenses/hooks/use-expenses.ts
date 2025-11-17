@@ -116,9 +116,13 @@ export function useSubmitExpense() {
       });
     },
     onError: (error: any) => {
+      const apiError =
+        error.response?.data?.error ||
+        error.response?.data?.message ||
+        error.message;
       toast({
         title: "Failed to submit expense",
-        description: error.response?.data?.message || "Please try again",
+        description: apiError || "Please try again",
         variant: "destructive",
       });
     },

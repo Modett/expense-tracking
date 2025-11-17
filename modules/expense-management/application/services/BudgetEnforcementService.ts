@@ -130,6 +130,29 @@ export class BudgetEnforcementService {
           overrideAllowed: budget.overrideAllowed,
           budgetOverride: expense.budgetOverride.getValue(),
         });
+
+        // Soft enforcement allows expenses to proceed without overrides
+        if (budget.enforcementType.isSoft()) {
+          console.log("[BudgetEnforcement] SOFT enforcement - allowing overage");
+          const overageAmount = expenseAmount - remainingAmount;
+          return {
+            result: BudgetCheckResult.BUDGET_EXCEEDED,
+            canProceed: true,
+            requiresOverride: false,
+            requiresJustification: false,
+            requiresExecutiveApproval: false,
+            budgetInfo,
+            message: `Budget exceeded by ${overageAmount.toFixed(
+              2
+            )}, but soft enforcement allows this expense.`,
+            warnings: [
+              "Soft enforcement: no override required",
+              "Finance team will be notified of the overage",
+              "Consider creating an override only if you need additional tracking",
+            ],
+          };
+        }
+
         return this.handleBudgetExceeded(
           expense,
           budgetInfo,
