@@ -75,8 +75,13 @@ export function useUpdateBudget() {
   const router = useRouter();
 
   return useMutation({
-    mutationFn: ({ budgetId, data }: { budgetId: string; data: UpdateBudgetRequest }) =>
-      budgetsApi.update(budgetId, data),
+    mutationFn: ({
+      budgetId,
+      data,
+    }: {
+      budgetId: string;
+      data: UpdateBudgetRequest;
+    }) => budgetsApi.update(budgetId, data),
     onSuccess: async (data) => {
       await queryClient.invalidateQueries({ queryKey: queryKeys.budgets.all });
       await queryClient.invalidateQueries({
@@ -107,8 +112,13 @@ export function useAdjustBudgetSpent() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ budgetId, data }: { budgetId: string; data: AdjustBudgetSpentRequest }) =>
-      budgetsApi.adjustSpent(budgetId, data),
+    mutationFn: ({
+      budgetId,
+      data,
+    }: {
+      budgetId: string;
+      data: AdjustBudgetSpentRequest;
+    }) => budgetsApi.adjustSpent(budgetId, data),
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.budgets.all });
       queryClient.invalidateQueries({

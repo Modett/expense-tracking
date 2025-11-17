@@ -5,7 +5,11 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useParams, useRouter } from "next/navigation";
-import { useBudget, useUpdateBudget, BudgetEnforcementType } from "@/features/budgets";
+import {
+  useBudget,
+  useUpdateBudget,
+  BudgetEnforcementType,
+} from "@/features/budgets";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -133,7 +137,9 @@ export default function EditBudgetPage() {
               {...register("budgetAmount", { valueAsNumber: true })}
             />
             {errors.budgetAmount && (
-              <p className="text-sm text-red-500 mt-1">{errors.budgetAmount.message}</p>
+              <p className="text-sm text-red-500 mt-1">
+                {errors.budgetAmount.message}
+              </p>
             )}
           </div>
 
@@ -147,11 +153,17 @@ export default function EditBudgetPage() {
                 className="mt-2 w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-md text-white"
                 {...register("enforcementType")}
               >
-                <option value={BudgetEnforcementType.SOFT}>Soft (allow with warnings)</option>
-                <option value={BudgetEnforcementType.HARD}>Hard (block overages)</option>
+                <option value={BudgetEnforcementType.SOFT}>
+                  Soft (allow with warnings)
+                </option>
+                <option value={BudgetEnforcementType.HARD}>
+                  Hard (block overages)
+                </option>
               </select>
               {errors.enforcementType && (
-                <p className="text-sm text-red-500 mt-1">{errors.enforcementType.message}</p>
+                <p className="text-sm text-red-500 mt-1">
+                  {errors.enforcementType.message}
+                </p>
               )}
             </div>
             <div className="flex items-center gap-3 pt-6">
@@ -176,7 +188,9 @@ export default function EditBudgetPage() {
             <Label className="text-zinc-300">Thresholds (%)</Label>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-2">
               <div>
-                <Label className="text-zinc-400 text-xs uppercase">Warning</Label>
+                <Label className="text-zinc-400 text-xs uppercase">
+                  Warning
+                </Label>
                 <Input
                   type="number"
                   className="mt-1 bg-zinc-800 border-zinc-700 text-white"
@@ -202,7 +216,9 @@ export default function EditBudgetPage() {
                 )}
               </div>
               <div>
-                <Label className="text-zinc-400 text-xs uppercase">Critical</Label>
+                <Label className="text-zinc-400 text-xs uppercase">
+                  Critical
+                </Label>
                 <Input
                   type="number"
                   className="mt-1 bg-zinc-800 border-zinc-700 text-white"
