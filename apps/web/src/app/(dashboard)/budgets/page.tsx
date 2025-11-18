@@ -8,6 +8,7 @@ import {
   useDeactivateBudget,
   useDeleteBudget,
 } from "@/features/budgets";
+import type { GetAllBudgetsParams } from "@/features/budgets";
 import { useDepartments } from "@/features/departments";
 import { useCategories } from "@/features/categories";
 import { Button } from "@/components/ui/button";
@@ -42,7 +43,25 @@ import {
 
 export default function BudgetsPage() {
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
-  const { data: budgets, isLoading } = useBudgets();
+  const [departmentFilter, setDepartmentFilter] = useState<string>("ALL");
+  const [categoryFilter, setCategoryFilter] = useState<string>("ALL");
+  const [fiscalPeriodFilter, setFiscalPeriodFilter] = useState<string>("ALL");
+
+  const budgetQueryParams = useMemo(() => {
+    const params: GetAllBudgetsParams = {};
+    if (departmentFilter !== "ALL") {
+      params.departmentId = departmentFilter;
+    }
+    if (categoryFilter !== "ALL") {
+      params.categoryId = categoryFilter;
+    }
+    if (fiscalPeriodFilter !== "ALL") {
+      params.fiscalPeriod = fiscalPeriodFilter;
+    }
+    return Object.keys(params).length > 0 ? params : undefined;
+  }, [departmentFilter, categoryFilter, fiscalPeriodFilter]);
+
+  const { data: budgets, isLoading } = useBudgets(budgetQueryParams);
   const { data: departments } = useDepartments();
   const { data: categories } = useCategories();
   const activateBudgetMutation = useActivateBudget();
@@ -70,6 +89,24 @@ export default function BudgetsPage() {
       {}
     );
   }, [categories]);
+
+  const fiscalPeriods = useMemo(() => {
+    if (!budgets) return [];
+    const unique = new Set<string>();
+    budgets.forEach((budget) => unique.add(budget.fiscalPeriod));
+    return Array.from(unique).sort();
+  }, [budgets]);
+
+  const hasAppliedFilters =
+    departmentFilter !== "ALL" ||
+    categoryFilter !== "ALL" ||
+    fiscalPeriodFilter !== "ALL";
+
+  const handleClearFilters = () => {
+    setDepartmentFilter("ALL");
+    setCategoryFilter("ALL");
+    setFiscalPeriodFilter("ALL");
+  };
 
   const [deleteDialog, setDeleteDialog] = useState<{
     open: boolean;
@@ -185,19 +222,81 @@ export default function BudgetsPage() {
         </div>
       </div>
 
-      <div className="flex gap-4 mb-6">
-        <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-64 bg-zinc-900 border-zinc-800 text-white">
-            <SelectValue placeholder="Filter by status" />
-          </SelectTrigger>
-          <SelectContent className="bg-zinc-900 border-zinc-800">
-            <SelectItem value="ALL">All Budgets</SelectItem>
-            <SelectItem value="active">Active Only</SelectItem>
-            <SelectItem value="inactive">Inactive Only</SelectItem>
-            <SelectItem value="overbudget">Over Budget</SelectItem>
-            <SelectItem value="nearlimit">Near Limit</SelectItem>
-          </SelectContent>
-        </Select>
+      <div className="flex flex-col gap-4 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <Select value={departmentFilter} onValueChange={setDepartmentFilter}>
+            <SelectTrigger className="bg-zinc-900 border-zinc-800 text-white">
+              <SelectValue placeholder="Filter by department" />
+            </SelectTrigger>
+            <SelectContent className="bg-zinc-900 border-zinc-800">
+              <SelectItem value="ALL">All Departments</SelectItem>
+              {departments?.map((dept) => (
+                <SelectItem key={dept.departmentId} value={dept.departmentId}>
+                  {dept.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+            <SelectTrigger className="bg-zinc-900 border-zinc-800 text-white">
+              <SelectValue placeholder="Filter by category" />
+            </SelectTrigger>
+            <SelectContent className="bg-zinc-900 border-zinc-800">
+              <SelectItem value="ALL">All Categories</SelectItem>
+              {categories?.map((category) => (
+                <SelectItem
+                  key={category.categoryId}
+                  value={category.categoryId}
+                >
+                  {category.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <Select
+            value={fiscalPeriodFilter}
+            onValueChange={setFiscalPeriodFilter}
+          >
+            <SelectTrigger className="bg-zinc-900 border-zinc-800 text-white">
+              <SelectValue placeholder="Filter by fiscal period" />
+            </SelectTrigger>
+            <SelectContent className="bg-zinc-900 border-zinc-800">
+              <SelectItem value="ALL">All Fiscal Periods</SelectItem>
+              {fiscalPeriods.map((period) => (
+                <SelectItem key={period} value={period}>
+                  {period}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="bg-zinc-900 border-zinc-800 text-white">
+              <SelectValue placeholder="Filter by status" />
+            </SelectTrigger>
+            <SelectContent className="bg-zinc-900 border-zinc-800">
+              <SelectItem value="ALL">All Budgets</SelectItem>
+              <SelectItem value="active">Active Only</SelectItem>
+              <SelectItem value="inactive">Inactive Only</SelectItem>
+              <SelectItem value="overbudget">Over Budget</SelectItem>
+              <SelectItem value="nearlimit">Near Limit</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        {hasAppliedFilters && (
+          <div className="flex justify-end">
+            <Button
+              variant="ghost"
+              className="text-zinc-400 hover:text-white hover:bg-zinc-800"
+              onClick={handleClearFilters}
+            >
+              Clear Filters
+            </Button>
+          </div>
+        )}
       </div>
 
       {filteredBudgets.length === 0 ? (
@@ -223,7 +322,8 @@ export default function BudgetsPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {filteredBudgets.map((budget) => {
             const departmentInfo =
-              budget.department ?? departmentLookup[budget.departmentId];
+              budget.department ??
+              (budget.departmentId ? departmentLookup[budget.departmentId] : undefined);
             const departmentName = departmentInfo?.name ?? "Unknown Department";
             const categoryInfo =
               budget.category ??
@@ -246,129 +346,129 @@ export default function BudgetsPage() {
                         {categoryInfo.name}
                       </p>
                     )}
-                  <p className="text-sm text-zinc-500 mt-1">
-                    {budget.fiscalPeriod}
-                  </p>
-                </div>
-                <div className="flex items-center gap-2">
-                  {getStatusBadge(budget)}
-                  {budget.isActive ? (
-                    <Badge
-                      variant="outline"
-                      className="bg-green-500/10 text-green-500 border-green-500/20"
-                    >
-                      Active
-                    </Badge>
-                  ) : (
-                    <Badge
-                      variant="outline"
-                      className="bg-gray-500/10 text-gray-400 border-gray-500/20"
-                    >
-                      Inactive
-                    </Badge>
-                  )}
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm text-zinc-400">
-                      Budget Utilization
-                    </span>
-                    <span className="text-sm font-semibold text-white">
-                      {budget.utilizationPercentage.toFixed(1)}%
-                    </span>
-                  </div>
-                  <Progress
-                    value={Math.min(budget.utilizationPercentage, 100)}
-                    className="h-2"
-                    indicatorClassName={getUtilizationColor(
-                      budget.utilizationPercentage
-                    )}
-                  />
-                  <div className="flex items-center justify-between mt-2 text-sm">
-                    <span className="text-zinc-500">
-                      Spent: ${Number(budget.spentAmount).toFixed(2)}
-                    </span>
-                    <span className="text-zinc-500">
-                      Total: ${Number(budget.budgetAmount).toFixed(2)}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="p-3 bg-zinc-800 rounded-lg">
-                    <p className="text-xs text-zinc-400 mb-1">Remaining</p>
-                    <p className="text-lg font-semibold text-white">
-                      ${Number(budget.remainingAmount).toFixed(2)}
+                    <p className="text-sm text-zinc-500 mt-1">
+                      {budget.fiscalPeriod}
                     </p>
-                  </div>
-                  <div className="p-3 bg-zinc-800 rounded-lg">
-                    <p className="text-xs text-zinc-400 mb-1">Enforcement</p>
-                    <p className="text-sm font-medium text-white capitalize">
-                      {budget.enforcementType}
-                    </p>
-                  </div>
-                </div>
-
-                {budget.exceededThreshold && (
-                  <div className="flex items-center gap-2 p-3 bg-orange-500/10 border border-orange-500/20 rounded-lg">
-                    <AlertTriangle className="w-4 h-4 text-orange-500" />
-                    <span className="text-sm text-orange-500">
-                      {budget.exceededThreshold.level} threshold exceeded (
-                      {budget.exceededThreshold.threshold}%)
-                    </span>
-                  </div>
-                )}
-
-                <div className="flex items-center justify-between pt-2 border-t border-zinc-800">
-                  <div className="text-sm text-zinc-500">
-                    {new Date(budget.startDate).toLocaleDateString()} -{" "}
-                    {new Date(budget.endDate).toLocaleDateString()}
                   </div>
                   <div className="flex items-center gap-2">
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      className={
-                        budget.isActive
-                          ? "text-gray-500 hover:text-gray-400 hover:bg-gray-500/10"
-                          : "text-green-500 hover:text-green-400 hover:bg-green-500/10"
-                      }
-                      onClick={() =>
-                        handleToggleActive(budget.budgetId, budget.isActive)
-                      }
-                    >
-                      {budget.isActive ? (
-                        <XCircle className="w-4 h-4" />
-                      ) : (
-                        <CheckCircle2 className="w-4 h-4" />
+                    {getStatusBadge(budget)}
+                    {budget.isActive ? (
+                      <Badge
+                        variant="outline"
+                        className="bg-green-500/10 text-green-500 border-green-500/20"
+                      >
+                        Active
+                      </Badge>
+                    ) : (
+                      <Badge
+                        variant="outline"
+                        className="bg-gray-500/10 text-gray-400 border-gray-500/20"
+                      >
+                        Inactive
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm text-zinc-400">
+                        Budget Utilization
+                      </span>
+                      <span className="text-sm font-semibold text-white">
+                        {budget.utilizationPercentage.toFixed(1)}%
+                      </span>
+                    </div>
+                    <Progress
+                      value={Math.min(budget.utilizationPercentage, 100)}
+                      className="h-2"
+                      indicatorClassName={getUtilizationColor(
+                        budget.utilizationPercentage
                       )}
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      className="text-blue-500 hover:text-blue-400 hover:bg-blue-500/10"
-                      asChild
-                    >
-                      <Link href={`/budgets/${budget.budgetId}/edit`}>
-                        <Edit className="w-4 h-4" />
-                      </Link>
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      className="text-red-500 hover:text-red-400 hover:bg-red-500/10"
-                      onClick={() =>
-                        setDeleteDialog({
-                          open: true,
-                          budgetId: budget.budgetId,
-                        })
-                      }
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
+                    />
+                    <div className="flex items-center justify-between mt-2 text-sm">
+                      <span className="text-zinc-500">
+                        Spent: ${Number(budget.spentAmount).toFixed(2)}
+                      </span>
+                      <span className="text-zinc-500">
+                        Total: ${Number(budget.budgetAmount).toFixed(2)}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="p-3 bg-zinc-800 rounded-lg">
+                      <p className="text-xs text-zinc-400 mb-1">Remaining</p>
+                      <p className="text-lg font-semibold text-white">
+                        ${Number(budget.remainingAmount).toFixed(2)}
+                      </p>
+                    </div>
+                    <div className="p-3 bg-zinc-800 rounded-lg">
+                      <p className="text-xs text-zinc-400 mb-1">Enforcement</p>
+                      <p className="text-sm font-medium text-white capitalize">
+                        {budget.enforcementType}
+                      </p>
+                    </div>
+                  </div>
+
+                  {budget.exceededThreshold && (
+                    <div className="flex items-center gap-2 p-3 bg-orange-500/10 border border-orange-500/20 rounded-lg">
+                      <AlertTriangle className="w-4 h-4 text-orange-500" />
+                      <span className="text-sm text-orange-500">
+                        {budget.exceededThreshold.level} threshold exceeded (
+                        {budget.exceededThreshold.threshold}%)
+                      </span>
+                    </div>
+                  )}
+
+                  <div className="flex items-center justify-between pt-2 border-t border-zinc-800">
+                    <div className="text-sm text-zinc-500">
+                      {new Date(budget.startDate).toLocaleDateString()} -{" "}
+                      {new Date(budget.endDate).toLocaleDateString()}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className={
+                          budget.isActive
+                            ? "text-gray-500 hover:text-gray-400 hover:bg-gray-500/10"
+                            : "text-green-500 hover:text-green-400 hover:bg-green-500/10"
+                        }
+                        onClick={() =>
+                          handleToggleActive(budget.budgetId, budget.isActive)
+                        }
+                      >
+                        {budget.isActive ? (
+                          <XCircle className="w-4 h-4" />
+                        ) : (
+                          <CheckCircle2 className="w-4 h-4" />
+                        )}
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="text-blue-500 hover:text-blue-400 hover:bg-blue-500/10"
+                        asChild
+                      >
+                        <Link href={`/budgets/${budget.budgetId}/edit`}>
+                          <Edit className="w-4 h-4" />
+                        </Link>
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="text-red-500 hover:text-red-400 hover:bg-red-500/10"
+                        onClick={() =>
+                          setDeleteDialog({
+                            open: true,
+                            budgetId: budget.budgetId,
+                          })
+                        }
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
                     </div>
                   </div>
                 </div>

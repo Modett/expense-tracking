@@ -3,9 +3,11 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useDeleteExpense, useExpenses } from "@/features/expenses";
+import { useVendors } from "@/features/vendors";
+import { useCategories } from "@/features/categories";
+import { useDepartments } from "@/features/departments";
 import { ExpenseStatusEnum, ExpensePriorityEnum } from "@/features/expenses/types";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -20,7 +22,6 @@ import {
 import {
   Plus,
   Search,
-  Filter,
   Eye,
   Edit,
   Trash2,
@@ -33,20 +34,29 @@ import { format } from "date-fns";
 
 export default function ExpensesPage() {
   const [page, setPage] = useState(1);
-  const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<ExpenseStatusEnum | "">("");
   const [priorityFilter, setPriorityFilter] = useState<ExpensePriorityEnum | "">("");
+  const [vendorFilter, setVendorFilter] = useState<string>("");
+  const [categoryFilter, setCategoryFilter] = useState<string>("");
+  const [departmentFilter, setDepartmentFilter] = useState<string>("");
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; expenseId: string | null }>({
     open: false,
     expenseId: null,
   });
 
+  const { data: vendors } = useVendors();
+  const { data: categories } = useCategories();
+  const { data: departments } = useDepartments();
+
   const { data, isLoading } = useExpenses({
     page,
     limit: 20,
     status: statusFilter || undefined,
     priority: priorityFilter || undefined,
+    vendorId: vendorFilter || undefined,
+    categoryId: categoryFilter || undefined,
+    departmentId: departmentFilter || undefined,
   });
   const deleteExpenseMutation = useDeleteExpense();
 
@@ -111,50 +121,83 @@ export default function ExpensesPage() {
 
         <Card className="bg-zinc-900 border-zinc-800">
           <CardContent className="p-4">
-            <div className="flex flex-col md:flex-row gap-4">
-              <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
-                <Input
-                  placeholder="Search expenses..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 bg-zinc-800 border-zinc-700 text-white"
-                />
+            <div className="flex flex-col gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                <select
+                  value={vendorFilter}
+                  onChange={(e) => setVendorFilter(e.target.value)}
+                  className="px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-md text-white"
+                >
+                  <option value="">All Vendors</option>
+                  {vendors?.map((vendor) => (
+                    <option key={vendor.vendorId} value={vendor.vendorId}>
+                      {vendor.name}
+                    </option>
+                  ))}
+                </select>
+
+                <select
+                  value={categoryFilter}
+                  onChange={(e) => setCategoryFilter(e.target.value)}
+                  className="px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-md text-white"
+                >
+                  <option value="">All Categories</option>
+                  {categories?.map((category) => (
+                    <option key={category.categoryId} value={category.categoryId}>
+                      {category.name}
+                    </option>
+                  ))}
+                </select>
+
+                <select
+                  value={departmentFilter}
+                  onChange={(e) => setDepartmentFilter(e.target.value)}
+                  className="px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-md text-white"
+                >
+                  <option value="">All Departments</option>
+                  {departments?.map((department) => (
+                    <option key={department.departmentId} value={department.departmentId}>
+                      {department.name}
+                    </option>
+                  ))}
+                </select>
+
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value as ExpenseStatusEnum | "")}
+                  className="px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-md text-white"
+                >
+                  <option value="">All Statuses</option>
+                  {Object.values(ExpenseStatusEnum).map((status) => (
+                    <option key={status} value={status}>
+                      {status.charAt(0) + status.slice(1).toLowerCase()}
+                    </option>
+                  ))}
+                </select>
+
+                <select
+                  value={priorityFilter}
+                  onChange={(e) => setPriorityFilter(e.target.value as ExpensePriorityEnum | "")}
+                  className="px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-md text-white"
+                >
+                  <option value="">All Priorities</option>
+                  {Object.values(ExpensePriorityEnum).map((priority) => (
+                    <option key={priority} value={priority}>
+                      {priority.charAt(0) + priority.slice(1).toLowerCase()}
+                    </option>
+                  ))}
+                </select>
               </div>
 
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value as ExpenseStatusEnum | "")}
-                className="px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-md text-white"
-              >
-                <option value="">All Statuses</option>
-                {Object.values(ExpenseStatusEnum).map((status) => (
-                  <option key={status} value={status}>
-                    {status.charAt(0) + status.slice(1).toLowerCase()}
-                  </option>
-                ))}
-              </select>
-
-              <select
-                value={priorityFilter}
-                onChange={(e) => setPriorityFilter(e.target.value as ExpensePriorityEnum | "")}
-                className="px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-md text-white"
-              >
-                <option value="">All Priorities</option>
-                {Object.values(ExpensePriorityEnum).map((priority) => (
-                  <option key={priority} value={priority}>
-                    {priority.charAt(0) + priority.slice(1).toLowerCase()}
-                  </option>
-                ))}
-              </select>
-
-              {(statusFilter || priorityFilter || searchQuery) && (
+              {(statusFilter || priorityFilter || vendorFilter || categoryFilter || departmentFilter) && (
                 <Button
                   variant="ghost"
                   onClick={() => {
                     setStatusFilter("");
                     setPriorityFilter("");
-                    setSearchQuery("");
+                    setVendorFilter("");
+                    setCategoryFilter("");
+                    setDepartmentFilter("");
                   }}
                   className="text-zinc-400 hover:text-white"
                 >
@@ -319,12 +362,20 @@ export default function ExpensesPage() {
                     No expenses found
                   </h3>
                   <p className="text-zinc-400 text-sm">
-                    {statusFilter || priorityFilter || searchQuery
+                    {statusFilter ||
+                    priorityFilter ||
+                    vendorFilter ||
+                    categoryFilter ||
+                    departmentFilter
                       ? "Try adjusting your filters"
                       : "Get started by creating your first expense"}
                   </p>
                 </div>
-                {!statusFilter && !priorityFilter && !searchQuery && (
+                {!statusFilter &&
+                  !priorityFilter &&
+                  !vendorFilter &&
+                  !categoryFilter &&
+                  !departmentFilter && (
                   <Link href="/expenses/new">
                     <Button className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600">
                       <Plus className="h-4 w-4 mr-2" />
