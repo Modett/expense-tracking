@@ -153,15 +153,17 @@ export const expensesApi = {
 
   update: async (expenseId: string, data: UpdateExpenseRequest): Promise<Expense> => {
     const { tagIds, ...rest } = data;
-    const response = await apiClient.put<ExpenseSuccessResponse>(`/expenses/${expenseId}`, rest);
-    let updatedExpense = mapExpense(response.data.data);
+    await apiClient.put(`/expenses/${expenseId}`, rest);
 
     if (tagIds !== undefined) {
       await apiClient.put(`/expenses/${expenseId}/tags`, { tagIds });
-      updatedExpense = { ...updatedExpense, tagIds };
     }
 
-    return updatedExpense;
+    const updatedExpense = await expensesApi.getById(expenseId);
+    return {
+      ...updatedExpense,
+      tagIds: tagIds ?? updatedExpense.tagIds,
+    };
   },
 
   delete: async (expenseId: string): Promise<void> => {

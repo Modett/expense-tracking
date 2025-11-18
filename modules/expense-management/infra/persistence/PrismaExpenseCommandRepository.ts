@@ -37,6 +37,9 @@ export class PrismaExpenseCommandRepository
       },
       update: {
         description: plainObject.description,
+        vendorId: plainObject.vendorId,
+        categoryId: plainObject.categoryId,
+        departmentId: plainObject.departmentId,
         amountNet: plainObject.amountNet,
         taxAmount: plainObject.taxAmount,
         totalAmount: plainObject.totalAmount,
@@ -87,6 +90,9 @@ export class PrismaExpenseCommandRepository
           },
           update: {
             description: plainObject.description,
+            vendorId: plainObject.vendorId,
+            categoryId: plainObject.categoryId,
+            departmentId: plainObject.departmentId,
             amountNet: plainObject.amountNet,
             taxAmount: plainObject.taxAmount,
             totalAmount: plainObject.totalAmount,
