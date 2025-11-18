@@ -252,7 +252,7 @@ export class BudgetEnforcementService {
       });
 
       // If overrides are not allowed at all, block completely
-      if (!overrideAllowed) {
+      if (!overrideAllowed && budgetOverrideType !== BudgetExceptionTypeEnum.EMERGENCY) {
         console.log("[BudgetEnforcement] BLOCKING - No override allowed");
         return {
           result: BudgetCheckResult.BUDGET_EXCEEDED,
@@ -288,6 +288,28 @@ export class BudgetEnforcementService {
             "You must set a budget override type (emergency, annual, or recurring)",
             "Justification is required (minimum 50 characters)",
             "This will trigger executive approval workflow",
+          ],
+        };
+      }
+
+      // Emergency override should bypass justification and proceed
+      if (budgetOverrideType === BudgetExceptionTypeEnum.EMERGENCY) {
+        console.log(
+          "[BudgetEnforcement] HARD enforcement - Emergency override detected"
+        );
+        return {
+          result: BudgetCheckResult.BUDGET_EXCEEDED,
+          canProceed: true,
+          requiresOverride: true,
+          requiresJustification: false,
+          requiresExecutiveApproval: true,
+          budgetInfo,
+          message: `Emergency override applied: expense exceeds budget by ${overageAmount.toFixed(
+            2
+          )}. Forwarding for executive approval.`,
+          warnings: [
+            "Emergency override bypassed justification requirement",
+            "Executive approval is still required before processing",
           ],
         };
       }
