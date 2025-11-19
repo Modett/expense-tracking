@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -43,26 +43,26 @@ export default function CreateCategoryPage(): JSX.Element {
       <div className="mb-8">
         <Button
           variant="ghost"
-          className="text-zinc-400 hover:text-white hover:bg-zinc-800 mb-4"
+          className="text-muted-foreground hover:text-foreground hover:bg-muted mb-4"
           onClick={() => router.back()}
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back
         </Button>
-        <h1 className="text-3xl font-bold text-white">Add Category</h1>
-        <p className="text-zinc-400 mt-2">Create a new expense category</p>
+        <h1 className="text-3xl font-bold text-foreground">Add Category</h1>
+        <p className="text-muted-foreground mt-2">Create a new expense category</p>
       </div>
 
-      <Card className="bg-zinc-900 border-zinc-800 max-w-2xl">
+      <Card className="bg-card border-border max-w-2xl">
         <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-6">
           <div>
-            <Label htmlFor="name" className="text-zinc-300">
+            <Label htmlFor="name" className="text-muted-foreground">
               Category Name <span className="text-red-500">*</span>
             </Label>
             <Input
               id="name"
               placeholder="e.g., Travel, Office Supplies, Marketing"
-              className="mt-2 bg-zinc-800 border-zinc-700 text-white"
+              className="mt-2 bg-muted border-border text-foreground"
               {...register("name")}
             />
             {errors.name && (
@@ -71,13 +71,13 @@ export default function CreateCategoryPage(): JSX.Element {
           </div>
 
           <div>
-            <Label htmlFor="description" className="text-zinc-300">
+            <Label htmlFor="description" className="text-muted-foreground">
               Description
             </Label>
             <Textarea
               id="description"
               placeholder="Enter category description"
-              className="mt-2 bg-zinc-800 border-zinc-700 text-white"
+              className="mt-2 bg-muted border-border text-foreground"
               rows={3}
               {...register("description")}
             />
@@ -93,7 +93,7 @@ export default function CreateCategoryPage(): JSX.Element {
               type="button"
               variant="ghost"
               onClick={() => router.back()}
-              className="flex-1 text-zinc-400 hover:text-white hover:bg-zinc-800"
+              className="flex-1 text-muted-foreground hover:text-foreground hover:bg-muted"
             >
               Cancel
             </Button>
@@ -112,3 +112,4 @@ export default function CreateCategoryPage(): JSX.Element {
     </div>
   );
 }
+

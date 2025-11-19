@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
@@ -121,11 +121,11 @@ export default function EditExpensePage() {
 
   if (expenseLoading) {
     return (
-      <div className="min-h-screen bg-zinc-950 p-6">
+      <div className="min-h-screen bg-background p-6">
         <div className="max-w-4xl mx-auto space-y-6">
-          <Skeleton className="h-12 w-64 bg-zinc-800" />
-          <Skeleton className="h-96 bg-zinc-800" />
-          <Skeleton className="h-64 bg-zinc-800" />
+          <Skeleton className="h-12 w-64 bg-muted" />
+          <Skeleton className="h-96 bg-muted" />
+          <Skeleton className="h-64 bg-muted" />
         </div>
       </div>
     );
@@ -133,12 +133,12 @@ export default function EditExpensePage() {
 
   if (!expense) {
     return (
-      <div className="min-h-screen bg-zinc-950 p-6">
+      <div className="min-h-screen bg-background p-6">
         <div className="max-w-4xl mx-auto text-center py-12">
-          <h2 className="text-2xl font-bold text-white mb-2">Expense Not Found</h2>
-          <p className="text-zinc-400 mb-6">The expense you're looking for doesn't exist.</p>
+          <h2 className="text-2xl font-bold text-foreground mb-2">Expense Not Found</h2>
+          <p className="text-muted-foreground mb-6">The expense you're looking for doesn't exist.</p>
           <Link href="/expenses">
-            <Button variant="outline" className="bg-zinc-800 border-zinc-700 text-white hover:bg-zinc-700">
+            <Button variant="outline" className="bg-muted border-border text-foreground hover:bg-muted">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Expenses
             </Button>
@@ -150,14 +150,14 @@ export default function EditExpensePage() {
 
   if (expense.status !== ExpenseStatusEnum.DRAFT) {
     return (
-      <div className="min-h-screen bg-zinc-950 p-6">
+      <div className="min-h-screen bg-background p-6">
         <div className="max-w-4xl mx-auto text-center py-12">
-          <h2 className="text-2xl font-bold text-white mb-2">Cannot Edit Expense</h2>
-          <p className="text-zinc-400 mb-6">
+          <h2 className="text-2xl font-bold text-foreground mb-2">Cannot Edit Expense</h2>
+          <p className="text-muted-foreground mb-6">
             Only draft expenses can be edited. This expense is {expense.status.toLowerCase()}.
           </p>
           <Link href={`/expenses/${expenseId}`}>
-            <Button variant="outline" className="bg-zinc-800 border-zinc-700 text-white hover:bg-zinc-700">
+            <Button variant="outline" className="bg-muted border-border text-foreground hover:bg-muted">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Expense Details
             </Button>
@@ -168,24 +168,24 @@ export default function EditExpensePage() {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-950 p-6">
+    <div className="min-h-screen bg-background p-6">
       <div className="max-w-4xl mx-auto">
         <div className="mb-6">
           <Link href={`/expenses/${expenseId}`}>
-            <Button variant="ghost" className="text-zinc-400 hover:text-white mb-4">
+            <Button variant="ghost" className="text-muted-foreground hover:text-foreground mb-4">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Expense Details
             </Button>
           </Link>
-          <h1 className="text-3xl font-bold text-white">Edit Expense</h1>
-          <p className="text-zinc-400 mt-1">Update expense information</p>
+          <h1 className="text-3xl font-bold text-foreground">Edit Expense</h1>
+          <p className="text-muted-foreground mt-1">Update expense information</p>
         </div>
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <Card className="bg-zinc-900 border-zinc-800">
+            <Card className="bg-card border-border">
               <CardHeader>
-                <CardTitle className="text-white">Expense Details</CardTitle>
+                <CardTitle className="text-foreground">Expense Details</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -194,13 +194,13 @@ export default function EditExpensePage() {
                     name="vendorId"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-zinc-300">
-                          Vendor <span className="text-xs text-zinc-500">(optional)</span>
+                        <FormLabel className="text-muted-foreground">
+                          Vendor <span className="text-xs text-muted-foreground">(optional)</span>
                         </FormLabel>
                         <FormControl>
                           <select
                             {...field}
-                            className="w-full px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-md text-white"
+                            className="w-full px-4 py-2 bg-muted border border-border rounded-md text-foreground"
                             disabled={vendorsLoading}
                           >
                             <option value="">Select vendor (optional)</option>
@@ -221,11 +221,11 @@ export default function EditExpensePage() {
                     name="categoryId"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-zinc-300">Category *</FormLabel>
+                        <FormLabel className="text-muted-foreground">Category *</FormLabel>
                         <FormControl>
                           <select
                             {...field}
-                            className="w-full px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-md text-white"
+                            className="w-full px-4 py-2 bg-muted border border-border rounded-md text-foreground"
                             disabled={categoriesLoading}
                           >
                             <option value="">Select category</option>
@@ -248,11 +248,11 @@ export default function EditExpensePage() {
                     name="departmentId"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-zinc-300">Department</FormLabel>
+                        <FormLabel className="text-muted-foreground">Department</FormLabel>
                         <FormControl>
                           <select
                             {...field}
-                            className="w-full px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-md text-white"
+                            className="w-full px-4 py-2 bg-muted border border-border rounded-md text-foreground"
                             disabled={departmentsLoading}
                           >
                             <option value="">Select department (optional)</option>
@@ -273,12 +273,12 @@ export default function EditExpensePage() {
                     name="expenseDate"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-zinc-300">Expense Date *</FormLabel>
+                        <FormLabel className="text-muted-foreground">Expense Date *</FormLabel>
                         <FormControl>
                           <Input
                             type="date"
                             {...field}
-                            className="bg-zinc-800 border-zinc-700 text-white"
+                            className="bg-muted border-border text-foreground"
                           />
                         </FormControl>
                         <FormMessage />
@@ -292,13 +292,13 @@ export default function EditExpensePage() {
                   name="description"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-zinc-300">Description *</FormLabel>
+                      <FormLabel className="text-muted-foreground">Description *</FormLabel>
                       <FormControl>
                         <textarea
                           {...field}
                           rows={3}
                           placeholder="Enter expense description..."
-                          className="w-full px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-md text-white resize-none"
+                          className="w-full px-4 py-2 bg-muted border border-border rounded-md text-foreground resize-none"
                         />
                       </FormControl>
                       <FormMessage />
@@ -312,14 +312,14 @@ export default function EditExpensePage() {
                     name="netAmount"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-zinc-300">Net Amount *</FormLabel>
+                        <FormLabel className="text-muted-foreground">Net Amount *</FormLabel>
                         <FormControl>
                           <Input
                             type="number"
                             step="0.01"
                             {...field}
                             onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
-                            className="bg-zinc-800 border-zinc-700 text-white"
+                            className="bg-muted border-border text-foreground"
                           />
                         </FormControl>
                         <FormMessage />
@@ -332,14 +332,14 @@ export default function EditExpensePage() {
                     name="taxAmount"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-zinc-300">Tax Amount *</FormLabel>
+                        <FormLabel className="text-muted-foreground">Tax Amount *</FormLabel>
                         <FormControl>
                           <Input
                             type="number"
                             step="0.01"
                             {...field}
                             onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
-                            className="bg-zinc-800 border-zinc-700 text-white"
+                            className="bg-muted border-border text-foreground"
                           />
                         </FormControl>
                         <FormMessage />
@@ -352,14 +352,14 @@ export default function EditExpensePage() {
                     name="totalAmount"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-zinc-300">Total Amount *</FormLabel>
+                        <FormLabel className="text-muted-foreground">Total Amount *</FormLabel>
                         <FormControl>
                           <Input
                             type="number"
                             step="0.01"
                             {...field}
                             disabled
-                            className="bg-zinc-800 border-zinc-700 text-white"
+                            className="bg-muted border-border text-foreground"
                           />
                         </FormControl>
                         <FormMessage />
@@ -373,13 +373,13 @@ export default function EditExpensePage() {
                   name="receiptUrl"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-zinc-300">Receipt URL</FormLabel>
+                      <FormLabel className="text-muted-foreground">Receipt URL</FormLabel>
                       <FormControl>
                         <Input
                           type="url"
                           placeholder="https://example.com/receipt.pdf"
                           {...field}
-                          className="bg-zinc-800 border-zinc-700 text-white"
+                          className="bg-muted border-border text-foreground"
                         />
                       </FormControl>
                       <FormMessage />
@@ -413,8 +413,8 @@ export default function EditExpensePage() {
 
                     return (
                       <FormItem>
-                        <FormLabel className="text-zinc-300">
-                          Tags <span className="text-xs text-zinc-500">(optional)</span>
+                        <FormLabel className="text-muted-foreground">
+                          Tags <span className="text-xs text-muted-foreground">(optional)</span>
                         </FormLabel>
                         <FormControl>
                           <DropdownMenu>
@@ -422,7 +422,7 @@ export default function EditExpensePage() {
                               <Button
                                 type="button"
                                 variant="outline"
-                                className="w-full justify-between bg-zinc-800 border-zinc-700 text-zinc-200 hover:bg-zinc-800/80"
+                                className="w-full justify-between bg-muted border-border text-muted-foreground hover:bg-muted/80"
                                 disabled={tagsLoading || !tags || tags.length === 0}
                               >
                                 <span className="truncate text-left">{summaryLabel()}</span>
@@ -430,7 +430,7 @@ export default function EditExpensePage() {
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent
-                              className="w-64 max-h-64 overflow-y-auto bg-zinc-900 border-zinc-800 text-white"
+                              className="w-64 max-h-64 overflow-y-auto bg-card border-border text-foreground"
                               align="start"
                               side="bottom"
                             >
@@ -443,7 +443,7 @@ export default function EditExpensePage() {
                                     onCheckedChange={(checked) =>
                                       toggleTag(tag.tagId, Boolean(checked))
                                     }
-                                    className="capitalize text-sm focus:bg-zinc-800"
+                                    className="capitalize text-sm focus:bg-muted"
                                   >
                                     {tag.name}
                                   </DropdownMenuCheckboxItem>
@@ -462,7 +462,7 @@ export default function EditExpensePage() {
 
             <div className="flex items-center justify-end gap-4">
               <Link href={`/expenses/${expenseId}`}>
-                <Button type="button" variant="outline" className="bg-zinc-800 border-zinc-700 text-white hover:bg-zinc-700">
+                <Button type="button" variant="outline" className="bg-muted border-border text-foreground hover:bg-muted">
                   Cancel
                 </Button>
               </Link>
@@ -490,3 +490,4 @@ export default function EditExpensePage() {
     </div>
   );
 }
+

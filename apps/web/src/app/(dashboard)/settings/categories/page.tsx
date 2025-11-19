@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import Link from "next/link";
@@ -53,28 +53,28 @@ export default function SettingsCategoriesPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-zinc-950 p-6">
+      <div className="min-h-screen bg-background p-6">
         <div className="max-w-7xl mx-auto">
-          <h1 className="text-3xl font-bold text-white">Categories</h1>
-          <p className="text-zinc-400 mt-2">Loading...</p>
+          <h1 className="text-3xl font-bold text-foreground">Categories</h1>
+          <p className="text-muted-foreground mt-2">Loading...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-zinc-950 p-6">
+    <div className="min-h-screen bg-background p-6">
       <div className="max-w-7xl mx-auto space-y-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Link href="/settings">
-              <Button variant="ghost" size="icon" className="text-zinc-400 hover:text-white">
+              <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
                 <ArrowLeft className="h-5 w-5" />
               </Button>
             </Link>
             <div>
-              <h1 className="text-3xl font-bold text-white">Category Management</h1>
-              <p className="text-zinc-400 mt-1">
+              <h1 className="text-3xl font-bold text-foreground">Category Management</h1>
+              <p className="text-muted-foreground mt-1">
                 Manage expense categories for classification
               </p>
             </div>
@@ -91,10 +91,10 @@ export default function SettingsCategoriesPage() {
         </div>
 
         {!categories || categories.length === 0 ? (
-          <Card className="bg-zinc-900 border-zinc-800 p-12 text-center">
-            <FolderOpen className="w-12 h-12 text-zinc-600 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-white mb-2">No Categories Found</h3>
-            <p className="text-zinc-400 mb-4">Add your first category to get started</p>
+          <Card className="bg-card border-border p-12 text-center">
+            <FolderOpen className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+            <h3 className="text-xl font-semibold text-foreground mb-2">No Categories Found</h3>
+            <p className="text-muted-foreground mb-4">Add your first category to get started</p>
             <Button
               className="bg-gradient-to-r from-cyan-500 to-purple-500 hover:from-cyan-600 hover:to-purple-600"
               asChild
@@ -106,21 +106,21 @@ export default function SettingsCategoriesPage() {
             </Button>
           </Card>
         ) : (
-          <Card className="bg-zinc-900 border-zinc-800">
+          <Card className="bg-card border-border">
             <Table>
               <TableHeader>
-                <TableRow className="border-zinc-800 hover:bg-zinc-800/50">
-                  <TableHead className="text-zinc-300">Name</TableHead>
-                  <TableHead className="text-zinc-300">Description</TableHead>
-                  <TableHead className="text-zinc-300">Status</TableHead>
-                  <TableHead className="text-zinc-300 text-right">Actions</TableHead>
+                <TableRow className="border-border hover:bg-muted/60">
+                  <TableHead className="text-muted-foreground">Name</TableHead>
+                  <TableHead className="text-muted-foreground">Description</TableHead>
+                  <TableHead className="text-muted-foreground">Status</TableHead>
+                  <TableHead className="text-muted-foreground text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {categories.map((category) => (
-                  <TableRow key={category.categoryId} className="border-zinc-800 hover:bg-zinc-800/50">
-                    <TableCell className="font-medium text-white">{category.name}</TableCell>
-                    <TableCell className="text-zinc-400">{category.description || "-"}</TableCell>
+                  <TableRow key={category.categoryId} className="border-border hover:bg-muted/60">
+                    <TableCell className="font-medium text-foreground">{category.name}</TableCell>
+                    <TableCell className="text-muted-foreground">{category.description || "-"}</TableCell>
                     <TableCell>
                       {category.isActive ? (
                         <Badge variant="outline" className="bg-green-500/10 text-green-500 border-green-500/20">
@@ -174,10 +174,10 @@ export default function SettingsCategoriesPage() {
         )}
 
         <Dialog open={deleteDialog.open} onOpenChange={(open) => setDeleteDialog({ open, categoryId: null })}>
-          <DialogContent className="bg-zinc-900 border-zinc-800 text-white">
+          <DialogContent className="bg-card border-border text-foreground">
             <DialogHeader>
               <DialogTitle>Delete Category</DialogTitle>
-              <DialogDescription className="text-zinc-400">
+              <DialogDescription className="text-muted-foreground">
                 Are you sure you want to delete this category? This action cannot be undone.
               </DialogDescription>
             </DialogHeader>
@@ -185,7 +185,7 @@ export default function SettingsCategoriesPage() {
               <Button
                 variant="ghost"
                 onClick={() => setDeleteDialog({ open: false, categoryId: null })}
-                className="text-zinc-400 hover:text-white hover:bg-zinc-800"
+                className="text-muted-foreground hover:text-foreground hover:bg-muted"
               >
                 Cancel
               </Button>
@@ -203,3 +203,4 @@ export default function SettingsCategoriesPage() {
     </div>
   );
 }
+

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import Link from "next/link";
@@ -62,7 +62,7 @@ export default function DashboardLayout({
   });
 
   return (
-    <div className="flex h-screen bg-zinc-950">
+    <div className="flex h-screen bg-background">
       {/* Mobile sidebar backdrop */}
       {sidebarOpen && (
         <div
@@ -74,17 +74,17 @@ export default function DashboardLayout({
       {/* Sidebar */}
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-50 w-64 bg-zinc-950 border-r border-zinc-800 transform transition-transform duration-300 lg:relative lg:translate-x-0",
+          "fixed inset-y-0 left-0 z-50 w-64 bg-card border-r border-border transform transition-transform duration-300 lg:relative lg:translate-x-0",
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >
         <div className="flex h-full flex-col">
           {/* Logo */}
-          <div className="flex h-20 items-center justify-between px-6 border-b border-zinc-800">
+          <div className="flex h-20 items-center justify-between px-6 border-b border-border">
             <div className="flex items-center gap-2">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-400 to-cyan-600">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary/70 to-primary">
                 <svg
-                  className="h-6 w-6 text-white"
+                  className="h-6 w-6 text-foreground"
                   fill="currentColor"
                   viewBox="0 0 24 24"
                 >
@@ -92,7 +92,7 @@ export default function DashboardLayout({
                 </svg>
               </div>
               <div>
-                <div className="text-white font-bold text-lg">
+                <div className="text-foreground font-bold text-lg">
                   EX<span className="text-cyan-400">P</span>ensio
                 </div>
               </div>
@@ -100,7 +100,7 @@ export default function DashboardLayout({
             <Button
               variant="ghost"
               size="icon"
-              className="lg:hidden text-zinc-400"
+              className="lg:hidden text-muted-foreground"
               onClick={() => setSidebarOpen(false)}
             >
               <X className="h-5 w-5" />
@@ -119,8 +119,8 @@ export default function DashboardLayout({
                   className={cn(
                     "flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition-colors",
                     isActive
-                      ? "bg-cyan-500/10 text-cyan-400"
-                      : "text-zinc-400 hover:bg-zinc-800/50 hover:text-white"
+                      ? "bg-primary/10 text-primary"
+                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
                   )}
                   onClick={() => setSidebarOpen(false)}
                 >
@@ -132,23 +132,25 @@ export default function DashboardLayout({
           </nav>
 
           {/* User info and logout */}
-          <div className="border-t border-zinc-800 p-4 space-y-3">
+          <div className="border-t border-border p-4 space-y-3">
             {user && (
               <div className="flex items-center gap-3 px-2">
-                <div className="h-8 w-8 rounded-full bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center text-white text-sm font-semibold">
+                <div className="h-8 w-8 rounded-full bg-gradient-to-br from-primary/70 to-primary flex items-center justify-center text-foreground text-sm font-semibold">
                   {user.name?.charAt(0).toUpperCase() || "U"}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-white truncate">
+                  <p className="text-sm font-medium text-foreground truncate">
                     {user.name}
                   </p>
-                  <p className="text-xs text-zinc-500 truncate">{user.email}</p>
+                  <p className="text-xs text-muted-foreground truncate">
+                    {user.email}
+                  </p>
                 </div>
               </div>
             )}
             <Button
               variant="ghost"
-              className="w-full justify-start text-zinc-400 hover:text-red-400 hover:bg-red-500/10"
+              className="w-full justify-start text-muted-foreground hover:text-destructive hover:bg-destructive/10"
               onClick={() => logoutMutation.mutate()}
               disabled={logoutMutation.isPending}
             >
@@ -160,18 +162,18 @@ export default function DashboardLayout({
       </aside>
 
       {/* Main content */}
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col overflow-hidden bg-background">
         {/* Mobile header */}
-        <header className="lg:hidden flex items-center justify-between h-16 px-4 border-b border-zinc-800 bg-zinc-950">
+        <header className="lg:hidden flex items-center justify-between h-16 px-4 border-b border-border bg-background">
           <Button
             variant="ghost"
             size="icon"
-            className="text-zinc-400"
+            className="text-muted-foreground"
             onClick={() => setSidebarOpen(true)}
           >
             <Menu className="h-5 w-5" />
           </Button>
-          <div className="text-white font-bold text-lg">
+          <div className="text-foreground font-bold text-lg">
             EX<span className="text-cyan-400">P</span>ensio
           </div>
           <div className="w-10" />
@@ -183,3 +185,4 @@ export default function DashboardLayout({
     </div>
   );
 }
+

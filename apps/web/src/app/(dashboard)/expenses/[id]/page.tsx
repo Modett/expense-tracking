@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
@@ -77,7 +77,7 @@ export default function ExpenseDetailPage() {
   const getStatusBadge = (status: ExpenseStatusEnum) => {
     const variants: Record<ExpenseStatusEnum, string> = {
       [ExpenseStatusEnum.DRAFT]:
-        "bg-zinc-500/20 text-zinc-300 border-zinc-500/30",
+        "bg-zinc-500/20 text-muted-foreground border-zinc-500/30",
       [ExpenseStatusEnum.SUBMITTED]:
         "bg-blue-500/20 text-blue-300 border-blue-500/30",
       [ExpenseStatusEnum.APPROVED]:
@@ -98,7 +98,7 @@ export default function ExpenseDetailPage() {
   const getPriorityBadge = (priority: ExpensePriorityEnum) => {
     const variants: Record<ExpensePriorityEnum, string> = {
       [ExpensePriorityEnum.ROUTINE]:
-        "bg-zinc-600/20 text-zinc-300 border-zinc-600/30",
+        "bg-zinc-600/20 text-muted-foreground border-zinc-600/30",
       [ExpensePriorityEnum.STANDARD]:
         "bg-cyan-500/20 text-cyan-300 border-cyan-500/30",
       [ExpensePriorityEnum.URGENT]:
@@ -154,11 +154,11 @@ export default function ExpenseDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-zinc-950 p-6">
+      <div className="min-h-screen bg-background p-6">
         <div className="max-w-5xl mx-auto space-y-6">
-          <Skeleton className="h-12 w-64 bg-zinc-800" />
-          <Skeleton className="h-96 bg-zinc-800" />
-          <Skeleton className="h-64 bg-zinc-800" />
+          <Skeleton className="h-12 w-64 bg-muted" />
+          <Skeleton className="h-96 bg-muted" />
+          <Skeleton className="h-64 bg-muted" />
         </div>
       </div>
     );
@@ -166,18 +166,18 @@ export default function ExpenseDetailPage() {
 
   if (!expense) {
     return (
-      <div className="min-h-screen bg-zinc-950 p-6">
+      <div className="min-h-screen bg-background p-6">
         <div className="max-w-5xl mx-auto text-center py-12">
-          <h2 className="text-2xl font-bold text-white mb-2">
+          <h2 className="text-2xl font-bold text-foreground mb-2">
             Expense Not Found
           </h2>
-          <p className="text-zinc-400 mb-6">
+          <p className="text-muted-foreground mb-6">
             The expense you're looking for doesn't exist.
           </p>
           <Link href="/expenses">
             <Button
               variant="outline"
-              className="bg-zinc-800 border-zinc-700 text-white hover:bg-zinc-700"
+              className="bg-muted border-border text-foreground hover:bg-muted"
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Expenses
@@ -189,13 +189,13 @@ export default function ExpenseDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-950 p-6">
+    <div className="min-h-screen bg-background p-6">
       <div className="max-w-5xl mx-auto">
         <div className="mb-6">
           <Link href="/expenses">
             <Button
               variant="ghost"
-              className="text-zinc-400 hover:text-white mb-4"
+              className="text-muted-foreground hover:text-foreground mb-4"
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Expenses
@@ -203,10 +203,10 @@ export default function ExpenseDetailPage() {
           </Link>
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-white mb-2">
+              <h1 className="text-3xl font-bold text-foreground mb-2">
                 Expense Details
               </h1>
-              <p className="text-zinc-400">
+              <p className="text-muted-foreground">
                 View and manage expense information
               </p>
             </div>
@@ -218,15 +218,15 @@ export default function ExpenseDetailPage() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-          <Card className="bg-zinc-900 border-zinc-800">
+          <Card className="bg-card border-border">
             <CardContent className="p-6">
               <div className="flex items-center gap-3 mb-2">
                 <div className="h-10 w-10 rounded-full bg-cyan-500/20 flex items-center justify-center">
                   <DollarSign className="h-5 w-5 text-cyan-400" />
                 </div>
                 <div>
-                  <p className="text-sm text-zinc-400">Total Amount</p>
-                  <p className="text-2xl font-bold text-white">
+                  <p className="text-sm text-muted-foreground">Total Amount</p>
+                  <p className="text-2xl font-bold text-foreground">
                     ${expense.totalAmount.toFixed(2)}
                   </p>
                 </div>
@@ -234,18 +234,18 @@ export default function ExpenseDetailPage() {
             </CardContent>
           </Card>
 
-          <Card className="bg-zinc-900 border-zinc-800">
+          <Card className="bg-card border-border">
             <CardContent className="p-6">
               <div className="flex items-center gap-3 mb-2">
                 <div className="h-10 w-10 rounded-full bg-emerald-500/20 flex items-center justify-center">
                   <UserCircle className="h-5 w-5 text-emerald-300" />
                 </div>
                 <div>
-                  <p className="text-sm text-zinc-400">Submitted By</p>
-                  <p className="text-lg font-semibold text-white">
+                  <p className="text-sm text-muted-foreground">Submitted By</p>
+                  <p className="text-lg font-semibold text-foreground">
                     {expense.user?.name || "Unknown submitter"}
                   </p>
-                  <p className="text-xs text-zinc-500">
+                  <p className="text-xs text-muted-foreground">
                     {expense.user?.email || `User ID: ${expense.userId}`}
                   </p>
                 </div>
@@ -253,15 +253,15 @@ export default function ExpenseDetailPage() {
             </CardContent>
           </Card>
 
-          <Card className="bg-zinc-900 border-zinc-800">
+          <Card className="bg-card border-border">
             <CardContent className="p-6">
               <div className="flex items-center gap-3 mb-2">
                 <div className="h-10 w-10 rounded-full bg-purple-500/20 flex items-center justify-center">
                   <Calendar className="h-5 w-5 text-purple-400" />
                 </div>
                 <div>
-                  <p className="text-sm text-zinc-400">Expense Date</p>
-                  <p className="text-xl font-semibold text-white">
+                  <p className="text-sm text-muted-foreground">Expense Date</p>
+                  <p className="text-xl font-semibold text-foreground">
                     {format(new Date(expense.dateOfExpense), "MMM dd, yyyy")}
                   </p>
                 </div>
@@ -269,15 +269,15 @@ export default function ExpenseDetailPage() {
             </CardContent>
           </Card>
 
-          <Card className="bg-zinc-900 border-zinc-800">
+          <Card className="bg-card border-border">
             <CardContent className="p-6">
               <div className="flex items-center gap-3 mb-2">
                 <div className="h-10 w-10 rounded-full bg-pink-500/20 flex items-center justify-center">
                   <span className="text-pink-400 font-bold">ID</span>
                 </div>
                 <div>
-                  <p className="text-sm text-zinc-400">Expense ID</p>
-                  <p className="text-sm font-mono text-white truncate max-w-[200px]">
+                  <p className="text-sm text-muted-foreground">Expense ID</p>
+                  <p className="text-sm font-mono text-foreground truncate max-w-[200px]">
                     {expense.expenseId.split("-")[0]}
                   </p>
                 </div>
@@ -287,46 +287,46 @@ export default function ExpenseDetailPage() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-          <Card className="bg-zinc-900 border-zinc-800">
+          <Card className="bg-card border-border">
             <CardHeader>
-              <CardTitle className="text-white">Expense Information</CardTitle>
+              <CardTitle className="text-foreground">Expense Information</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <label className="text-sm text-zinc-400">Description</label>
-                <p className="text-white mt-1">{expense.description}</p>
+                <label className="text-sm text-muted-foreground">Description</label>
+                <p className="text-foreground mt-1">{expense.description}</p>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm text-zinc-400">Vendor</label>
-                  <p className="text-white mt-1">
+                  <label className="text-sm text-muted-foreground">Vendor</label>
+                  <p className="text-foreground mt-1">
                     {expense.vendor?.name || "-"}
                   </p>
                 </div>
                 <div>
-                  <label className="text-sm text-zinc-400">Category</label>
-                  <p className="text-white mt-1">
+                  <label className="text-sm text-muted-foreground">Category</label>
+                  <p className="text-foreground mt-1">
                     {expense.category?.name || "-"}
                   </p>
                 </div>
               </div>
 
               <div>
-                <label className="text-sm text-zinc-400">Department</label>
+                <label className="text-sm text-muted-foreground">Department</label>
                 {expense.department ? (
                   <Badge className="bg-purple-500/20 text-purple-400 border-0 mt-1">
                     {expense.department.name}
                   </Badge>
                 ) : (
-                  <p className="text-zinc-500 mt-1">-</p>
+                  <p className="text-muted-foreground mt-1">-</p>
                 )}
               </div>
 
               <div>
-                <label className="text-sm text-zinc-400">Tags</label>
+                <label className="text-sm text-muted-foreground">Tags</label>
                 {tagsLoading ? (
-                  <p className="text-zinc-500 mt-1">Loading tags...</p>
+                  <p className="text-muted-foreground mt-1">Loading tags...</p>
                 ) : expense.tagIds && expense.tagIds.length > 0 ? (
                   expenseTags.length > 0 ? (
                     <div className="flex flex-wrap gap-2 mt-1">
@@ -340,18 +340,18 @@ export default function ExpenseDetailPage() {
                       ))}
                     </div>
                   ) : (
-                    <p className="text-zinc-500 mt-1">
+                    <p className="text-muted-foreground mt-1">
                       Tags not available. They might have been removed.
                     </p>
                   )
                 ) : (
-                  <p className="text-zinc-500 mt-1">-</p>
+                  <p className="text-muted-foreground mt-1">-</p>
                 )}
               </div>
 
               {expense.receiptUrl && (
                 <div>
-                  <label className="text-sm text-zinc-400">Receipt</label>
+                  <label className="text-sm text-muted-foreground">Receipt</label>
                   <a
                     href={expense.receiptUrl}
                     target="_blank"
@@ -366,34 +366,34 @@ export default function ExpenseDetailPage() {
             </CardContent>
           </Card>
 
-          <Card className="bg-zinc-900 border-zinc-800">
+          <Card className="bg-card border-border">
             <CardHeader>
-              <CardTitle className="text-white">Amount Breakdown</CardTitle>
+              <CardTitle className="text-foreground">Amount Breakdown</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex justify-between items-center pb-3 border-b border-zinc-800">
-                <span className="text-zinc-400">Net Amount</span>
-                <span className="text-white font-semibold">
+              <div className="flex justify-between items-center pb-3 border-b border-border">
+                <span className="text-muted-foreground">Net Amount</span>
+                <span className="text-foreground font-semibold">
                   ${expense.netAmount.toFixed(2)}
                 </span>
               </div>
-              <div className="flex justify-between items-center pb-3 border-b border-zinc-800">
-                <span className="text-zinc-400">Tax Amount</span>
-                <span className="text-white font-semibold">
+              <div className="flex justify-between items-center pb-3 border-b border-border">
+                <span className="text-muted-foreground">Tax Amount</span>
+                <span className="text-foreground font-semibold">
                   ${expense.taxAmount.toFixed(2)}
                 </span>
               </div>
               <div className="flex justify-between items-center pt-2">
-                <span className="text-white font-semibold">Total Amount</span>
-                <span className="text-2xl font-bold text-white">
+                <span className="text-foreground font-semibold">Total Amount</span>
+                <span className="text-2xl font-bold text-foreground">
                   ${expense.totalAmount.toFixed(2)}
                 </span>
               </div>
 
               {expense.budgetOverride &&
                 expense.budgetOverride !== BudgetExceptionTypeEnum.NONE && (
-                  <div className="pt-4 border-t border-zinc-800">
-                    <label className="text-sm text-zinc-400">
+                  <div className="pt-4 border-t border-border">
+                    <label className="text-sm text-muted-foreground">
                       Budget Override
                     </label>
                     <Badge className="bg-orange-500/20 text-orange-400 border-0 mt-1">
@@ -401,7 +401,7 @@ export default function ExpenseDetailPage() {
                         expense.budgetOverride.slice(1).toLowerCase()}
                     </Badge>
                     {expense.justification && (
-                      <p className="text-sm text-zinc-300 mt-2">
+                      <p className="text-sm text-muted-foreground mt-2">
                         {expense.justification}
                       </p>
                     )}
@@ -411,16 +411,16 @@ export default function ExpenseDetailPage() {
           </Card>
         </div>
 
-        <Card className="bg-zinc-900 border-zinc-800">
+        <Card className="bg-card border-border">
           <CardHeader>
-            <CardTitle className="text-white">Actions</CardTitle>
+            <CardTitle className="text-foreground">Actions</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-3 flex-wrap">
               {expense.status === ExpenseStatusEnum.DRAFT && (
                 <>
                   <Link href={`/expenses/${expense.expenseId}/edit`}>
-                    <Button className="bg-zinc-800 border-zinc-700 hover:bg-zinc-700 text-white">
+                    <Button className="bg-muted border-border hover:bg-muted text-foreground">
                       <Edit className="h-4 w-4 mr-2" />
                       Edit Expense
                     </Button>
@@ -467,7 +467,7 @@ export default function ExpenseDetailPage() {
                   onClick={handleCancel}
                   disabled={isCancelling}
                   variant="outline"
-                  className="bg-zinc-800 border-zinc-700 text-white hover:bg-zinc-700"
+                  className="bg-muted border-border text-foreground hover:bg-muted"
                 >
                   {isCancelling ? (
                     <>
@@ -486,7 +486,7 @@ export default function ExpenseDetailPage() {
               {(expense.status === ExpenseStatusEnum.APPROVED ||
                 expense.status === ExpenseStatusEnum.REJECTED ||
                 expense.status === ExpenseStatusEnum.CANCELLED) && (
-                <p className="text-zinc-400 text-sm">
+                <p className="text-muted-foreground text-sm">
                   This expense is {expense.status.toLowerCase()} and cannot be
                   modified.
                 </p>
@@ -497,12 +497,12 @@ export default function ExpenseDetailPage() {
 
         {showDeleteConfirm && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-            <Card className="bg-zinc-900 border-zinc-800 max-w-md mx-4">
+            <Card className="bg-card border-border max-w-md mx-4">
               <CardHeader>
-                <CardTitle className="text-white">Confirm Delete</CardTitle>
+                <CardTitle className="text-foreground">Confirm Delete</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <p className="text-zinc-300">
+                <p className="text-muted-foreground">
                   Are you sure you want to delete this expense? This action
                   cannot be undone.
                 </p>
@@ -510,7 +510,7 @@ export default function ExpenseDetailPage() {
                   <Button
                     onClick={() => setShowDeleteConfirm(false)}
                     variant="outline"
-                    className="bg-zinc-800 border-zinc-700 text-white hover:bg-zinc-700"
+                    className="bg-muted border-border text-foreground hover:bg-muted"
                   >
                     Cancel
                   </Button>
@@ -529,30 +529,30 @@ export default function ExpenseDetailPage() {
 
         {showSubmitDialog && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-            <Card className="bg-zinc-900 border-zinc-800 max-w-md mx-4">
+            <Card className="bg-card border-border max-w-md mx-4">
               <CardHeader>
-                <CardTitle className="text-white">
+                <CardTitle className="text-foreground">
                   Submit for Approval
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <p className="text-zinc-300">
+                <p className="text-muted-foreground">
                   Are you sure you want to submit this expense for approval? You
                   won't be able to edit it after submission.
                 </p>
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <Label className="text-zinc-200">Budget Override</Label>
+                    <Label className="text-muted-foreground">Budget Override</Label>
                     <Select
                       value={submitBudgetOverride}
                       onValueChange={(value) =>
                         setSubmitBudgetOverride(value as BudgetExceptionTypeEnum)
                       }
                     >
-                      <SelectTrigger className="bg-zinc-800 border-zinc-700 text-white">
+                      <SelectTrigger className="bg-muted border-border text-foreground">
                         <SelectValue placeholder="Select override" />
                       </SelectTrigger>
-                      <SelectContent className="bg-zinc-900 border-zinc-800 text-white">
+                      <SelectContent className="bg-card border-border text-foreground">
                         <SelectItem value={BudgetExceptionTypeEnum.NONE}>
                           No override
                         </SelectItem>
@@ -567,7 +567,7 @@ export default function ExpenseDetailPage() {
                         </SelectItem>
                       </SelectContent>
                     </Select>
-                    <p className="text-xs text-zinc-500">
+                    <p className="text-xs text-muted-foreground">
                       Choose an override type if this expense exceeds the
                       allocated budget.
                     </p>
@@ -575,7 +575,7 @@ export default function ExpenseDetailPage() {
 
                   {submitBudgetOverride !== BudgetExceptionTypeEnum.NONE && (
                     <div className="space-y-2">
-                      <Label className="text-zinc-200">Justification</Label>
+                      <Label className="text-muted-foreground">Justification</Label>
                       <Textarea
                         rows={4}
                         value={submitJustification}
@@ -583,13 +583,13 @@ export default function ExpenseDetailPage() {
                           setSubmitJustification(event.target.value)
                         }
                         placeholder="Explain why this expense should exceed the budget (minimum 50 characters)"
-                        className="bg-zinc-800 border-zinc-700 text-white"
+                        className="bg-muted border-border text-foreground"
                       />
                       <p
                         className={`text-xs ${
                           submitJustification.trim().length < 50
                             ? "text-red-400"
-                            : "text-zinc-500"
+                            : "text-muted-foreground"
                         }`}
                       >
                         {submitJustification.trim().length}/50 characters
@@ -601,7 +601,7 @@ export default function ExpenseDetailPage() {
                   <Button
                     onClick={() => setShowSubmitDialog(false)}
                     variant="outline"
-                    className="bg-zinc-800 border-zinc-700 text-white hover:bg-zinc-700"
+                    className="bg-muted border-border text-foreground hover:bg-muted"
                   >
                     Cancel
                   </Button>
@@ -621,3 +621,4 @@ export default function ExpenseDetailPage() {
     </div>
   );
 }
+

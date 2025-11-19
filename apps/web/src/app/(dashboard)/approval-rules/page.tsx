@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import Link from "next/link";
@@ -112,10 +112,10 @@ export default function ApprovalRulesPage() {
 
   if (isLoading) {
     return (
-      <div className="p-8">
+      <div className="p-8 bg-background min-h-screen">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-white">Approval Rules</h1>
-          <p className="text-zinc-400 mt-2">Loading...</p>
+          <h1 className="text-3xl font-bold text-foreground">Approval Rules</h1>
+          <p className="text-muted-foreground mt-2">Loading...</p>
         </div>
       </div>
     );
@@ -123,13 +123,13 @@ export default function ApprovalRulesPage() {
 
   if (isError) {
     return (
-      <div className="p-8">
+      <div className="p-8 bg-background min-h-screen">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-white">Approval Rules</h1>
+          <h1 className="text-3xl font-bold text-foreground">Approval Rules</h1>
           <p className="text-red-400 mt-2">
             Error loading approval rules: {error?.toString()}
           </p>
-          <pre className="text-xs text-zinc-400 mt-4">
+          <pre className="text-xs text-muted-foreground mt-4">
             {JSON.stringify(error, null, 2)}
           </pre>
         </div>
@@ -157,12 +157,12 @@ export default function ApprovalRulesPage() {
   );
 
   return (
-    <div className="p-8">
+    <div className="p-8 bg-background min-h-screen">
       <div className="mb-8">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-white">Approval Rules</h1>
-            <p className="text-zinc-400 mt-2">
+            <h1 className="text-3xl font-bold text-foreground">Approval Rules</h1>
+            <p className="text-muted-foreground mt-2">
               Configure approval workflows by category and amount
             </p>
           </div>
@@ -185,10 +185,10 @@ export default function ApprovalRulesPage() {
             setRoleFilter(value as ApproverRoleEnum | "ALL")
           }
         >
-          <SelectTrigger className="w-48 bg-zinc-900 border-zinc-800 text-white">
+          <SelectTrigger className="w-48 bg-card border-border text-foreground">
             <SelectValue placeholder="Filter by role" />
           </SelectTrigger>
-          <SelectContent className="bg-zinc-900 border-zinc-800">
+          <SelectContent className="bg-card border-border">
             <SelectItem value="ALL">All Roles</SelectItem>
             <SelectItem value={ApproverRoleEnum.STAFF}>Staff</SelectItem>
             <SelectItem value={ApproverRoleEnum.MANAGER}>Manager</SelectItem>
@@ -198,10 +198,10 @@ export default function ApprovalRulesPage() {
         </Select>
 
         <Select value={activeFilter} onValueChange={setActiveFilter}>
-          <SelectTrigger className="w-48 bg-zinc-900 border-zinc-800 text-white">
+          <SelectTrigger className="w-48 bg-card border-border text-foreground">
             <SelectValue placeholder="Filter by status" />
           </SelectTrigger>
-          <SelectContent className="bg-zinc-900 border-zinc-800">
+          <SelectContent className="bg-card border-border">
             <SelectItem value="ALL">All Statuses</SelectItem>
             <SelectItem value="active">Active Only</SelectItem>
             <SelectItem value="inactive">Inactive Only</SelectItem>
@@ -210,12 +210,12 @@ export default function ApprovalRulesPage() {
       </div>
 
       {Object.entries(rulesByCategory).length === 0 ? (
-        <Card className="bg-zinc-900 border-zinc-800 p-12 text-center">
-          <Shield className="w-12 h-12 text-zinc-600 mx-auto mb-4" />
-          <h3 className="text-xl font-semibold text-white mb-2">
+        <Card className="bg-card border-border p-12 text-center">
+          <Shield className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+          <h3 className="text-xl font-semibold text-foreground mb-2">
             No Approval Rules
           </h3>
-          <p className="text-zinc-400 mb-4">
+          <p className="text-muted-foreground mb-4">
             Create your first approval rule to get started
           </p>
           <Button
@@ -231,29 +231,29 @@ export default function ApprovalRulesPage() {
       ) : (
         <div className="space-y-6">
           {Object.entries(rulesByCategory).map(([categoryName, rules]) => (
-            <Card key={categoryName} className="bg-zinc-900 border-zinc-800">
-              <div className="p-6 border-b border-zinc-800">
-                <h2 className="text-xl font-semibold text-white">
+            <Card key={categoryName} className="bg-card border-border">
+              <div className="p-6 border-b border-border">
+                <h2 className="text-xl font-semibold text-foreground">
                   {categoryName}
                 </h2>
-                <p className="text-sm text-zinc-400 mt-1">
+                <p className="text-sm text-muted-foreground mt-1">
                   {rules.length} rule{rules.length !== 1 ? "s" : ""} configured
                 </p>
               </div>
               <Table>
                 <TableHeader>
-                  <TableRow className="border-zinc-800 hover:bg-zinc-900">
-                    <TableHead className="text-zinc-400">
+                  <TableRow className="border-border hover:bg-card">
+                    <TableHead className="text-muted-foreground">
                       Minimum Amount
                     </TableHead>
-                    <TableHead className="text-zinc-400">
+                    <TableHead className="text-muted-foreground">
                       Approver Role
                     </TableHead>
-                    <TableHead className="text-zinc-400">
+                    <TableHead className="text-muted-foreground">
                       Approval Order
                     </TableHead>
-                    <TableHead className="text-zinc-400">Status</TableHead>
-                    <TableHead className="text-zinc-400 text-right">
+                    <TableHead className="text-muted-foreground">Status</TableHead>
+                    <TableHead className="text-muted-foreground text-right">
                       Actions
                     </TableHead>
                   </TableRow>
@@ -264,16 +264,16 @@ export default function ApprovalRulesPage() {
                     .map((rule) => (
                       <TableRow
                         key={rule.ruleId}
-                        className="border-zinc-800 hover:bg-zinc-800/50"
+                        className="border-border hover:bg-muted/60"
                       >
-                        <TableCell className="text-white font-mono">
+                        <TableCell className="text-foreground font-mono">
                           ${Number(rule.minAmount).toFixed(2)}+
                         </TableCell>
                         <TableCell>{getRoleBadge(rule.approverRole)}</TableCell>
                         <TableCell>
                           <Badge
                             variant="outline"
-                            className="bg-zinc-800 text-zinc-300 border-zinc-700"
+                            className="bg-muted text-muted-foreground border-border"
                           >
                             Level {rule.approvalOrder}
                           </Badge>
@@ -357,10 +357,10 @@ export default function ApprovalRulesPage() {
         open={deleteDialog.open}
         onOpenChange={(open) => setDeleteDialog({ open, ruleId: null })}
       >
-        <DialogContent className="bg-zinc-900 border-zinc-800 text-white">
+        <DialogContent className="bg-card border-border text-foreground">
           <DialogHeader>
             <DialogTitle>Delete Approval Rule</DialogTitle>
-            <DialogDescription className="text-zinc-400">
+            <DialogDescription className="text-muted-foreground">
               Are you sure you want to delete this approval rule? This action
               cannot be undone.
             </DialogDescription>
@@ -369,7 +369,7 @@ export default function ApprovalRulesPage() {
             <Button
               variant="ghost"
               onClick={() => setDeleteDialog({ open: false, ruleId: null })}
-              className="text-zinc-400 hover:text-white hover:bg-zinc-800"
+              className="text-muted-foreground hover:text-foreground hover:bg-muted"
             >
               Cancel
             </Button>
@@ -386,3 +386,5 @@ export default function ApprovalRulesPage() {
     </div>
   );
 }
+
+

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect } from "react";
 import Link from "next/link";
@@ -84,24 +84,24 @@ export default function EditProfilePage() {
   };
 
   return (
-    <div className="min-h-screen bg-zinc-950 p-6">
+    <div className="min-h-screen bg-background p-6">
       <div className="max-w-3xl mx-auto space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-white">Edit Profile</h1>
-            <p className="text-zinc-400 mt-1">
+            <h1 className="text-3xl font-bold text-foreground">Edit Profile</h1>
+            <p className="text-muted-foreground mt-1">
               Update your personal information.
             </p>
           </div>
           <Link href="/settings">
-            <Button variant="ghost" className="text-zinc-400 hover:text-white">
+            <Button variant="ghost" className="text-muted-foreground hover:text-foreground">
               <ArrowLeft className="mr-2 h-4 w-4" />
               Back to settings
             </Button>
           </Link>
         </div>
 
-        <Card className="bg-zinc-900 border-zinc-800">
+        <Card className="bg-card border-border">
           <CardHeader className="space-y-1">
             <div className="flex items-center gap-3 text-cyan-400">
               <User className="h-5 w-5" />
@@ -109,7 +109,7 @@ export default function EditProfilePage() {
                 Profile
               </span>
             </div>
-            <CardTitle className="text-white">Personal Information</CardTitle>
+            <CardTitle className="text-foreground">Personal Information</CardTitle>
             <CardDescription>
               Update your name and email address.
             </CardDescription>
@@ -122,12 +122,12 @@ export default function EditProfilePage() {
                   name="name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-zinc-300">Full Name</FormLabel>
+                      <FormLabel className="text-muted-foreground">Full Name</FormLabel>
                       <FormControl>
                         <Input
                           type="text"
                           placeholder="Enter your full name"
-                          className="bg-zinc-800 border-zinc-700 text-white"
+                          className="bg-muted border-border text-foreground"
                           {...field}
                         />
                       </FormControl>
@@ -141,12 +141,12 @@ export default function EditProfilePage() {
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-zinc-300">Email Address</FormLabel>
+                      <FormLabel className="text-muted-foreground">Email Address</FormLabel>
                       <FormControl>
                         <Input
                           type="email"
                           placeholder="Enter your email"
-                          className="bg-zinc-800 border-zinc-700 text-white"
+                          className="bg-muted border-border text-foreground"
                           {...field}
                         />
                       </FormControl>
@@ -155,12 +155,12 @@ export default function EditProfilePage() {
                   )}
                 />
 
-                <div className="bg-zinc-800/50 border border-zinc-700 rounded-lg p-4">
-                  <p className="text-sm text-zinc-400">
-                    <span className="font-medium text-zinc-300">Role:</span>{" "}
+                <div className="bg-muted/60 border border-border rounded-lg p-4">
+                  <p className="text-sm text-muted-foreground">
+                    <span className="font-medium text-muted-foreground">Role:</span>{" "}
                     <span className="capitalize">{user?.role}</span>
                   </p>
-                  <p className="text-xs text-zinc-500 mt-1">
+                  <p className="text-xs text-muted-foreground mt-1">
                     Contact an administrator to change your role.
                   </p>
                 </div>
@@ -198,3 +198,4 @@ export default function EditProfilePage() {
     </div>
   );
 }
+

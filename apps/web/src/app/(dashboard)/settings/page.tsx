@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { useMemo } from "react";
@@ -101,8 +101,8 @@ export default function SettingsPage() {
         <Card className="bg-card border-border">
           <CardHeader className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
             <div>
-          <CardTitle className="text-foreground text-xl">Profile</CardTitle>
-          <CardDescription className="text-muted-foreground">
+              <CardTitle className="text-foreground text-xl">Profile</CardTitle>
+              <CardDescription className="text-muted-foreground">
                 View and edit your account details
               </CardDescription>
             </div>
@@ -126,14 +126,14 @@ export default function SettingsPage() {
               </p>
             </div>
             <div>
-              <p className="text-sm text-zinc-500">Email</p>
+              <p className="text-sm text-muted-foreground">Email</p>
               <p className="text-lg text-foreground font-medium">
                 {user?.email || "—"}
               </p>
             </div>
             <div>
-              <p className="text-sm text-zinc-500">Role</p>
-              <p className="capitalize text-white font-medium">
+              <p className="text-sm text-muted-foreground">Role</p>
+              <p className="capitalize text-foreground font-medium">
                 {normalizedRole || "—"}
               </p>
             </div>
@@ -141,13 +141,13 @@ export default function SettingsPage() {
         </Card>
 
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          <Card className="bg-zinc-900 border-zinc-800">
+          <Card className="bg-card border-border">
             <CardHeader>
-              <CardTitle className="text-white flex items-center gap-2">
+              <CardTitle className="text-foreground flex items-center gap-2">
                 <Palette className="h-5 w-5 text-purple-400" />
                 Appearance
               </CardTitle>
-              <CardDescription className="text-zinc-400">
+              <CardDescription className="text-muted-foreground">
                 Choose your preferred theme.
               </CardDescription>
             </CardHeader>
@@ -179,13 +179,13 @@ export default function SettingsPage() {
             </CardContent>
           </Card>
 
-          <Card className="bg-zinc-900 border-zinc-800">
+          <Card className="bg-card border-border">
             <CardHeader>
-              <CardTitle className="text-white flex items-center gap-2">
+              <CardTitle className="text-foreground flex items-center gap-2">
                 <ShieldCheck className="h-5 w-5 text-cyan-400" />
                 Security
               </CardTitle>
-              <CardDescription className="text-zinc-400">
+              <CardDescription className="text-muted-foreground">
                 Update your password to keep your account safe.
               </CardDescription>
             </CardHeader>
@@ -199,13 +199,13 @@ export default function SettingsPage() {
             </CardContent>
           </Card>
 
-          <Card className="bg-zinc-900 border-zinc-800">
+          <Card className="bg-card border-border">
             <CardHeader>
-              <CardTitle className="text-white flex items-center gap-2">
+              <CardTitle className="text-foreground flex items-center gap-2">
                 <LogOut className="h-5 w-5 text-pink-400" />
                 Session
               </CardTitle>
-              <CardDescription className="text-zinc-400">
+              <CardDescription className="text-muted-foreground">
                 Need to switch accounts? Sign out from here.
               </CardDescription>
             </CardHeader>
@@ -224,21 +224,21 @@ export default function SettingsPage() {
 
         {availableLinks.length > 0 && (
           <div className="space-y-3">
-            <h2 className="text-xl font-semibold text-white">
+            <h2 className="text-xl font-semibold text-foreground">
               Workspace configuration
             </h2>
             <div className="grid gap-4 md:grid-cols-2">
               {availableLinks.map((link) => (
                 <Card
                   key={link.href}
-                  className="bg-zinc-900 border-zinc-800 hover:border-cyan-500/40 transition-colors"
+                  className="bg-card border-border hover:border-cyan-500/40 transition-colors"
                 >
                   <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-white">
+                    <CardTitle className="flex items-center gap-2 text-foreground">
                       <link.icon className="h-5 w-5 text-cyan-400" />
                       {link.title}
                     </CardTitle>
-                    <CardDescription className="text-zinc-400">
+                    <CardDescription className="text-muted-foreground">
                       {link.description}
                     </CardDescription>
                   </CardHeader>
@@ -261,10 +261,10 @@ export default function SettingsPage() {
         )}
 
         {availableLinks.length === 0 && (
-          <Card className="bg-zinc-900 border-zinc-800">
+          <Card className="bg-card border-border">
             <CardHeader>
-              <CardTitle className="text-white">Nothing to configure</CardTitle>
-              <CardDescription className="text-zinc-400">
+              <CardTitle className="text-foreground">Nothing to configure</CardTitle>
+              <CardDescription className="text-muted-foreground">
                 You can always update your password from this page. Contact an
                 administrator if you need extended permissions.
               </CardDescription>
@@ -275,3 +275,7 @@ export default function SettingsPage() {
     </div>
   );
 }
+
+
+
+

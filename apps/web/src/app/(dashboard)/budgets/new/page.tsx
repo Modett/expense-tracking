@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -78,21 +78,21 @@ export default function CreateBudgetPage() {
       <div className="mb-8">
         <Button
           variant="ghost"
-          className="text-zinc-400 hover:text-white hover:bg-zinc-800 mb-4"
+          className="text-muted-foreground hover:text-foreground hover:bg-muted mb-4"
           onClick={() => router.back()}
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back
         </Button>
-        <h1 className="text-3xl font-bold text-white">Create Budget</h1>
-        <p className="text-zinc-400 mt-2">Set up a new budget for department or category</p>
+        <h1 className="text-3xl font-bold text-foreground">Create Budget</h1>
+        <p className="text-muted-foreground mt-2">Set up a new budget for department or category</p>
       </div>
 
-      <Card className="bg-zinc-900 border-zinc-800 max-w-3xl">
+      <Card className="bg-card border-border max-w-3xl">
         <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-6">
           <div className="grid grid-cols-2 gap-6">
             <div>
-              <Label htmlFor="departmentId" className="text-zinc-300">
+              <Label htmlFor="departmentId" className="text-muted-foreground">
                 Department (Optional)
               </Label>
               <Select
@@ -105,10 +105,10 @@ export default function CreateBudgetPage() {
                   setValue("departmentId", value);
                 }}
               >
-                <SelectTrigger className="mt-2 bg-zinc-800 border-zinc-700 text-white">
+                <SelectTrigger className="mt-2 bg-muted border-border text-foreground">
                   <SelectValue placeholder="Organization-wide" />
                 </SelectTrigger>
-                <SelectContent className="bg-zinc-900 border-zinc-800">
+                <SelectContent className="bg-card border-border">
                   <SelectItem value={ORG_LEVEL_VALUE}>Organization-wide (no department)</SelectItem>
                   {departments?.map((dept) => (
                     <SelectItem key={dept.departmentId} value={dept.departmentId}>
@@ -120,7 +120,7 @@ export default function CreateBudgetPage() {
             </div>
 
             <div>
-              <Label htmlFor="categoryId" className="text-zinc-300">
+              <Label htmlFor="categoryId" className="text-muted-foreground">
                 Category (Optional)
               </Label>
               <Select
@@ -133,10 +133,10 @@ export default function CreateBudgetPage() {
                   setValue("categoryId", value);
                 }}
               >
-                <SelectTrigger className="mt-2 bg-zinc-800 border-zinc-700 text-white">
+                <SelectTrigger className="mt-2 bg-muted border-border text-foreground">
                   <SelectValue placeholder="All categories" />
                 </SelectTrigger>
-                <SelectContent className="bg-zinc-900 border-zinc-800">
+                <SelectContent className="bg-card border-border">
                   <SelectItem value={CATEGORY_ALL_VALUE}>All Categories</SelectItem>
                   {categories?.map((cat) => (
                     <SelectItem key={cat.categoryId} value={cat.categoryId}>
@@ -150,7 +150,7 @@ export default function CreateBudgetPage() {
 
           <div className="grid grid-cols-2 gap-6">
             <div>
-              <Label htmlFor="budgetAmount" className="text-zinc-300">
+              <Label htmlFor="budgetAmount" className="text-muted-foreground">
                 Budget Amount <span className="text-red-500">*</span>
               </Label>
               <Input
@@ -158,7 +158,7 @@ export default function CreateBudgetPage() {
                 type="number"
                 step="0.01"
                 placeholder="10000.00"
-                className="mt-2 bg-zinc-800 border-zinc-700 text-white"
+                className="mt-2 bg-muted border-border text-foreground"
                 {...register("budgetAmount", { valueAsNumber: true })}
               />
               {errors.budgetAmount && (
@@ -167,16 +167,16 @@ export default function CreateBudgetPage() {
             </div>
 
             <div>
-              <Label htmlFor="fiscalPeriod" className="text-zinc-300">
+              <Label htmlFor="fiscalPeriod" className="text-muted-foreground">
                 Fiscal Period <span className="text-red-500">*</span>
               </Label>
               <Input
                 id="fiscalPeriod"
                 placeholder="2024-Q1 or 2024 or 2024-01"
-                className="mt-2 bg-zinc-800 border-zinc-700 text-white"
+                className="mt-2 bg-muted border-border text-foreground"
                 {...register("fiscalPeriod")}
               />
-              <p className="text-xs text-zinc-500 mt-1">Format: YYYY, YYYY-Q1, YYYY-H1, or YYYY-MM</p>
+              <p className="text-xs text-muted-foreground mt-1">Format: YYYY, YYYY-Q1, YYYY-H1, or YYYY-MM</p>
               {errors.fiscalPeriod && (
                 <p className="text-sm text-red-500 mt-1">{errors.fiscalPeriod.message}</p>
               )}
@@ -185,13 +185,13 @@ export default function CreateBudgetPage() {
 
           <div className="grid grid-cols-2 gap-6">
             <div>
-              <Label htmlFor="startDate" className="text-zinc-300">
+              <Label htmlFor="startDate" className="text-muted-foreground">
                 Start Date <span className="text-red-500">*</span>
               </Label>
               <Input
                 id="startDate"
                 type="datetime-local"
-                className="mt-2 bg-zinc-800 border-zinc-700 text-white"
+                className="mt-2 bg-muted border-border text-foreground"
                 {...register("startDate")}
               />
               {errors.startDate && (
@@ -200,13 +200,13 @@ export default function CreateBudgetPage() {
             </div>
 
             <div>
-              <Label htmlFor="endDate" className="text-zinc-300">
+              <Label htmlFor="endDate" className="text-muted-foreground">
                 End Date <span className="text-red-500">*</span>
               </Label>
               <Input
                 id="endDate"
                 type="datetime-local"
-                className="mt-2 bg-zinc-800 border-zinc-700 text-white"
+                className="mt-2 bg-muted border-border text-foreground"
                 {...register("endDate")}
               />
               {errors.endDate && (
@@ -215,22 +215,22 @@ export default function CreateBudgetPage() {
             </div>
           </div>
 
-          <div className="border-t border-zinc-800 pt-6">
-            <h3 className="text-lg font-semibold text-white mb-4">Enforcement Settings</h3>
+          <div className="border-t border-border pt-6">
+            <h3 className="text-lg font-semibold text-foreground mb-4">Enforcement Settings</h3>
 
             <div className="grid grid-cols-2 gap-6">
               <div>
-                <Label htmlFor="enforcementType" className="text-zinc-300">
+                <Label htmlFor="enforcementType" className="text-muted-foreground">
                   Enforcement Type
                 </Label>
                 <Select
                   value={watch("enforcementType")}
                   onValueChange={(value) => setValue("enforcementType", value as BudgetEnforcementType)}
                 >
-                  <SelectTrigger className="mt-2 bg-zinc-800 border-zinc-700 text-white">
+                  <SelectTrigger className="mt-2 bg-muted border-border text-foreground">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="bg-zinc-900 border-zinc-800">
+                  <SelectContent className="bg-card border-border">
                     <SelectItem value={BudgetEnforcementType.SOFT}>Soft (Warning Only)</SelectItem>
                     <SelectItem value={BudgetEnforcementType.HARD}>Hard (Strict Block)</SelectItem>
                   </SelectContent>
@@ -242,21 +242,21 @@ export default function CreateBudgetPage() {
                   id="overrideAllowed"
                   checked={watch("overrideAllowed")}
                   onCheckedChange={(checked) => setValue("overrideAllowed", !!checked)}
-                  className="border-zinc-700"
+                  className="border-border"
                 />
-                <Label htmlFor="overrideAllowed" className="text-zinc-300 cursor-pointer">
+                <Label htmlFor="overrideAllowed" className="text-muted-foreground cursor-pointer">
                   Allow Budget Override
                 </Label>
               </div>
             </div>
           </div>
 
-          <div className="border-t border-zinc-800 pt-6">
-            <h3 className="text-lg font-semibold text-white mb-4">Alert Thresholds (%)</h3>
+          <div className="border-t border-border pt-6">
+            <h3 className="text-lg font-semibold text-foreground mb-4">Alert Thresholds (%)</h3>
 
             <div className="grid grid-cols-3 gap-6">
               <div>
-                <Label htmlFor="warningThreshold1" className="text-zinc-300">
+                <Label htmlFor="warningThreshold1" className="text-muted-foreground">
                   Warning 1
                 </Label>
                 <Input
@@ -264,13 +264,13 @@ export default function CreateBudgetPage() {
                   type="number"
                   min="0"
                   max="100"
-                  className="mt-2 bg-zinc-800 border-zinc-700 text-white"
+                  className="mt-2 bg-muted border-border text-foreground"
                   {...register("warningThreshold1", { valueAsNumber: true })}
                 />
               </div>
 
               <div>
-                <Label htmlFor="warningThreshold2" className="text-zinc-300">
+                <Label htmlFor="warningThreshold2" className="text-muted-foreground">
                   Warning 2
                 </Label>
                 <Input
@@ -278,13 +278,13 @@ export default function CreateBudgetPage() {
                   type="number"
                   min="0"
                   max="100"
-                  className="mt-2 bg-zinc-800 border-zinc-700 text-white"
+                  className="mt-2 bg-muted border-border text-foreground"
                   {...register("warningThreshold2", { valueAsNumber: true })}
                 />
               </div>
 
               <div>
-                <Label htmlFor="criticalThreshold" className="text-zinc-300">
+                <Label htmlFor="criticalThreshold" className="text-muted-foreground">
                   Critical
                 </Label>
                 <Input
@@ -292,7 +292,7 @@ export default function CreateBudgetPage() {
                   type="number"
                   min="0"
                   max="100"
-                  className="mt-2 bg-zinc-800 border-zinc-700 text-white"
+                  className="mt-2 bg-muted border-border text-foreground"
                   {...register("criticalThreshold", { valueAsNumber: true })}
                 />
               </div>
@@ -304,7 +304,7 @@ export default function CreateBudgetPage() {
               type="button"
               variant="ghost"
               onClick={() => router.back()}
-              className="flex-1 text-zinc-400 hover:text-white hover:bg-zinc-800"
+              className="flex-1 text-muted-foreground hover:text-foreground hover:bg-muted"
             >
               Cancel
             </Button>
@@ -321,3 +321,4 @@ export default function CreateBudgetPage() {
     </div>
   );
 }
+

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import Link from "next/link";
@@ -85,24 +85,24 @@ export default function ChangePasswordPage() {
   };
 
   return (
-    <div className="min-h-screen bg-zinc-950 p-6">
+    <div className="min-h-screen bg-background p-6">
       <div className="max-w-3xl mx-auto space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-white">Change Password</h1>
-            <p className="text-zinc-400 mt-1">
+            <h1 className="text-3xl font-bold text-foreground">Change Password</h1>
+            <p className="text-muted-foreground mt-1">
               Update your account password securely.
             </p>
           </div>
           <Link href="/settings">
-            <Button variant="ghost" className="text-zinc-400 hover:text-white">
+            <Button variant="ghost" className="text-muted-foreground hover:text-foreground">
               <ArrowLeft className="mr-2 h-4 w-4" />
               Back to settings
             </Button>
           </Link>
         </div>
 
-        <Card className="bg-zinc-900 border-zinc-800">
+        <Card className="bg-card border-border">
           <CardHeader className="space-y-1">
             <div className="flex items-center gap-3 text-purple-400">
               <ShieldCheck className="h-5 w-5" />
@@ -110,7 +110,7 @@ export default function ChangePasswordPage() {
                 Security
               </span>
             </div>
-            <CardTitle className="text-white">Update password</CardTitle>
+            <CardTitle className="text-foreground">Update password</CardTitle>
             <CardDescription>
               Enter your current password and choose a new one.
             </CardDescription>
@@ -128,7 +128,7 @@ export default function ChangePasswordPage() {
                         <Input
                           type="password"
                           placeholder="Enter current password"
-                          className="bg-zinc-800 border-zinc-700 text-white"
+                          className="bg-muted border-border text-foreground"
                           {...field}
                         />
                       </FormControl>
@@ -147,7 +147,7 @@ export default function ChangePasswordPage() {
                         <Input
                           type="password"
                           placeholder="Enter new password"
-                          className="bg-zinc-800 border-zinc-700 text-white"
+                          className="bg-muted border-border text-foreground"
                           {...field}
                         />
                       </FormControl>
@@ -166,7 +166,7 @@ export default function ChangePasswordPage() {
                         <Input
                           type="password"
                           placeholder="Re-enter new password"
-                          className="bg-zinc-800 border-zinc-700 text-white"
+                          className="bg-muted border-border text-foreground"
                           {...field}
                         />
                       </FormControl>
@@ -204,3 +204,4 @@ export default function ChangePasswordPage() {
     </div>
   );
 }
+

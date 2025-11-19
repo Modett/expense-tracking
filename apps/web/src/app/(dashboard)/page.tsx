@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -172,65 +172,65 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-950 p-6">
+    <div className="min-h-screen bg-background p-6">
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center gap-4 mb-2">
           <div className="h-16 w-16 rounded-full bg-gradient-to-br from-cyan-400 to-blue-500 overflow-hidden">
-            <div className="flex h-full w-full items-center justify-center text-white font-semibold text-xl">
+            <div className="flex h-full w-full items-center justify-center text-foreground font-semibold text-xl">
               {user?.name?.charAt(0).toUpperCase() || "U"}
             </div>
           </div>
           <div>
-            <h1 className="text-3xl font-bold text-white">
+            <h1 className="text-3xl font-bold text-foreground">
               Welcome back, {user?.name?.split(" ")[0] || "User"}
             </h1>
-            <p className="text-zinc-400">Here's what's happening today</p>
+            <p className="text-muted-foreground">Here's what's happening today</p>
           </div>
         </div>
       </div>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-        <Card className="bg-zinc-900 border-zinc-800">
+        <Card className="bg-card border-border">
           <CardContent className="p-6">
             {statsLoading ? (
-              <Skeleton className="h-24 bg-zinc-800" />
+              <Skeleton className="h-24 bg-muted" />
             ) : (
               <>
                 <div className="flex items-center gap-3 mb-3">
                   <div className="p-2 bg-purple-500/10 rounded-lg">
                     <DollarSign className="w-5 h-5 text-purple-500" />
                   </div>
-                  <span className="text-sm text-zinc-400">Total Expenses</span>
+                  <span className="text-sm text-muted-foreground">Total Expenses</span>
                 </div>
-                <p className="text-2xl font-bold text-white">
+                <p className="text-2xl font-bold text-foreground">
                   {formatCurrency(totalExpensesAmount)}
                 </p>
-                <p className="text-xs text-zinc-500 mt-1">This month</p>
+                <p className="text-xs text-muted-foreground mt-1">This month</p>
               </>
             )}
           </CardContent>
         </Card>
 
-        <Card className="bg-zinc-900 border-zinc-800">
+        <Card className="bg-card border-border">
           <CardContent className="p-6">
             {statsLoading ? (
-              <Skeleton className="h-24 bg-zinc-800" />
+              <Skeleton className="h-24 bg-muted" />
             ) : (
               <>
                 <div className="flex items-center gap-3 mb-3">
                   <div className="p-2 bg-yellow-500/10 rounded-lg">
                     <Clock className="w-5 h-5 text-yellow-500" />
                   </div>
-                  <span className="text-sm text-zinc-400">
+                  <span className="text-sm text-muted-foreground">
                     Pending Approvals
                   </span>
                 </div>
-                <p className="text-2xl font-bold text-white">
+                <p className="text-2xl font-bold text-foreground">
                   {pendingApprovalsCount}
                 </p>
-                <p className="text-xs text-zinc-500 mt-1">
+                <p className="text-xs text-muted-foreground mt-1">
                   Awaiting your action
                 </p>
               </>
@@ -238,45 +238,45 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card className="bg-zinc-900 border-zinc-800">
+        <Card className="bg-card border-border">
           <CardContent className="p-6">
             {statsLoading ? (
-              <Skeleton className="h-24 bg-zinc-800" />
+              <Skeleton className="h-24 bg-muted" />
             ) : (
               <>
                 <div className="flex items-center gap-3 mb-3">
                   <div className="p-2 bg-green-500/10 rounded-lg">
                     <Building2 className="w-5 h-5 text-green-500" />
                   </div>
-                  <span className="text-sm text-zinc-400">Active Departments</span>
+                  <span className="text-sm text-muted-foreground">Active Departments</span>
                 </div>
-                <p className="text-2xl font-bold text-white">
+                <p className="text-2xl font-bold text-foreground">
                   {activeDepartmentsCount}
                 </p>
-                <p className="text-xs text-zinc-500 mt-1">Currently active</p>
+                <p className="text-xs text-muted-foreground mt-1">Currently active</p>
               </>
             )}
           </CardContent>
         </Card>
 
-        <Card className="bg-zinc-900 border-zinc-800">
+        <Card className="bg-card border-border">
           <CardContent className="p-6">
             {statsLoading ? (
-              <Skeleton className="h-24 bg-zinc-800" />
+              <Skeleton className="h-24 bg-muted" />
             ) : (
               <>
                 <div className="flex items-center gap-3 mb-3">
                   <div className="p-2 bg-blue-500/10 rounded-lg">
                     <FileText className="w-5 h-5 text-blue-500" />
                   </div>
-                  <span className="text-sm text-zinc-400">
+                  <span className="text-sm text-muted-foreground">
                     Active Categories
                   </span>
                 </div>
-                <p className="text-2xl font-bold text-white">
+                <p className="text-2xl font-bold text-foreground">
                   {activeCategoriesCount}
                 </p>
-                <p className="text-xs text-zinc-500 mt-1">
+                <p className="text-xs text-muted-foreground mt-1">
                   Available for expenses
                 </p>
               </>
@@ -287,17 +287,17 @@ export default function DashboardPage() {
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-6">
         {/* Pending Tasks */}
-        <Card className="bg-zinc-900 border-zinc-800 col-span-1 xl:col-span-2">
+        <Card className="bg-card border-border col-span-1 xl:col-span-2">
           <CardHeader>
             <div className="flex items-center justify-between">
-              <CardTitle className="text-white font-semibold text-lg">
+              <CardTitle className="text-foreground font-semibold text-lg">
                 Pending Tasks
               </CardTitle>
               <Link href="/approvals">
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="text-zinc-400 hover:text-white"
+                  className="text-muted-foreground hover:text-foreground"
                 >
                   View All
                 </Button>
@@ -308,29 +308,29 @@ export default function DashboardPage() {
             {pendingApprovalTasks.length > 0 ? (
               pendingApprovalTasks.map((task) => (
                 <Link key={task.approvalId} href={`/approvals/${task.approvalId}`}>
-                  <div className="flex flex-col gap-3 p-3 rounded-lg bg-zinc-800/50 hover:bg-zinc-800 transition-colors md:flex-row md:items-center md:justify-between">
+                  <div className="flex flex-col gap-3 p-3 rounded-lg bg-muted/60 hover:bg-muted transition-colors md:flex-row md:items-center md:justify-between">
                     <div className="flex flex-col gap-1">
-                      <p className="text-sm font-medium text-white">
+                      <p className="text-sm font-medium text-foreground">
                         {task.expenseDescription || "Expense approval"}
                       </p>
-                      <div className="flex flex-col sm:flex-row sm:items-center sm:gap-2 text-xs text-zinc-500">
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:gap-2 text-xs text-muted-foreground">
                         <span className="uppercase tracking-wide">
                           {task.priority?.toUpperCase() || "STANDARD"}
                         </span>
-                        <span className="hidden sm:inline">•</span>
+                        <span className="hidden sm:inline">â€¢</span>
                         <span>{new Date(task.submittedAt).toLocaleDateString()}</span>
                       </div>
                     </div>
                     <div className="flex w-full justify-between items-center gap-4 text-sm md:w-auto">
                       <div className="text-right">
-                        <p className="text-zinc-500 text-xs uppercase">Amount</p>
-                        <p className="text-white font-semibold">
+                        <p className="text-muted-foreground text-xs uppercase">Amount</p>
+                        <p className="text-foreground font-semibold">
                           {formatCurrency(task.expenseAmount || 0)}
                         </p>
                       </div>
-                      <div className="text-right text-xs text-zinc-400 md:text-sm">
+                      <div className="text-right text-xs text-muted-foreground md:text-sm">
                         <p className="uppercase text-[10px] tracking-wide">Status</p>
-                        <p className="text-white">
+                        <p className="text-foreground">
                           {task.status?.toLowerCase() ?? "pending"}
                         </p>
                       </div>
@@ -339,7 +339,7 @@ export default function DashboardPage() {
                 </Link>
               ))
             ) : (
-              <div className="text-center text-sm text-zinc-500 py-6">
+              <div className="text-center text-sm text-muted-foreground py-6">
                 No pending approvals right now.
               </div>
             )}
@@ -347,9 +347,9 @@ export default function DashboardPage() {
       </div>
 
       {/* Quick Access */}
-      <Card className="bg-zinc-900 border-zinc-800 mb-6">
+      <Card className="bg-card border-border mb-6">
         <CardHeader>
-          <CardTitle className="text-white font-semibold text-lg">
+          <CardTitle className="text-foreground font-semibold text-lg">
             Quick Access
           </CardTitle>
         </CardHeader>
@@ -358,37 +358,37 @@ export default function DashboardPage() {
             <Link href="/expenses/new">
               <Button
                 variant="ghost"
-                className="w-full h-20 bg-zinc-800/50 hover:bg-zinc-800 border-zinc-700 flex flex-col items-center gap-2"
+                className="w-full h-20 bg-muted/60 hover:bg-muted border-border flex flex-col items-center gap-2"
               >
                 <div className="h-10 w-10 rounded-full bg-gradient-to-br from-pink-500 to-pink-600 flex items-center justify-center">
-                  <Plus className="h-5 w-5 text-white" />
+                  <Plus className="h-5 w-5 text-foreground" />
                 </div>
-                <span className="text-white text-sm">New expense</span>
+                <span className="text-foreground text-sm">New expense</span>
               </Button>
             </Link>
 
             <Link href="/expenses/receipts">
               <Button
                 variant="ghost"
-                className="w-full h-20 bg-zinc-800/50 hover:bg-zinc-800 border-zinc-700 flex flex-col items-center gap-2"
+                className="w-full h-20 bg-muted/60 hover:bg-muted border-border flex flex-col items-center gap-2"
               >
                 <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
-                  <Receipt className="h-5 w-5 text-white" />
+                  <Receipt className="h-5 w-5 text-foreground" />
                 </div>
-                <span className="text-white text-sm">Add receipt</span>
+                <span className="text-foreground text-sm">Add receipt</span>
               </Button>
             </Link>
 
             <Button
               variant="ghost"
-              className="w-full h-20 bg-zinc-800/50 hover:bg-zinc-800 border-zinc-700 flex flex-col items-center gap-2"
+              className="w-full h-20 bg-muted/60 hover:bg-muted border-border flex flex-col items-center gap-2"
               onClick={handleGenerateReport}
               disabled={isDownloadingReport}
             >
               <div className="h-10 w-10 rounded-full bg-gradient-to-br from-cyan-500 to-cyan-600 flex items-center justify-center">
-                <FileBarChart className="h-5 w-5 text-white" />
+                <FileBarChart className="h-5 w-5 text-foreground" />
               </div>
-              <span className="text-white text-sm">
+              <span className="text-foreground text-sm">
                 {isDownloadingReport ? "Preparing..." : "Create report"}
               </span>
             </Button>
@@ -396,12 +396,12 @@ export default function DashboardPage() {
             <Link href="/approvals">
               <Button
                 variant="ghost"
-                className="w-full h-20 bg-zinc-800/50 hover:bg-zinc-800 border-zinc-700 flex flex-col items-center gap-2"
+                className="w-full h-20 bg-muted/60 hover:bg-muted border-border flex flex-col items-center gap-2"
               >
                 <div className="h-10 w-10 rounded-full bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center">
-                  <CheckCircle className="h-5 w-5 text-white" />
+                  <CheckCircle className="h-5 w-5 text-foreground" />
                 </div>
-                <span className="text-white text-sm">Review approvals</span>
+                <span className="text-foreground text-sm">Review approvals</span>
               </Button>
             </Link>
           </div>
@@ -409,9 +409,9 @@ export default function DashboardPage() {
       </Card>
 
       {/* Monthly Report */}
-      <Card className="bg-zinc-900 border-zinc-800">
+      <Card className="bg-card border-border">
         <CardHeader>
-          <CardTitle className="text-white font-semibold text-lg">
+          <CardTitle className="text-foreground font-semibold text-lg">
             Monthly Report
           </CardTitle>
         </CardHeader>
@@ -419,11 +419,11 @@ export default function DashboardPage() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Team Spending Trend */}
             <div>
-              <h3 className="text-zinc-400 text-sm mb-4">
+              <h3 className="text-muted-foreground text-sm mb-4">
                 Team Spending Trend
               </h3>
               {teamLoading ? (
-                <Skeleton className="h-64 bg-zinc-800" />
+                <Skeleton className="h-64 bg-muted" />
               ) : teamSpending && teamSpending.length > 0 ? (
                 <ResponsiveContainer width="100%" height={250}>
                   <BarChart data={teamSpending}>
@@ -446,7 +446,7 @@ export default function DashboardPage() {
                   </BarChart>
                 </ResponsiveContainer>
               ) : (
-                <div className="text-center text-sm text-zinc-400 py-6">
+                <div className="text-center text-sm text-muted-foreground py-6">
                   No team spending data yet.
                 </div>
               )}
@@ -454,11 +454,11 @@ export default function DashboardPage() {
 
             {/* Day-to-Day Expenses */}
             <div>
-              <h3 className="text-zinc-400 text-sm mb-4">
+              <h3 className="text-muted-foreground text-sm mb-4">
                 Day-to-Day Expenses
               </h3>
               {categoryLoading ? (
-                <Skeleton className="h-64 bg-zinc-800" />
+                <Skeleton className="h-64 bg-muted" />
               ) : categoryExpenses && categoryExpenses.length > 0 ? (
                 <ResponsiveContainer width="100%" height={250}>
                   <BarChart data={categoryExpenses}>
@@ -481,7 +481,7 @@ export default function DashboardPage() {
                   </BarChart>
                 </ResponsiveContainer>
               ) : (
-                <div className="text-center text-sm text-zinc-400 py-6">
+                <div className="text-center text-sm text-muted-foreground py-6">
                   No category data yet.
                 </div>
               )}
@@ -492,4 +492,6 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+
 

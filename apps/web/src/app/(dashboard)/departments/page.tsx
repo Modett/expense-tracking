@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import Link from "next/link";
@@ -53,22 +53,22 @@ export default function DepartmentsPage() {
 
   if (isLoading) {
     return (
-      <div className="p-8">
+      <div className="p-8 bg-background min-h-screen">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-white">Departments</h1>
-          <p className="text-zinc-400 mt-2">Loading...</p>
+          <h1 className="text-3xl font-bold text-foreground">Departments</h1>
+          <p className="text-muted-foreground mt-2">Loading...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="p-8">
+    <div className="p-8 bg-background min-h-screen">
       <div className="mb-8">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-white">Department Management</h1>
-            <p className="text-zinc-400 mt-2">
+            <h1 className="text-3xl font-bold text-foreground">Department Management</h1>
+            <p className="text-muted-foreground mt-2">
               Manage organizational departments
             </p>
           </div>
@@ -85,10 +85,10 @@ export default function DepartmentsPage() {
       </div>
 
       {!departments || departments.length === 0 ? (
-        <Card className="bg-zinc-900 border-zinc-800 p-12 text-center">
-          <Building className="w-12 h-12 text-zinc-600 mx-auto mb-4" />
-          <h3 className="text-xl font-semibold text-white mb-2">No Departments Found</h3>
-          <p className="text-zinc-400 mb-4">Add your first department to get started</p>
+        <Card className="bg-card border-border p-12 text-center">
+          <Building className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+          <h3 className="text-xl font-semibold text-foreground mb-2">No Departments Found</h3>
+          <p className="text-muted-foreground mb-4">Add your first department to get started</p>
           <Button
             className="bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700"
             asChild
@@ -100,21 +100,21 @@ export default function DepartmentsPage() {
           </Button>
         </Card>
       ) : (
-        <Card className="bg-zinc-900 border-zinc-800">
+        <Card className="bg-card border-border">
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
-                <TableRow className="border-zinc-800/60 bg-zinc-900/40">
-                  <TableHead className="text-xs font-semibold uppercase tracking-wide text-zinc-400">
+                <TableRow className="border-border/60 bg-card/40">
+                  <TableHead className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                     Name
                   </TableHead>
-                  <TableHead className="text-xs font-semibold uppercase tracking-wide text-zinc-400">
+                  <TableHead className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                     Code
                   </TableHead>
-                  <TableHead className="text-xs font-semibold uppercase tracking-wide text-zinc-400">
+                  <TableHead className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                     Status
                   </TableHead>
-                  <TableHead className="text-xs font-semibold uppercase tracking-wide text-zinc-400 text-right">
+                  <TableHead className="text-xs font-semibold uppercase tracking-wide text-muted-foreground text-right">
                     Actions
                   </TableHead>
                 </TableRow>
@@ -123,21 +123,21 @@ export default function DepartmentsPage() {
                 {departments.map((department, index) => (
                   <TableRow
                     key={department.departmentId}
-                    className="border-zinc-800/50 hover:bg-zinc-800/40 transition-colors"
+                    className="border-border/50 hover:bg-muted/40 transition-colors"
                   >
-                    <TableCell className="font-medium text-white">
+                    <TableCell className="font-medium text-foreground">
                       <div>
                         <p>{department.name}</p>
-                        <p className="text-xs text-zinc-500">{department.departmentId.slice(0, 8)}</p>
+                        <p className="text-xs text-muted-foreground">{department.departmentId.slice(0, 8)}</p>
                       </div>
                     </TableCell>
-                    <TableCell className="text-zinc-400">
+                    <TableCell className="text-muted-foreground">
                       {department.code ? (
-                        <Badge variant="outline" className="bg-zinc-800 text-zinc-300 border-zinc-700">
+                        <Badge variant="outline" className="bg-muted text-muted-foreground border-border">
                           {department.code}
                         </Badge>
                       ) : (
-                        <span className="text-zinc-500">-</span>
+                        <span className="text-muted-foreground">-</span>
                       )}
                     </TableCell>
                     <TableCell>
@@ -194,10 +194,10 @@ export default function DepartmentsPage() {
       )}
 
       <Dialog open={deleteDialog.open} onOpenChange={(open) => setDeleteDialog({ open, departmentId: null })}>
-        <DialogContent className="bg-zinc-900 border-zinc-800 text-white">
+        <DialogContent className="bg-card border-border text-foreground">
           <DialogHeader>
             <DialogTitle>Delete Department</DialogTitle>
-            <DialogDescription className="text-zinc-400">
+            <DialogDescription className="text-muted-foreground">
               Are you sure you want to delete this department? This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
@@ -205,7 +205,7 @@ export default function DepartmentsPage() {
             <Button
               variant="ghost"
               onClick={() => setDeleteDialog({ open: false, departmentId: null })}
-              className="text-zinc-400 hover:text-white hover:bg-zinc-800"
+              className="text-muted-foreground hover:text-foreground hover:bg-muted"
             >
               Cancel
             </Button>
@@ -222,3 +222,5 @@ export default function DepartmentsPage() {
     </div>
   );
 }
+
+

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -50,26 +50,26 @@ export default function CreateTagPage() {
       <div className="mb-8">
         <Button
           variant="ghost"
-          className="text-zinc-400 hover:text-white hover:bg-zinc-800 mb-4"
+          className="text-muted-foreground hover:text-foreground hover:bg-muted mb-4"
           onClick={() => router.back()}
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back
         </Button>
-        <h1 className="text-3xl font-bold text-white">Add Tag</h1>
-        <p className="text-zinc-400 mt-2">Create a new tag for expense tracking</p>
+        <h1 className="text-3xl font-bold text-foreground">Add Tag</h1>
+        <p className="text-muted-foreground mt-2">Create a new tag for expense tracking</p>
       </div>
 
-      <Card className="bg-zinc-900 border-zinc-800 max-w-2xl">
+      <Card className="bg-card border-border max-w-2xl">
         <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-6">
           <div>
-            <Label htmlFor="name" className="text-zinc-300">
+            <Label htmlFor="name" className="text-muted-foreground">
               Tag Name <span className="text-red-500">*</span>
             </Label>
             <Input
               id="name"
               placeholder="e.g., Q4 Campaign, Project Alpha"
-              className="mt-2 bg-zinc-800 border-zinc-700 text-white"
+              className="mt-2 bg-muted border-border text-foreground"
               {...register("name")}
             />
             {errors.name && (
@@ -78,27 +78,27 @@ export default function CreateTagPage() {
           </div>
 
           <div>
-            <Label htmlFor="type" className="text-zinc-300">
+            <Label htmlFor="type" className="text-muted-foreground">
               Tag Type <span className="text-red-500">*</span>
             </Label>
             <Select
               value={selectedType}
               onValueChange={(value) => setValue("type", value as TagTypeEnum)}
             >
-              <SelectTrigger className="mt-2 bg-zinc-800 border-zinc-700 text-white">
+              <SelectTrigger className="mt-2 bg-muted border-border text-foreground">
                 <SelectValue placeholder="Select tag type" />
               </SelectTrigger>
-              <SelectContent className="bg-zinc-900 border-zinc-800">
-                <SelectItem value={TagTypeEnum.COLLECTION} className="text-white">
+              <SelectContent className="bg-card border-border">
+                <SelectItem value={TagTypeEnum.COLLECTION} className="text-foreground">
                   Collection
                 </SelectItem>
-                <SelectItem value={TagTypeEnum.CAMPAIGN} className="text-white">
+                <SelectItem value={TagTypeEnum.CAMPAIGN} className="text-foreground">
                   Campaign
                 </SelectItem>
-                <SelectItem value={TagTypeEnum.CUSTOM} className="text-white">
+                <SelectItem value={TagTypeEnum.CUSTOM} className="text-foreground">
                   Custom
                 </SelectItem>
-                <SelectItem value={TagTypeEnum.DEPARTMENT} className="text-white">
+                <SelectItem value={TagTypeEnum.DEPARTMENT} className="text-foreground">
                   Department
                 </SelectItem>
               </SelectContent>
@@ -113,7 +113,7 @@ export default function CreateTagPage() {
               type="button"
               variant="ghost"
               onClick={() => router.back()}
-              className="flex-1 text-zinc-400 hover:text-white hover:bg-zinc-800"
+              className="flex-1 text-muted-foreground hover:text-foreground hover:bg-muted"
             >
               Cancel
             </Button>
@@ -130,3 +130,4 @@ export default function CreateTagPage() {
     </div>
   );
 }
+
