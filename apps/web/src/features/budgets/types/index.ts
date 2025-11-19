@@ -34,6 +34,7 @@ export interface Budget {
   isPeriodActive: boolean;
   createdAt: string;
   updatedAt: string;
+  notes?: string | null;
   department?: {
     departmentId: string;
     name: string;

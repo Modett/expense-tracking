@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { withAdminGuard } from "@/hooks/with-admin-guard";
 import {
   ArrowLeft,
   Edit,
@@ -21,7 +22,7 @@ import {
   Tag,
 } from "lucide-react";
 
-export default function BudgetDetailPage() {
+function BudgetDetailPage() {
   const params = useParams();
   const router = useRouter();
   const budgetId = params.id as string;
@@ -438,4 +439,6 @@ export default function BudgetDetailPage() {
     </div>
   );
 }
+
+export default withAdminGuard(BudgetDetailPage, { title: "Budget Details" });
 
