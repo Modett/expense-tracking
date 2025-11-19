@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -57,32 +57,32 @@ export default function CreateApprovalRulePage() {
       <div className="mb-8">
         <Button
           variant="ghost"
-          className="text-zinc-400 hover:text-white hover:bg-zinc-800 mb-4"
+          className="text-muted-foreground hover:text-foreground hover:bg-muted mb-4"
           onClick={() => router.back()}
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back
         </Button>
-        <h1 className="text-3xl font-bold text-white">Create Approval Rule</h1>
-        <p className="text-zinc-400 mt-2">
+        <h1 className="text-3xl font-bold text-foreground">Create Approval Rule</h1>
+        <p className="text-muted-foreground mt-2">
           Define a new approval rule for expense workflows
         </p>
       </div>
 
-      <Card className="bg-zinc-900 border-zinc-800 max-w-2xl">
+      <Card className="bg-card border-border max-w-2xl">
         <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-6">
           <div>
-            <Label htmlFor="categoryId" className="text-zinc-300">
+            <Label htmlFor="categoryId" className="text-muted-foreground">
               Category <span className="text-red-500">*</span>
             </Label>
             <Select
               value={watch("categoryId")}
               onValueChange={(value) => setValue("categoryId", value)}
             >
-              <SelectTrigger className="mt-2 bg-zinc-800 border-zinc-700 text-white">
+              <SelectTrigger className="mt-2 bg-muted border-border text-foreground">
                 <SelectValue placeholder="Select a category" />
               </SelectTrigger>
-              <SelectContent className="bg-zinc-900 border-zinc-800">
+              <SelectContent className="bg-card border-border">
                 {categories?.map((category) => (
                   <SelectItem key={category.categoryId} value={category.categoryId}>
                     {category.name}
@@ -96,7 +96,7 @@ export default function CreateApprovalRulePage() {
           </div>
 
           <div>
-            <Label htmlFor="minAmount" className="text-zinc-300">
+            <Label htmlFor="minAmount" className="text-muted-foreground">
               Minimum Amount <span className="text-red-500">*</span>
             </Label>
             <Input
@@ -104,10 +104,10 @@ export default function CreateApprovalRulePage() {
               type="number"
               step="0.01"
               placeholder="0.00"
-              className="mt-2 bg-zinc-800 border-zinc-700 text-white"
+              className="mt-2 bg-muted border-border text-foreground"
               {...register("minAmount", { valueAsNumber: true })}
             />
-            <p className="text-sm text-zinc-500 mt-1">
+            <p className="text-sm text-muted-foreground mt-1">
               This rule will apply to expenses with amounts equal to or greater than this value
             </p>
             {errors.minAmount && (
@@ -116,24 +116,24 @@ export default function CreateApprovalRulePage() {
           </div>
 
           <div>
-            <Label htmlFor="approverRole" className="text-zinc-300">
+            <Label htmlFor="approverRole" className="text-muted-foreground">
               Approver Role <span className="text-red-500">*</span>
             </Label>
             <Select
               value={watch("approverRole")}
               onValueChange={(value) => setValue("approverRole", value as ApproverRoleEnum)}
             >
-              <SelectTrigger className="mt-2 bg-zinc-800 border-zinc-700 text-white">
+              <SelectTrigger className="mt-2 bg-muted border-border text-foreground">
                 <SelectValue placeholder="Select approver role" />
               </SelectTrigger>
-              <SelectContent className="bg-zinc-900 border-zinc-800">
+              <SelectContent className="bg-card border-border">
                 <SelectItem value={ApproverRoleEnum.STAFF}>Staff</SelectItem>
                 <SelectItem value={ApproverRoleEnum.MANAGER}>Manager</SelectItem>
                 <SelectItem value={ApproverRoleEnum.FINANCE}>Finance</SelectItem>
                 <SelectItem value={ApproverRoleEnum.ADMIN}>Admin</SelectItem>
               </SelectContent>
             </Select>
-            <p className="text-sm text-zinc-500 mt-1">
+            <p className="text-sm text-muted-foreground mt-1">
               Users with this role will be required to approve at this level
             </p>
             {errors.approverRole && (
@@ -142,7 +142,7 @@ export default function CreateApprovalRulePage() {
           </div>
 
           <div>
-            <Label htmlFor="approvalOrder" className="text-zinc-300">
+            <Label htmlFor="approvalOrder" className="text-muted-foreground">
               Approval Order <span className="text-red-500">*</span>
             </Label>
             <Input
@@ -150,10 +150,10 @@ export default function CreateApprovalRulePage() {
               type="number"
               min="1"
               placeholder="1"
-              className="mt-2 bg-zinc-800 border-zinc-700 text-white"
+              className="mt-2 bg-muted border-border text-foreground"
               {...register("approvalOrder", { valueAsNumber: true })}
             />
-            <p className="text-sm text-zinc-500 mt-1">
+            <p className="text-sm text-muted-foreground mt-1">
               Order in the approval chain (1 = first, 2 = second, etc.)
             </p>
             {errors.approvalOrder && (
@@ -166,7 +166,7 @@ export default function CreateApprovalRulePage() {
               type="button"
               variant="ghost"
               onClick={() => router.back()}
-              className="flex-1 text-zinc-400 hover:text-white hover:bg-zinc-800"
+              className="flex-1 text-muted-foreground hover:text-foreground hover:bg-muted"
             >
               Cancel
             </Button>
@@ -183,3 +183,4 @@ export default function CreateApprovalRulePage() {
     </div>
   );
 }
+

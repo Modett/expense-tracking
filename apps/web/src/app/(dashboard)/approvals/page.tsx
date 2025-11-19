@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useMemo } from "react";
 import Link from "next/link";
@@ -195,20 +195,20 @@ export default function PendingApprovalsPage() {
 
   if (isLoading) {
     return (
-      <div className="p-8">
+      <div className="p-8 bg-background min-h-screen">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-white">Pending Approvals</h1>
-          <p className="text-zinc-400 mt-2">Loading...</p>
+          <h1 className="text-3xl font-bold text-foreground">Pending Approvals</h1>
+          <p className="text-muted-foreground mt-2">Loading...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="p-8">
+    <div className="p-8 bg-background min-h-screen">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-white">Pending Approvals</h1>
-        <p className="text-zinc-400 mt-2">
+        <h1 className="text-3xl font-bold text-foreground">Pending Approvals</h1>
+        <p className="text-muted-foreground mt-2">
           Review and approve expense requests awaiting your action
         </p>
       </div>
@@ -216,12 +216,12 @@ export default function PendingApprovalsPage() {
       {/* Filters and Bulk Actions */}
       <div className="mb-6 flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <Filter className="w-5 h-5 text-zinc-400" />
+          <Filter className="w-5 h-5 text-muted-foreground" />
           <Select value={priorityFilter} onValueChange={setPriorityFilter}>
-            <SelectTrigger className="w-[180px] bg-zinc-900 border-zinc-800 text-white">
+            <SelectTrigger className="w-[180px] bg-card border-border text-foreground">
               <SelectValue placeholder="Priority" />
             </SelectTrigger>
-            <SelectContent className="bg-zinc-900 border-zinc-800">
+            <SelectContent className="bg-card border-border">
               <SelectItem value="all">All Priorities</SelectItem>
               <SelectItem value="emergency">Emergency</SelectItem>
               <SelectItem value="urgent">Urgent</SelectItem>
@@ -231,10 +231,10 @@ export default function PendingApprovalsPage() {
           </Select>
 
           <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-[180px] bg-zinc-900 border-zinc-800 text-white">
+            <SelectTrigger className="w-[180px] bg-card border-border text-foreground">
               <SelectValue placeholder="Status" />
             </SelectTrigger>
-            <SelectContent className="bg-zinc-900 border-zinc-800">
+            <SelectContent className="bg-card border-border">
               <SelectItem value="all">All Statuses</SelectItem>
               <SelectItem value={ApprovalStatusEnum.PENDING}>Pending</SelectItem>
               <SelectItem value={ApprovalStatusEnum.WAITING}>Waiting</SelectItem>
@@ -273,70 +273,70 @@ export default function PendingApprovalsPage() {
       </div>
 
       {filteredApprovals.length === 0 ? (
-        <Card className="bg-zinc-900 border-zinc-800 p-12 text-center">
-          <Clock className="w-12 h-12 text-zinc-600 mx-auto mb-4" />
-          <h3 className="text-xl font-semibold text-white mb-2">No Pending Approvals</h3>
-          <p className="text-zinc-400">You have no expenses waiting for your approval</p>
+        <Card className="bg-card border-border p-12 text-center">
+          <Clock className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+          <h3 className="text-xl font-semibold text-foreground mb-2">No Pending Approvals</h3>
+          <p className="text-muted-foreground">You have no expenses waiting for your approval</p>
         </Card>
       ) : (
-        <Card className="bg-zinc-900 border-zinc-800">
+        <Card className="bg-card border-border">
           <Table>
             <TableHeader>
-              <TableRow className="border-zinc-800 hover:bg-zinc-900">
+              <TableRow className="border-border hover:bg-card">
                 <TableHead className="w-[50px]">
                   <Checkbox
                     checked={selectedApprovals.size === filteredApprovals.length && filteredApprovals.length > 0}
                     onCheckedChange={toggleSelectAll}
-                    className="border-zinc-700"
+                    className="border-border"
                   />
                 </TableHead>
-                <TableHead className="text-zinc-400">Expense</TableHead>
-                <TableHead className="text-zinc-400">Submitted By</TableHead>
-                <TableHead className="text-zinc-400">Amount</TableHead>
-                <TableHead className="text-zinc-400">Priority</TableHead>
-                <TableHead className="text-zinc-400">Status</TableHead>
-                <TableHead className="text-zinc-400">Order</TableHead>
-                <TableHead className="text-zinc-400">SLA</TableHead>
-                <TableHead className="text-zinc-400">Submitted</TableHead>
-                <TableHead className="text-zinc-400 text-right">Actions</TableHead>
+                <TableHead className="text-muted-foreground">Expense</TableHead>
+                <TableHead className="text-muted-foreground">Submitted By</TableHead>
+                <TableHead className="text-muted-foreground">Amount</TableHead>
+                <TableHead className="text-muted-foreground">Priority</TableHead>
+                <TableHead className="text-muted-foreground">Status</TableHead>
+                <TableHead className="text-muted-foreground">Order</TableHead>
+                <TableHead className="text-muted-foreground">SLA</TableHead>
+                <TableHead className="text-muted-foreground">Submitted</TableHead>
+                <TableHead className="text-muted-foreground text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filteredApprovals.map((approval) => {
                 const sla = calculateSLA(approval.createdAt);
                 return (
-                <TableRow key={approval.approvalId} className="border-zinc-800 hover:bg-zinc-800/50">
+                <TableRow key={approval.approvalId} className="border-border hover:bg-muted/60">
                   <TableCell>
                     <Checkbox
                       checked={selectedApprovals.has(approval.approvalId)}
                       onCheckedChange={() => toggleSelection(approval.approvalId)}
-                      className="border-zinc-700"
+                      className="border-border"
                     />
                   </TableCell>
                   <TableCell>
                     <div className="max-w-xs">
                       <Link
                         href={`/expenses/${approval.expenseId}`}
-                        className="text-white hover:text-purple-400 font-medium line-clamp-1"
+                        className="text-foreground hover:text-purple-400 font-medium line-clamp-1"
                       >
                         {approval.expense?.description || "N/A"}
                       </Link>
-                      <div className="text-sm text-zinc-500 mt-1">
+                      <div className="text-sm text-muted-foreground mt-1">
                         {approval.expense?.category?.name}
                       </div>
                     </div>
                   </TableCell>
                   <TableCell>
-                    <div className="text-white">{approval.expense?.user?.name || "Unknown"}</div>
-                    <div className="text-sm text-zinc-500">{approval.expense?.user?.email}</div>
+                    <div className="text-foreground">{approval.expense?.user?.name || "Unknown"}</div>
+                    <div className="text-sm text-muted-foreground">{approval.expense?.user?.email}</div>
                   </TableCell>
-                  <TableCell className="text-white font-mono">
+                  <TableCell className="text-foreground font-mono">
                     ${approval.expense?.totalAmount ? Number(approval.expense.totalAmount).toFixed(2) : "0.00"}
                   </TableCell>
                   <TableCell>{getPriorityBadge(approval.expense?.priority || "standard")}</TableCell>
                   <TableCell>{getStatusBadge(approval.status)}</TableCell>
                   <TableCell>
-                    <Badge variant="outline" className="bg-zinc-800 text-zinc-300 border-zinc-700">
+                    <Badge variant="outline" className="bg-muted text-muted-foreground border-border">
                       Level {approval.approvalOrder}
                     </Badge>
                   </TableCell>
@@ -348,14 +348,14 @@ export default function PendingApprovalsPage() {
                       </Badge>
                     ) : (
                       <div className="text-sm">
-                        <div className={`font-medium ${sla.days === 0 ? 'text-orange-500' : 'text-zinc-300'}`}>
+                        <div className={`font-medium ${sla.days === 0 ? 'text-orange-500' : 'text-muted-foreground'}`}>
                           {sla.days}d {sla.hours}h
                         </div>
-                        <div className="text-xs text-zinc-500">remaining</div>
+                        <div className="text-xs text-muted-foreground">remaining</div>
                       </div>
                     )}
                   </TableCell>
-                  <TableCell className="text-zinc-400">
+                  <TableCell className="text-muted-foreground">
                     {new Date(approval.createdAt).toLocaleDateString()}
                   </TableCell>
                   <TableCell>
@@ -363,7 +363,7 @@ export default function PendingApprovalsPage() {
                       <Button
                         size="sm"
                         variant="ghost"
-                        className="text-zinc-400 hover:text-white hover:bg-zinc-800"
+                        className="text-muted-foreground hover:text-foreground hover:bg-muted"
                         asChild
                       >
                         <Link href={`/approvals/${approval.approvalId}`}>
@@ -397,16 +397,16 @@ export default function PendingApprovalsPage() {
       )}
 
       <Dialog open={approveDialog.open} onOpenChange={(open) => setApproveDialog({ open, approvalId: null })}>
-        <DialogContent className="bg-zinc-900 border-zinc-800 text-white">
+        <DialogContent className="bg-card border-border text-foreground">
           <DialogHeader>
             <DialogTitle>Approve Expense</DialogTitle>
-            <DialogDescription className="text-zinc-400">
+            <DialogDescription className="text-muted-foreground">
               You are about to approve this expense. Optionally add comments for your approval.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div>
-              <Label htmlFor="approve-comments" className="text-zinc-300">
+              <Label htmlFor="approve-comments" className="text-muted-foreground">
                 Comments (Optional)
               </Label>
               <Textarea
@@ -414,7 +414,7 @@ export default function PendingApprovalsPage() {
                 placeholder="Add any comments about your approval decision..."
                 value={comments}
                 onChange={(e) => setComments(e.target.value)}
-                className="bg-zinc-800 border-zinc-700 text-white mt-2"
+                className="bg-muted border-border text-foreground mt-2"
                 rows={4}
               />
             </div>
@@ -426,7 +426,7 @@ export default function PendingApprovalsPage() {
                 setApproveDialog({ open: false, approvalId: null });
                 setComments("");
               }}
-              className="text-zinc-400 hover:text-white hover:bg-zinc-800"
+              className="text-muted-foreground hover:text-foreground hover:bg-muted"
             >
               Cancel
             </Button>
@@ -442,16 +442,16 @@ export default function PendingApprovalsPage() {
       </Dialog>
 
       <Dialog open={rejectDialog.open} onOpenChange={(open) => setRejectDialog({ open, approvalId: null })}>
-        <DialogContent className="bg-zinc-900 border-zinc-800 text-white">
+        <DialogContent className="bg-card border-border text-foreground">
           <DialogHeader>
             <DialogTitle>Reject Expense</DialogTitle>
-            <DialogDescription className="text-zinc-400">
+            <DialogDescription className="text-muted-foreground">
               You are about to reject this expense. Please provide a reason for rejection.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div>
-              <Label htmlFor="reject-comments" className="text-zinc-300">
+              <Label htmlFor="reject-comments" className="text-muted-foreground">
                 Rejection Reason <span className="text-red-500">*</span>
               </Label>
               <Textarea
@@ -459,7 +459,7 @@ export default function PendingApprovalsPage() {
                 placeholder="Please explain why you are rejecting this expense..."
                 value={comments}
                 onChange={(e) => setComments(e.target.value)}
-                className="bg-zinc-800 border-zinc-700 text-white mt-2"
+                className="bg-muted border-border text-foreground mt-2"
                 rows={4}
               />
             </div>
@@ -477,7 +477,7 @@ export default function PendingApprovalsPage() {
                 setRejectDialog({ open: false, approvalId: null });
                 setComments("");
               }}
-              className="text-zinc-400 hover:text-white hover:bg-zinc-800"
+              className="text-muted-foreground hover:text-foreground hover:bg-muted"
             >
               Cancel
             </Button>
@@ -494,16 +494,16 @@ export default function PendingApprovalsPage() {
 
       {/* Bulk Approve Dialog */}
       <Dialog open={bulkApproveDialog} onOpenChange={setBulkApproveDialog}>
-        <DialogContent className="bg-zinc-900 border-zinc-800 text-white">
+        <DialogContent className="bg-card border-border text-foreground">
           <DialogHeader>
             <DialogTitle>Approve Multiple Expenses</DialogTitle>
-            <DialogDescription className="text-zinc-400">
+            <DialogDescription className="text-muted-foreground">
               You are about to approve {selectedApprovals.size} expense(s). Optionally add comments for your approval.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div>
-              <Label htmlFor="bulk-approve-comments" className="text-zinc-300">
+              <Label htmlFor="bulk-approve-comments" className="text-muted-foreground">
                 Comments (Optional)
               </Label>
               <Textarea
@@ -511,7 +511,7 @@ export default function PendingApprovalsPage() {
                 placeholder="Add any comments about your approval decision..."
                 value={comments}
                 onChange={(e) => setComments(e.target.value)}
-                className="bg-zinc-800 border-zinc-700 text-white mt-2"
+                className="bg-muted border-border text-foreground mt-2"
                 rows={4}
               />
             </div>
@@ -523,7 +523,7 @@ export default function PendingApprovalsPage() {
                 setBulkApproveDialog(false);
                 setComments("");
               }}
-              className="text-zinc-400 hover:text-white hover:bg-zinc-800"
+              className="text-muted-foreground hover:text-foreground hover:bg-muted"
             >
               Cancel
             </Button>
@@ -540,16 +540,16 @@ export default function PendingApprovalsPage() {
 
       {/* Bulk Reject Dialog */}
       <Dialog open={bulkRejectDialog} onOpenChange={setBulkRejectDialog}>
-        <DialogContent className="bg-zinc-900 border-zinc-800 text-white">
+        <DialogContent className="bg-card border-border text-foreground">
           <DialogHeader>
             <DialogTitle>Reject Multiple Expenses</DialogTitle>
-            <DialogDescription className="text-zinc-400">
+            <DialogDescription className="text-muted-foreground">
               You are about to reject {selectedApprovals.size} expense(s). Please provide a reason for rejection.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div>
-              <Label htmlFor="bulk-reject-comments" className="text-zinc-300">
+              <Label htmlFor="bulk-reject-comments" className="text-muted-foreground">
                 Rejection Reason <span className="text-red-500">*</span>
               </Label>
               <Textarea
@@ -557,7 +557,7 @@ export default function PendingApprovalsPage() {
                 placeholder="Please explain why you are rejecting these expenses..."
                 value={comments}
                 onChange={(e) => setComments(e.target.value)}
-                className="bg-zinc-800 border-zinc-700 text-white mt-2"
+                className="bg-muted border-border text-foreground mt-2"
                 rows={4}
               />
             </div>
@@ -575,7 +575,7 @@ export default function PendingApprovalsPage() {
                 setBulkRejectDialog(false);
                 setComments("");
               }}
-              className="text-zinc-400 hover:text-white hover:bg-zinc-800"
+              className="text-muted-foreground hover:text-foreground hover:bg-muted"
             >
               Cancel
             </Button>
@@ -592,3 +592,5 @@ export default function PendingApprovalsPage() {
     </div>
   );
 }
+
+

@@ -72,7 +72,7 @@ export default function EditApprovalRulePage() {
     return (
       <div className="p-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-white">Loading...</h1>
+          <h1 className="text-3xl font-bold text-foreground">Loading...</h1>
         </div>
       </div>
     );
@@ -83,26 +83,26 @@ export default function EditApprovalRulePage() {
       <div className="mb-8">
         <Button
           variant="ghost"
-          className="text-zinc-400 hover:text-white hover:bg-zinc-800 mb-4"
+          className="text-muted-foreground hover:text-foreground hover:bg-muted mb-4"
           onClick={() => router.back()}
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back
         </Button>
-        <h1 className="text-3xl font-bold text-white">Edit Approval Rule</h1>
-        <p className="text-zinc-400 mt-2">
+        <h1 className="text-3xl font-bold text-foreground">Edit Approval Rule</h1>
+        <p className="text-muted-foreground mt-2">
           Update approval rule for {rule.category?.name}
         </p>
       </div>
 
-      <Card className="bg-zinc-900 border-zinc-800 max-w-2xl">
+      <Card className="bg-card border-border max-w-2xl">
         <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-6">
           <Controller
             control={control}
             name="categoryId"
             render={({ field }) => (
               <div>
-                <Label className="text-zinc-300">
+                <Label className="text-muted-foreground">
                   Category <span className="text-red-500">*</span>
                 </Label>
                 <Select
@@ -110,10 +110,10 @@ export default function EditApprovalRulePage() {
                   onValueChange={field.onChange}
                   disabled={categoriesLoading}
                 >
-                  <SelectTrigger className="mt-2 bg-zinc-800 border-zinc-700 text-white">
+                  <SelectTrigger className="mt-2 bg-muted border-border text-foreground">
                     <SelectValue placeholder={rule.category?.name || "Select category"} />
                   </SelectTrigger>
-                  <SelectContent className="bg-zinc-900 border-zinc-800">
+                  <SelectContent className="bg-card border-border">
                     {categories?.map((category) => (
                       <SelectItem
                         key={category.categoryId}
@@ -124,7 +124,7 @@ export default function EditApprovalRulePage() {
                     ))}
                   </SelectContent>
                 </Select>
-                <p className="text-sm text-zinc-500 mt-1">
+                <p className="text-sm text-muted-foreground mt-1">
                   Choose which category this approval rule should apply to.
                 </p>
                 {errors.categoryId && (
@@ -137,17 +137,17 @@ export default function EditApprovalRulePage() {
           />
 
           <div>
-            <Label htmlFor="minAmount" className="text-zinc-300">
+            <Label htmlFor="minAmount" className="text-muted-foreground">
               Minimum Amount <span className="text-red-500">*</span>
             </Label>
             <Input
               id="minAmount"
               type="number"
               step="0.01"
-              className="mt-2 bg-zinc-800 border-zinc-700 text-white"
+              className="mt-2 bg-muted border-border text-foreground"
               {...register("minAmount", { valueAsNumber: true })}
             />
-            <p className="text-sm text-zinc-500 mt-1">
+            <p className="text-sm text-muted-foreground mt-1">
               This rule will apply to expenses with amounts equal to or greater than this value
             </p>
             {errors.minAmount && (
@@ -160,7 +160,7 @@ export default function EditApprovalRulePage() {
             name="approverRole"
             render={({ field }) => (
               <div>
-                <Label htmlFor="approverRole" className="text-zinc-300">
+                <Label htmlFor="approverRole" className="text-muted-foreground">
                   Approver Role <span className="text-red-500">*</span>
                 </Label>
                 <Select
@@ -169,10 +169,10 @@ export default function EditApprovalRulePage() {
                     field.onChange(value as ApproverRoleEnum)
                   }
                 >
-                  <SelectTrigger className="mt-2 bg-zinc-800 border-zinc-700 text-white">
+                  <SelectTrigger className="mt-2 bg-muted border-border text-foreground">
                     <SelectValue placeholder="Select role" />
                   </SelectTrigger>
-                  <SelectContent className="bg-zinc-900 border-zinc-800">
+                  <SelectContent className="bg-card border-border">
                     <SelectItem value={ApproverRoleEnum.STAFF}>
                       Staff
                     </SelectItem>
@@ -195,17 +195,17 @@ export default function EditApprovalRulePage() {
           />
 
           <div>
-            <Label htmlFor="approvalOrder" className="text-zinc-300">
+            <Label htmlFor="approvalOrder" className="text-muted-foreground">
               Approval Order <span className="text-red-500">*</span>
             </Label>
             <Input
               id="approvalOrder"
               type="number"
               min="1"
-              className="mt-2 bg-zinc-800 border-zinc-700 text-white"
+              className="mt-2 bg-muted border-border text-foreground"
               {...register("approvalOrder", { valueAsNumber: true })}
             />
-            <p className="text-sm text-zinc-500 mt-1">
+            <p className="text-sm text-muted-foreground mt-1">
               Order in the approval chain (1 = first, 2 = second, etc.)
             </p>
             {errors.approvalOrder && (
@@ -218,7 +218,7 @@ export default function EditApprovalRulePage() {
               type="button"
               variant="ghost"
               onClick={() => router.back()}
-              className="flex-1 text-zinc-400 hover:text-white hover:bg-zinc-800"
+              className="flex-1 text-muted-foreground hover:text-foreground hover:bg-muted"
             >
               Cancel
             </Button>
@@ -235,4 +235,5 @@ export default function EditApprovalRulePage() {
     </div>
   );
 }
+
 

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
@@ -182,10 +182,10 @@ export default function BudgetsPage() {
 
   if (isLoading) {
     return (
-      <div className="p-8">
+      <div className="p-8 bg-background min-h-screen">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-white">Budgets</h1>
-          <p className="text-zinc-400 mt-2">Loading...</p>
+          <h1 className="text-3xl font-bold text-foreground">Budgets</h1>
+          <p className="text-muted-foreground mt-2">Loading...</p>
         </div>
       </div>
     );
@@ -201,12 +201,12 @@ export default function BudgetsPage() {
     }) || [];
 
   return (
-    <div className="p-8">
+    <div className="p-8 bg-background min-h-screen">
       <div className="mb-8">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-white">Budget Management</h1>
-            <p className="text-zinc-400 mt-2">
+            <h1 className="text-3xl font-bold text-foreground">Budget Management</h1>
+            <p className="text-muted-foreground mt-2">
               Track and manage departmental budgets
             </p>
           </div>
@@ -225,10 +225,10 @@ export default function BudgetsPage() {
       <div className="flex flex-col gap-4 mb-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <Select value={departmentFilter} onValueChange={setDepartmentFilter}>
-            <SelectTrigger className="bg-zinc-900 border-zinc-800 text-white">
+            <SelectTrigger className="bg-card border-border text-foreground">
               <SelectValue placeholder="Filter by department" />
             </SelectTrigger>
-            <SelectContent className="bg-zinc-900 border-zinc-800">
+            <SelectContent className="bg-card border-border">
               <SelectItem value="ALL">All Departments</SelectItem>
               {departments?.map((dept) => (
                 <SelectItem key={dept.departmentId} value={dept.departmentId}>
@@ -239,10 +239,10 @@ export default function BudgetsPage() {
           </Select>
 
           <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-            <SelectTrigger className="bg-zinc-900 border-zinc-800 text-white">
+            <SelectTrigger className="bg-card border-border text-foreground">
               <SelectValue placeholder="Filter by category" />
             </SelectTrigger>
-            <SelectContent className="bg-zinc-900 border-zinc-800">
+            <SelectContent className="bg-card border-border">
               <SelectItem value="ALL">All Categories</SelectItem>
               {categories?.map((category) => (
                 <SelectItem
@@ -259,10 +259,10 @@ export default function BudgetsPage() {
             value={fiscalPeriodFilter}
             onValueChange={setFiscalPeriodFilter}
           >
-            <SelectTrigger className="bg-zinc-900 border-zinc-800 text-white">
+            <SelectTrigger className="bg-card border-border text-foreground">
               <SelectValue placeholder="Filter by fiscal period" />
             </SelectTrigger>
-            <SelectContent className="bg-zinc-900 border-zinc-800">
+            <SelectContent className="bg-card border-border">
               <SelectItem value="ALL">All Fiscal Periods</SelectItem>
               {fiscalPeriods.map((period) => (
                 <SelectItem key={period} value={period}>
@@ -273,10 +273,10 @@ export default function BudgetsPage() {
           </Select>
 
           <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="bg-zinc-900 border-zinc-800 text-white">
+            <SelectTrigger className="bg-card border-border text-foreground">
               <SelectValue placeholder="Filter by status" />
             </SelectTrigger>
-            <SelectContent className="bg-zinc-900 border-zinc-800">
+            <SelectContent className="bg-card border-border">
               <SelectItem value="ALL">All Budgets</SelectItem>
               <SelectItem value="active">Active Only</SelectItem>
               <SelectItem value="inactive">Inactive Only</SelectItem>
@@ -290,7 +290,7 @@ export default function BudgetsPage() {
           <div className="flex justify-end">
             <Button
               variant="ghost"
-              className="text-zinc-400 hover:text-white hover:bg-zinc-800"
+              className="text-muted-foreground hover:text-foreground hover:bg-muted"
               onClick={handleClearFilters}
             >
               Clear Filters
@@ -300,12 +300,12 @@ export default function BudgetsPage() {
       </div>
 
       {filteredBudgets.length === 0 ? (
-        <Card className="bg-zinc-900 border-zinc-800 p-12 text-center">
-          <Wallet className="w-12 h-12 text-zinc-600 mx-auto mb-4" />
-          <h3 className="text-xl font-semibold text-white mb-2">
+        <Card className="bg-card border-border p-12 text-center">
+          <Wallet className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+          <h3 className="text-xl font-semibold text-foreground mb-2">
             No Budgets Found
           </h3>
-          <p className="text-zinc-400 mb-4">
+          <p className="text-muted-foreground mb-4">
             Create your first budget to start tracking spending
           </p>
           <Button
@@ -334,19 +334,19 @@ export default function BudgetsPage() {
             return (
               <Card
                 key={budget.budgetId}
-                className="bg-zinc-900 border-zinc-800 p-6"
+                className="bg-card border-border p-6"
               >
                 <div className="flex items-start justify-between mb-4">
                   <div>
-                    <h3 className="text-lg font-semibold text-white">
+                    <h3 className="text-lg font-semibold text-foreground">
                       {departmentName}
                     </h3>
                     {categoryInfo && (
-                      <p className="text-sm text-zinc-400 mt-1">
+                      <p className="text-sm text-muted-foreground mt-1">
                         {categoryInfo.name}
                       </p>
                     )}
-                    <p className="text-sm text-zinc-500 mt-1">
+                    <p className="text-sm text-muted-foreground mt-1">
                       {budget.fiscalPeriod}
                     </p>
                   </div>
@@ -373,10 +373,10 @@ export default function BudgetsPage() {
                 <div className="space-y-4">
                   <div>
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm text-zinc-400">
+                      <span className="text-sm text-muted-foreground">
                         Budget Utilization
                       </span>
-                      <span className="text-sm font-semibold text-white">
+                      <span className="text-sm font-semibold text-foreground">
                         {budget.utilizationPercentage.toFixed(1)}%
                       </span>
                     </div>
@@ -388,25 +388,25 @@ export default function BudgetsPage() {
                       )}
                     />
                     <div className="flex items-center justify-between mt-2 text-sm">
-                      <span className="text-zinc-500">
+                      <span className="text-muted-foreground">
                         Spent: ${Number(budget.spentAmount).toFixed(2)}
                       </span>
-                      <span className="text-zinc-500">
+                      <span className="text-muted-foreground">
                         Total: ${Number(budget.budgetAmount).toFixed(2)}
                       </span>
                     </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
-                    <div className="p-3 bg-zinc-800 rounded-lg">
-                      <p className="text-xs text-zinc-400 mb-1">Remaining</p>
-                      <p className="text-lg font-semibold text-white">
+                    <div className="p-3 bg-muted rounded-lg">
+                      <p className="text-xs text-muted-foreground mb-1">Remaining</p>
+                      <p className="text-lg font-semibold text-foreground">
                         ${Number(budget.remainingAmount).toFixed(2)}
                       </p>
                     </div>
-                    <div className="p-3 bg-zinc-800 rounded-lg">
-                      <p className="text-xs text-zinc-400 mb-1">Enforcement</p>
-                      <p className="text-sm font-medium text-white capitalize">
+                    <div className="p-3 bg-muted rounded-lg">
+                      <p className="text-xs text-muted-foreground mb-1">Enforcement</p>
+                      <p className="text-sm font-medium text-foreground capitalize">
                         {budget.enforcementType}
                       </p>
                     </div>
@@ -422,8 +422,8 @@ export default function BudgetsPage() {
                     </div>
                   )}
 
-                  <div className="flex items-center justify-between pt-2 border-t border-zinc-800">
-                    <div className="text-sm text-zinc-500">
+                  <div className="flex items-center justify-between pt-2 border-t border-border">
+                    <div className="text-sm text-muted-foreground">
                       {new Date(budget.startDate).toLocaleDateString()} -{" "}
                       {new Date(budget.endDate).toLocaleDateString()}
                     </div>
@@ -484,10 +484,10 @@ export default function BudgetsPage() {
           setDeleteDialog({ open, budgetId: null })
         }
       >
-        <DialogContent className="bg-zinc-900 border-zinc-800 text-white">
+        <DialogContent className="bg-card border-border text-foreground">
           <DialogHeader>
             <DialogTitle>Delete Budget</DialogTitle>
-            <DialogDescription className="text-zinc-400">
+            <DialogDescription className="text-muted-foreground">
               Are you sure you want to delete this budget? This action cannot be
               undone.
             </DialogDescription>
@@ -496,7 +496,7 @@ export default function BudgetsPage() {
             <Button
               variant="ghost"
               onClick={() => setDeleteDialog({ open: false, budgetId: null })}
-              className="text-zinc-400 hover:text-white hover:bg-zinc-800"
+              className="text-muted-foreground hover:text-foreground hover:bg-muted"
             >
               Cancel
             </Button>
@@ -513,3 +513,6 @@ export default function BudgetsPage() {
     </div>
   );
 }
+
+
+

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -107,8 +107,8 @@ export default function EditUserPage() {
     return (
       <div className="p-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-white">Edit User</h1>
-          <p className="text-zinc-400 mt-2">Loading...</p>
+          <h1 className="text-3xl font-bold text-foreground">Edit User</h1>
+          <p className="text-muted-foreground mt-2">Loading...</p>
         </div>
       </div>
     );
@@ -118,8 +118,8 @@ export default function EditUserPage() {
     return (
       <div className="p-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-white">Edit User</h1>
-          <p className="text-zinc-400 mt-2">User not found</p>
+          <h1 className="text-3xl font-bold text-foreground">Edit User</h1>
+          <p className="text-muted-foreground mt-2">User not found</p>
         </div>
       </div>
     );
@@ -130,26 +130,26 @@ export default function EditUserPage() {
       <div className="mb-8">
         <Button
           variant="ghost"
-          className="text-zinc-400 hover:text-white hover:bg-zinc-800 mb-4"
+          className="text-muted-foreground hover:text-foreground hover:bg-muted mb-4"
           onClick={() => router.back()}
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back
         </Button>
-        <h1 className="text-3xl font-bold text-white">Edit User</h1>
-        <p className="text-zinc-400 mt-2">Update user information</p>
+        <h1 className="text-3xl font-bold text-foreground">Edit User</h1>
+        <p className="text-muted-foreground mt-2">Update user information</p>
       </div>
 
-      <Card className="bg-zinc-900 border-zinc-800 max-w-2xl">
+      <Card className="bg-card border-border max-w-2xl">
         <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-6">
           <div>
-            <Label htmlFor="name" className="text-zinc-300">
+            <Label htmlFor="name" className="text-muted-foreground">
               Full Name <span className="text-red-500">*</span>
             </Label>
             <Input
               id="name"
               placeholder="John Doe"
-              className="mt-2 bg-zinc-800 border-zinc-700 text-white"
+              className="mt-2 bg-muted border-border text-foreground"
               {...register("name")}
             />
             {errors.name && (
@@ -158,14 +158,14 @@ export default function EditUserPage() {
           </div>
 
           <div>
-            <Label htmlFor="email" className="text-zinc-300">
+            <Label htmlFor="email" className="text-muted-foreground">
               Email Address <span className="text-red-500">*</span>
             </Label>
             <Input
               id="email"
               type="email"
               placeholder="john@example.com"
-              className="mt-2 bg-zinc-800 border-zinc-700 text-white"
+              className="mt-2 bg-muted border-border text-foreground"
               {...register("email")}
             />
             {errors.email && (
@@ -174,27 +174,27 @@ export default function EditUserPage() {
           </div>
 
           <div>
-            <Label htmlFor="role" className="text-zinc-300">
+            <Label htmlFor="role" className="text-muted-foreground">
               Role <span className="text-red-500">*</span>
             </Label>
             <Select
               value={selectedRole}
               onValueChange={(value) => setValue("role", value as RoleEnum)}
             >
-              <SelectTrigger className="mt-2 bg-zinc-800 border-zinc-700 text-white">
+              <SelectTrigger className="mt-2 bg-muted border-border text-foreground">
                 <SelectValue placeholder="Select user role" />
               </SelectTrigger>
-              <SelectContent className="bg-zinc-900 border-zinc-800">
-                <SelectItem value={RoleEnum.STAFF} className="text-white">
+              <SelectContent className="bg-card border-border">
+                <SelectItem value={RoleEnum.STAFF} className="text-foreground">
                   Staff - Regular employee
                 </SelectItem>
-                <SelectItem value={RoleEnum.MANAGER} className="text-white">
+                <SelectItem value={RoleEnum.MANAGER} className="text-foreground">
                   Manager - Department manager
                 </SelectItem>
-                <SelectItem value={RoleEnum.FINANCE} className="text-white">
+                <SelectItem value={RoleEnum.FINANCE} className="text-foreground">
                   Finance - Finance team member
                 </SelectItem>
-                <SelectItem value={RoleEnum.ADMIN} className="text-white">
+                <SelectItem value={RoleEnum.ADMIN} className="text-foreground">
                   Admin - System administrator
                 </SelectItem>
               </SelectContent>
@@ -204,21 +204,21 @@ export default function EditUserPage() {
             )}
           </div>
 
-          <div className="border-t border-zinc-800 pt-6">
-            <p className="text-sm text-zinc-400 mb-4">
+          <div className="border-t border-border pt-6">
+            <p className="text-sm text-muted-foreground mb-4">
               Leave password fields empty to keep the current password
             </p>
 
             <div className="grid grid-cols-2 gap-6">
               <div>
-                <Label htmlFor="password" className="text-zinc-300">
+                <Label htmlFor="password" className="text-muted-foreground">
                   New Password
                 </Label>
                 <Input
                   id="password"
                   type="password"
-                  placeholder="••••••••"
-                  className="mt-2 bg-zinc-800 border-zinc-700 text-white"
+                  placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
+                  className="mt-2 bg-muted border-border text-foreground"
                   {...register("password")}
                 />
                 {errors.password && (
@@ -227,14 +227,14 @@ export default function EditUserPage() {
               </div>
 
               <div>
-                <Label htmlFor="confirmPassword" className="text-zinc-300">
+                <Label htmlFor="confirmPassword" className="text-muted-foreground">
                   Confirm New Password
                 </Label>
                 <Input
                   id="confirmPassword"
                   type="password"
-                  placeholder="••••••••"
-                  className="mt-2 bg-zinc-800 border-zinc-700 text-white"
+                  placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
+                  className="mt-2 bg-muted border-border text-foreground"
                   {...register("confirmPassword")}
                 />
                 {errors.confirmPassword && (
@@ -249,7 +249,7 @@ export default function EditUserPage() {
               type="button"
               variant="ghost"
               onClick={() => router.back()}
-              className="flex-1 text-zinc-400 hover:text-white hover:bg-zinc-800"
+              className="flex-1 text-muted-foreground hover:text-foreground hover:bg-muted"
             >
               Cancel
             </Button>
@@ -266,3 +266,4 @@ export default function EditUserPage() {
     </div>
   );
 }
+

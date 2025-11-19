@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
@@ -77,7 +77,7 @@ export default function ApprovalDetailPage() {
     return (
       <div className="p-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-white">Loading...</h1>
+          <h1 className="text-3xl font-bold text-foreground">Loading...</h1>
         </div>
       </div>
     );
@@ -91,7 +91,7 @@ export default function ApprovalDetailPage() {
       <div className="mb-8">
         <Button
           variant="ghost"
-          className="text-zinc-400 hover:text-white hover:bg-zinc-800 mb-4"
+          className="text-muted-foreground hover:text-foreground hover:bg-muted mb-4"
           onClick={() => router.back()}
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
@@ -99,8 +99,8 @@ export default function ApprovalDetailPage() {
         </Button>
         <div className="flex items-start justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-white">Approval Details</h1>
-            <p className="text-zinc-400 mt-2">Review expense details and approval chain</p>
+            <h1 className="text-3xl font-bold text-foreground">Approval Details</h1>
+            <p className="text-muted-foreground mt-2">Review expense details and approval chain</p>
           </div>
           {isPending && (
             <div className="flex gap-3">
@@ -125,114 +125,114 @@ export default function ApprovalDetailPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-        <Card className="bg-zinc-900 border-zinc-800 p-6">
+        <Card className="bg-card border-border p-6">
           <div className="flex items-center gap-3 mb-2">
             <div className="p-2 bg-purple-500/10 rounded-lg">
               <DollarSign className="w-5 h-5 text-purple-500" />
             </div>
-            <span className="text-sm text-zinc-400">Total Amount</span>
+            <span className="text-sm text-muted-foreground">Total Amount</span>
           </div>
-          <p className="text-2xl font-bold text-white">
+          <p className="text-2xl font-bold text-foreground">
             ${expense?.totalAmount ? Number(expense.totalAmount).toFixed(2) : "0.00"}
           </p>
         </Card>
 
-        <Card className="bg-zinc-900 border-zinc-800 p-6">
+        <Card className="bg-card border-border p-6">
           <div className="flex items-center gap-3 mb-2">
             <div className="p-2 bg-blue-500/10 rounded-lg">
               <Calendar className="w-5 h-5 text-blue-500" />
             </div>
-            <span className="text-sm text-zinc-400">Submitted Date</span>
+            <span className="text-sm text-muted-foreground">Submitted Date</span>
           </div>
-          <p className="text-2xl font-bold text-white">
+          <p className="text-2xl font-bold text-foreground">
             {expense?.dateOfExpense ? new Date(expense.dateOfExpense).toLocaleDateString() : "N/A"}
           </p>
         </Card>
 
-        <Card className="bg-zinc-900 border-zinc-800 p-6">
+        <Card className="bg-card border-border p-6">
           <div className="flex items-center gap-3 mb-2">
             <div className="p-2 bg-green-500/10 rounded-lg">
               <CheckCircle2 className="w-5 h-5 text-green-500" />
             </div>
-            <span className="text-sm text-zinc-400">Approval Level</span>
+            <span className="text-sm text-muted-foreground">Approval Level</span>
           </div>
-          <p className="text-2xl font-bold text-white">Level {approval.approvalOrder}</p>
+          <p className="text-2xl font-bold text-foreground">Level {approval.approvalOrder}</p>
         </Card>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="space-y-6">
-          <Card className="bg-zinc-900 border-zinc-800 p-6">
-            <h2 className="text-xl font-semibold text-white mb-4">Expense Information</h2>
+          <Card className="bg-card border-border p-6">
+            <h2 className="text-xl font-semibold text-foreground mb-4">Expense Information</h2>
             <div className="space-y-4">
               <div>
-                <label className="text-sm text-zinc-400">Description</label>
-                <p className="text-white mt-1">{expense?.description || "N/A"}</p>
+                <label className="text-sm text-muted-foreground">Description</label>
+                <p className="text-foreground mt-1">{expense?.description || "N/A"}</p>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm text-zinc-400">Category</label>
-                  <p className="text-white mt-1">{expense?.category?.name || "N/A"}</p>
+                  <label className="text-sm text-muted-foreground">Category</label>
+                  <p className="text-foreground mt-1">{expense?.category?.name || "N/A"}</p>
                 </div>
                 <div>
-                  <label className="text-sm text-zinc-400">Vendor</label>
-                  <p className="text-white mt-1">{expense?.vendor?.name || "N/A"}</p>
+                  <label className="text-sm text-muted-foreground">Vendor</label>
+                  <p className="text-foreground mt-1">{expense?.vendor?.name || "N/A"}</p>
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm text-zinc-400">Net Amount</label>
-                  <p className="text-white mt-1 font-mono">
+                  <label className="text-sm text-muted-foreground">Net Amount</label>
+                  <p className="text-foreground mt-1 font-mono">
                     ${expense?.amountNet ? Number(expense.amountNet).toFixed(2) : "0.00"}
                   </p>
                 </div>
                 <div>
-                  <label className="text-sm text-zinc-400">Tax Amount</label>
-                  <p className="text-white mt-1 font-mono">
+                  <label className="text-sm text-muted-foreground">Tax Amount</label>
+                  <p className="text-foreground mt-1 font-mono">
                     ${expense?.taxAmount ? Number(expense.taxAmount).toFixed(2) : "0.00"}
                   </p>
                 </div>
               </div>
               <div>
-                <label className="text-sm text-zinc-400">Submitted By</label>
+                <label className="text-sm text-muted-foreground">Submitted By</label>
                 <div className="mt-1">
-                  <p className="text-white">{expense?.user?.name || "Unknown"}</p>
-                  <p className="text-sm text-zinc-500">{expense?.user?.email}</p>
+                  <p className="text-foreground">{expense?.user?.name || "Unknown"}</p>
+                  <p className="text-sm text-muted-foreground">{expense?.user?.email}</p>
                 </div>
               </div>
             </div>
           </Card>
 
-          <Card className="bg-zinc-900 border-zinc-800 p-6">
-            <h2 className="text-xl font-semibold text-white mb-4">Approval Information</h2>
+          <Card className="bg-card border-border p-6">
+            <h2 className="text-xl font-semibold text-foreground mb-4">Approval Information</h2>
             <div className="space-y-4">
               <div>
-                <label className="text-sm text-zinc-400">Approver</label>
+                <label className="text-sm text-muted-foreground">Approver</label>
                 <div className="mt-1">
-                  <p className="text-white">{approval.approver?.name || "Unknown"}</p>
-                  <p className="text-sm text-zinc-500">{approval.approver?.email}</p>
+                  <p className="text-foreground">{approval.approver?.name || "Unknown"}</p>
+                  <p className="text-sm text-muted-foreground">{approval.approver?.email}</p>
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm text-zinc-400">Status</label>
+                  <label className="text-sm text-muted-foreground">Status</label>
                   <div className="mt-2">{getStatusBadge(approval.status)}</div>
                 </div>
                 <div>
-                  <label className="text-sm text-zinc-400">Approval Order</label>
-                  <p className="text-white mt-2">Level {approval.approvalOrder}</p>
+                  <label className="text-sm text-muted-foreground">Approval Order</label>
+                  <p className="text-foreground mt-2">Level {approval.approvalOrder}</p>
                 </div>
               </div>
               {approval.comments && (
                 <div>
-                  <label className="text-sm text-zinc-400">Comments</label>
-                  <p className="text-white mt-1 p-3 bg-zinc-800 rounded-lg">{approval.comments}</p>
+                  <label className="text-sm text-muted-foreground">Comments</label>
+                  <p className="text-foreground mt-1 p-3 bg-muted rounded-lg">{approval.comments}</p>
                 </div>
               )}
               {approval.approvedAt && (
                 <div>
-                  <label className="text-sm text-zinc-400">Approved At</label>
-                  <p className="text-white mt-1">
+                  <label className="text-sm text-muted-foreground">Approved At</label>
+                  <p className="text-foreground mt-1">
                     {new Date(approval.approvedAt).toLocaleString()}
                   </p>
                 </div>
@@ -244,12 +244,12 @@ export default function ApprovalDetailPage() {
         <div className="space-y-6">
           <ApprovalChain approvals={allApprovals || []} />
 
-          <Card className="bg-zinc-900 border-zinc-800 p-6">
-            <h2 className="text-xl font-semibold text-white mb-4">Quick Links</h2>
+          <Card className="bg-card border-border p-6">
+            <h2 className="text-xl font-semibold text-foreground mb-4">Quick Links</h2>
             <div className="space-y-2">
               <Button
                 variant="ghost"
-                className="w-full justify-start text-zinc-400 hover:text-white hover:bg-zinc-800"
+                className="w-full justify-start text-muted-foreground hover:text-foreground hover:bg-muted"
                 asChild
               >
                 <Link href={`/expenses/${expense?.expenseId}`}>
@@ -263,16 +263,16 @@ export default function ApprovalDetailPage() {
       </div>
 
       <Dialog open={approveDialog} onOpenChange={setApproveDialog}>
-        <DialogContent className="bg-zinc-900 border-zinc-800 text-white">
+        <DialogContent className="bg-card border-border text-foreground">
           <DialogHeader>
             <DialogTitle>Approve Expense</DialogTitle>
-            <DialogDescription className="text-zinc-400">
+            <DialogDescription className="text-muted-foreground">
               You are about to approve this expense. Optionally add comments for your approval.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div>
-              <Label htmlFor="approve-comments" className="text-zinc-300">
+              <Label htmlFor="approve-comments" className="text-muted-foreground">
                 Comments (Optional)
               </Label>
               <Textarea
@@ -280,7 +280,7 @@ export default function ApprovalDetailPage() {
                 placeholder="Add any comments about your approval decision..."
                 value={comments}
                 onChange={(e) => setComments(e.target.value)}
-                className="bg-zinc-800 border-zinc-700 text-white mt-2"
+                className="bg-muted border-border text-foreground mt-2"
                 rows={4}
               />
             </div>
@@ -292,7 +292,7 @@ export default function ApprovalDetailPage() {
                 setApproveDialog(false);
                 setComments("");
               }}
-              className="text-zinc-400 hover:text-white hover:bg-zinc-800"
+              className="text-muted-foreground hover:text-foreground hover:bg-muted"
             >
               Cancel
             </Button>
@@ -308,16 +308,16 @@ export default function ApprovalDetailPage() {
       </Dialog>
 
       <Dialog open={rejectDialog} onOpenChange={setRejectDialog}>
-        <DialogContent className="bg-zinc-900 border-zinc-800 text-white">
+        <DialogContent className="bg-card border-border text-foreground">
           <DialogHeader>
             <DialogTitle>Reject Expense</DialogTitle>
-            <DialogDescription className="text-zinc-400">
+            <DialogDescription className="text-muted-foreground">
               You are about to reject this expense. Please provide a reason for rejection.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div>
-              <Label htmlFor="reject-comments" className="text-zinc-300">
+              <Label htmlFor="reject-comments" className="text-muted-foreground">
                 Rejection Reason <span className="text-red-500">*</span>
               </Label>
               <Textarea
@@ -325,7 +325,7 @@ export default function ApprovalDetailPage() {
                 placeholder="Please explain why you are rejecting this expense..."
                 value={comments}
                 onChange={(e) => setComments(e.target.value)}
-                className="bg-zinc-800 border-zinc-700 text-white mt-2"
+                className="bg-muted border-border text-foreground mt-2"
                 rows={4}
               />
             </div>
@@ -343,7 +343,7 @@ export default function ApprovalDetailPage() {
                 setRejectDialog(false);
                 setComments("");
               }}
-              className="text-zinc-400 hover:text-white hover:bg-zinc-800"
+              className="text-muted-foreground hover:text-foreground hover:bg-muted"
             >
               Cancel
             </Button>
@@ -360,3 +360,4 @@ export default function ApprovalDetailPage() {
     </div>
   );
 }
+

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
@@ -93,8 +93,8 @@ export default function EditBudgetPage() {
     return (
       <div className="p-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-white">Edit Budget</h1>
-          <p className="text-zinc-400 mt-2">Loading...</p>
+          <h1 className="text-3xl font-bold text-foreground">Edit Budget</h1>
+          <p className="text-muted-foreground mt-2">Loading...</p>
         </div>
       </div>
     );
@@ -104,8 +104,8 @@ export default function EditBudgetPage() {
     return (
       <div className="p-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-white">Edit Budget</h1>
-          <p className="text-zinc-400 mt-2">Budget not found</p>
+          <h1 className="text-3xl font-bold text-foreground">Edit Budget</h1>
+          <p className="text-muted-foreground mt-2">Budget not found</p>
         </div>
       </div>
     );
@@ -116,28 +116,28 @@ export default function EditBudgetPage() {
       <div className="mb-8">
         <Button
           variant="ghost"
-          className="text-zinc-400 hover:text-white hover:bg-zinc-800 mb-4"
+          className="text-muted-foreground hover:text-foreground hover:bg-muted mb-4"
           onClick={() => router.back()}
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back
         </Button>
-        <h1 className="text-3xl font-bold text-white">Edit Budget</h1>
-        <p className="text-zinc-400 mt-2">
+        <h1 className="text-3xl font-bold text-foreground">Edit Budget</h1>
+        <p className="text-muted-foreground mt-2">
           Update allocations and enforcement settings for this budget.
         </p>
       </div>
 
-      <Card className="bg-zinc-900 border-zinc-800 max-w-3xl">
+      <Card className="bg-card border-border max-w-3xl">
         <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label className="text-zinc-300" htmlFor="departmentId">
+              <Label className="text-muted-foreground" htmlFor="departmentId">
                 Department
               </Label>
               <select
                 id="departmentId"
-                className="mt-2 w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-md text-white"
+                className="mt-2 w-full px-3 py-2 bg-muted border border-border rounded-md text-foreground"
                 {...register("departmentId")}
               >
                 <option value="">Organization-wide</option>
@@ -149,12 +149,12 @@ export default function EditBudgetPage() {
               </select>
             </div>
             <div>
-              <Label className="text-zinc-300" htmlFor="categoryId">
+              <Label className="text-muted-foreground" htmlFor="categoryId">
                 Category
               </Label>
               <select
                 id="categoryId"
-                className="mt-2 w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-md text-white"
+                className="mt-2 w-full px-3 py-2 bg-muted border border-border rounded-md text-foreground"
                 {...register("categoryId")}
               >
                 <option value="">Not specified</option>
@@ -168,14 +168,14 @@ export default function EditBudgetPage() {
           </div>
 
           <div>
-            <Label htmlFor="budgetAmount" className="text-zinc-300">
+            <Label htmlFor="budgetAmount" className="text-muted-foreground">
               Budget Amount
             </Label>
             <Input
               id="budgetAmount"
               type="number"
               step="0.01"
-              className="mt-2 bg-zinc-800 border-zinc-700 text-white"
+              className="mt-2 bg-muted border-border text-foreground"
               {...register("budgetAmount", { valueAsNumber: true })}
             />
             {errors.budgetAmount && (
@@ -187,12 +187,12 @@ export default function EditBudgetPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="enforcementType" className="text-zinc-300">
+              <Label htmlFor="enforcementType" className="text-muted-foreground">
                 Enforcement Type
               </Label>
               <select
                 id="enforcementType"
-                className="mt-2 w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-md text-white"
+                className="mt-2 w-full px-3 py-2 bg-muted border border-border rounded-md text-foreground"
                 {...register("enforcementType")}
               >
                 <option value={BudgetEnforcementType.SOFT}>
@@ -216,10 +216,10 @@ export default function EditBudgetPage() {
                 {...register("overrideAllowed")}
               />
               <div>
-                <Label htmlFor="overrideAllowed" className="text-zinc-300">
+                <Label htmlFor="overrideAllowed" className="text-muted-foreground">
                   Allow Overrides
                 </Label>
-                <p className="text-xs text-zinc-500">
+                <p className="text-xs text-muted-foreground">
                   Permit managers to request budget exceptions when required.
                 </p>
               </div>
@@ -227,15 +227,15 @@ export default function EditBudgetPage() {
           </div>
 
           <div>
-            <Label className="text-zinc-300">Thresholds (%)</Label>
+            <Label className="text-muted-foreground">Thresholds (%)</Label>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-2">
               <div>
-                <Label className="text-zinc-400 text-xs uppercase">
+                <Label className="text-muted-foreground text-xs uppercase">
                   Warning
                 </Label>
                 <Input
                   type="number"
-                  className="mt-1 bg-zinc-800 border-zinc-700 text-white"
+                  className="mt-1 bg-muted border-border text-foreground"
                   {...register("warningThreshold1", { valueAsNumber: true })}
                 />
                 {errors.warningThreshold1 && (
@@ -245,10 +245,10 @@ export default function EditBudgetPage() {
                 )}
               </div>
               <div>
-                <Label className="text-zinc-400 text-xs uppercase">Alert</Label>
+                <Label className="text-muted-foreground text-xs uppercase">Alert</Label>
                 <Input
                   type="number"
-                  className="mt-1 bg-zinc-800 border-zinc-700 text-white"
+                  className="mt-1 bg-muted border-border text-foreground"
                   {...register("warningThreshold2", { valueAsNumber: true })}
                 />
                 {errors.warningThreshold2 && (
@@ -258,12 +258,12 @@ export default function EditBudgetPage() {
                 )}
               </div>
               <div>
-                <Label className="text-zinc-400 text-xs uppercase">
+                <Label className="text-muted-foreground text-xs uppercase">
                   Critical
                 </Label>
                 <Input
                   type="number"
-                  className="mt-1 bg-zinc-800 border-zinc-700 text-white"
+                  className="mt-1 bg-muted border-border text-foreground"
                   {...register("criticalThreshold", { valueAsNumber: true })}
                 />
                 {errors.criticalThreshold && (
@@ -277,12 +277,12 @@ export default function EditBudgetPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label className="text-zinc-300">Fiscal Period</Label>
-              <p className="text-white mt-1">{budget.fiscalPeriod}</p>
+              <Label className="text-muted-foreground">Fiscal Period</Label>
+              <p className="text-foreground mt-1">{budget.fiscalPeriod}</p>
             </div>
             <div>
-              <Label className="text-zinc-300">Duration</Label>
-              <p className="text-white mt-1">
+              <Label className="text-muted-foreground">Duration</Label>
+              <p className="text-foreground mt-1">
                 {new Date(budget.startDate).toLocaleDateString()} -{" "}
                 {new Date(budget.endDate).toLocaleDateString()}
               </p>
@@ -294,7 +294,7 @@ export default function EditBudgetPage() {
               type="button"
               variant="ghost"
               onClick={() => router.back()}
-              className="flex-1 text-zinc-400 hover:text-white hover:bg-zinc-800"
+              className="flex-1 text-muted-foreground hover:text-foreground hover:bg-muted"
             >
               Cancel
             </Button>
@@ -311,3 +311,4 @@ export default function EditBudgetPage() {
     </div>
   );
 }
+

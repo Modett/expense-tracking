@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
@@ -32,7 +32,7 @@ export default function BudgetDetailPage() {
     return (
       <div className="p-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-white">Loading...</h1>
+          <h1 className="text-3xl font-bold text-foreground">Loading...</h1>
         </div>
       </div>
     );
@@ -74,7 +74,7 @@ export default function BudgetDetailPage() {
       <div className="mb-8">
         <Button
           variant="ghost"
-          className="text-zinc-400 hover:text-white hover:bg-zinc-800 mb-4"
+          className="text-muted-foreground hover:text-foreground hover:bg-muted mb-4"
           onClick={() => router.back()}
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
@@ -82,17 +82,17 @@ export default function BudgetDetailPage() {
         </Button>
         <div className="flex items-start justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-white">
+            <h1 className="text-3xl font-bold text-foreground">
               {budget.department?.name || "Budget"} - {budget.fiscalPeriod}
             </h1>
-            <p className="text-zinc-400 mt-2">
+            <p className="text-muted-foreground mt-2">
               {budget.category?.name || "All Categories"}
             </p>
           </div>
           <div className="flex gap-3">
             <Button
               variant="ghost"
-              className="border border-zinc-700 text-zinc-300 hover:text-white hover:bg-zinc-800"
+              className="border border-border text-muted-foreground hover:text-foreground hover:bg-muted"
               asChild
             >
               <Link href={`/budgets/${budgetId}/edit`}>
@@ -138,31 +138,31 @@ export default function BudgetDetailPage() {
 
       {/* Overview Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-        <Card className="bg-zinc-900 border-zinc-800 p-6">
+        <Card className="bg-card border-border p-6">
           <div className="flex items-center gap-3 mb-2">
             <div className="p-2 bg-purple-500/10 rounded-lg">
               <DollarSign className="w-5 h-5 text-purple-500" />
             </div>
-            <span className="text-sm text-zinc-400">Budget Amount</span>
+            <span className="text-sm text-muted-foreground">Budget Amount</span>
           </div>
-          <p className="text-2xl font-bold text-white">
+          <p className="text-2xl font-bold text-foreground">
             ${Number(budget.budgetAmount).toFixed(2)}
           </p>
         </Card>
 
-        <Card className="bg-zinc-900 border-zinc-800 p-6">
+        <Card className="bg-card border-border p-6">
           <div className="flex items-center gap-3 mb-2">
             <div className="p-2 bg-blue-500/10 rounded-lg">
               <TrendingUp className="w-5 h-5 text-blue-500" />
             </div>
-            <span className="text-sm text-zinc-400">Spent Amount</span>
+            <span className="text-sm text-muted-foreground">Spent Amount</span>
           </div>
-          <p className="text-2xl font-bold text-white">
+          <p className="text-2xl font-bold text-foreground">
             ${Number(budget.spentAmount).toFixed(2)}
           </p>
         </Card>
 
-        <Card className="bg-zinc-900 border-zinc-800 p-6">
+        <Card className="bg-card border-border p-6">
           <div className="flex items-center gap-3 mb-2">
             <div className={`p-2 ${isOverBudget ? 'bg-red-500/10' : 'bg-green-500/10'} rounded-lg`}>
               {isOverBudget ? (
@@ -171,7 +171,7 @@ export default function BudgetDetailPage() {
                 <DollarSign className="w-5 h-5 text-green-500" />
               )}
             </div>
-            <span className="text-sm text-zinc-400">Remaining</span>
+            <span className="text-sm text-muted-foreground">Remaining</span>
           </div>
           <p className={`text-2xl font-bold ${isOverBudget ? 'text-red-500' : 'text-green-500'}`}>
             ${Math.abs(Number(budget.remainingAmount)).toFixed(2)}
@@ -179,12 +179,12 @@ export default function BudgetDetailPage() {
           </p>
         </Card>
 
-        <Card className="bg-zinc-900 border-zinc-800 p-6">
+        <Card className="bg-card border-border p-6">
           <div className="flex items-center gap-3 mb-2">
             <div className="p-2 bg-yellow-500/10 rounded-lg">
               <TrendingUp className="w-5 h-5 text-yellow-500" />
             </div>
-            <span className="text-sm text-zinc-400">Utilization</span>
+            <span className="text-sm text-muted-foreground">Utilization</span>
           </div>
           <p className={`text-2xl font-bold ${getUtilizationColor()}`}>
             {utilizationPercentage.toFixed(1)}%
@@ -195,14 +195,14 @@ export default function BudgetDetailPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
           {/* Utilization Chart */}
-          <Card className="bg-zinc-900 border-zinc-800 p-6">
-            <h2 className="text-xl font-semibold text-white mb-6">
+          <Card className="bg-card border-border p-6">
+            <h2 className="text-xl font-semibold text-foreground mb-6">
               Budget Utilization
             </h2>
             <div className="space-y-6">
               <div>
                 <div className="flex items-center justify-between mb-3">
-                  <span className="text-sm text-zinc-400">Overall Progress</span>
+                  <span className="text-sm text-muted-foreground">Overall Progress</span>
                   <span className={`text-sm font-semibold ${getUtilizationColor()}`}>
                     {utilizationPercentage.toFixed(1)}%
                   </span>
@@ -212,7 +212,7 @@ export default function BudgetDetailPage() {
                   className="h-4"
                   indicatorClassName={getProgressColor()}
                 />
-                <div className="flex items-center justify-between mt-2 text-xs text-zinc-500">
+                <div className="flex items-center justify-between mt-2 text-xs text-muted-foreground">
                   <span>${Number(budget.spentAmount).toFixed(2)} spent</span>
                   <span>${Number(budget.budgetAmount).toFixed(2)} total</span>
                 </div>
@@ -220,27 +220,27 @@ export default function BudgetDetailPage() {
 
               {/* Visual Budget Bar */}
               <div className="relative">
-                <div className="text-sm font-medium text-white mb-3">
+                <div className="text-sm font-medium text-foreground mb-3">
                   Budget vs Actual Comparison
                 </div>
                 <div className="space-y-3">
                   <div>
                     <div className="flex items-center justify-between mb-1">
-                      <span className="text-xs text-zinc-400">Allocated Budget</span>
-                      <span className="text-xs text-white">
+                      <span className="text-xs text-muted-foreground">Allocated Budget</span>
+                      <span className="text-xs text-foreground">
                         ${Number(budget.budgetAmount).toFixed(2)}
                       </span>
                     </div>
-                    <div className="w-full h-8 bg-zinc-800 rounded-lg" />
+                    <div className="w-full h-8 bg-muted rounded-lg" />
                   </div>
                   <div>
                     <div className="flex items-center justify-between mb-1">
-                      <span className="text-xs text-zinc-400">Actual Spending</span>
-                      <span className="text-xs text-white">
+                      <span className="text-xs text-muted-foreground">Actual Spending</span>
+                      <span className="text-xs text-foreground">
                         ${Number(budget.spentAmount).toFixed(2)}
                       </span>
                     </div>
-                    <div className="w-full h-8 bg-zinc-800 rounded-lg overflow-hidden">
+                    <div className="w-full h-8 bg-muted rounded-lg overflow-hidden">
                       <div
                         className={`h-full ${getProgressColor()} transition-all`}
                         style={{
@@ -255,57 +255,57 @@ export default function BudgetDetailPage() {
           </Card>
 
           {/* Budget Details */}
-          <Card className="bg-zinc-900 border-zinc-800 p-6">
-            <h2 className="text-xl font-semibold text-white mb-4">
+          <Card className="bg-card border-border p-6">
+            <h2 className="text-xl font-semibold text-foreground mb-4">
               Budget Details
             </h2>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-sm text-zinc-400">Department</label>
+                <label className="text-sm text-muted-foreground">Department</label>
                 <div className="flex items-center gap-2 mt-2">
-                  <Building2 className="w-4 h-4 text-zinc-500" />
-                  <p className="text-white">{budget.department?.name || "N/A"}</p>
+                  <Building2 className="w-4 h-4 text-muted-foreground" />
+                  <p className="text-foreground">{budget.department?.name || "N/A"}</p>
                 </div>
               </div>
               <div>
-                <label className="text-sm text-zinc-400">Category</label>
+                <label className="text-sm text-muted-foreground">Category</label>
                 <div className="flex items-center gap-2 mt-2">
-                  <Tag className="w-4 h-4 text-zinc-500" />
-                  <p className="text-white">
+                  <Tag className="w-4 h-4 text-muted-foreground" />
+                  <p className="text-foreground">
                     {budget.category?.name || "All Categories"}
                   </p>
                 </div>
               </div>
               <div>
-                <label className="text-sm text-zinc-400">Fiscal Period</label>
-                <p className="text-white mt-2">{budget.fiscalPeriod}</p>
+                <label className="text-sm text-muted-foreground">Fiscal Period</label>
+                <p className="text-foreground mt-2">{budget.fiscalPeriod}</p>
               </div>
               <div>
-                <label className="text-sm text-zinc-400">Enforcement Type</label>
-                <p className="text-white mt-2 capitalize">
+                <label className="text-sm text-muted-foreground">Enforcement Type</label>
+                <p className="text-foreground mt-2 capitalize">
                   {budget.enforcementType}
                 </p>
               </div>
               <div>
-                <label className="text-sm text-zinc-400">Start Date</label>
+                <label className="text-sm text-muted-foreground">Start Date</label>
                 <div className="flex items-center gap-2 mt-2">
-                  <Calendar className="w-4 h-4 text-zinc-500" />
-                  <p className="text-white">
+                  <Calendar className="w-4 h-4 text-muted-foreground" />
+                  <p className="text-foreground">
                     {new Date(budget.startDate).toLocaleDateString()}
                   </p>
                 </div>
               </div>
               <div>
-                <label className="text-sm text-zinc-400">End Date</label>
+                <label className="text-sm text-muted-foreground">End Date</label>
                 <div className="flex items-center gap-2 mt-2">
-                  <Calendar className="w-4 h-4 text-zinc-500" />
-                  <p className="text-white">
+                  <Calendar className="w-4 h-4 text-muted-foreground" />
+                  <p className="text-foreground">
                     {new Date(budget.endDate).toLocaleDateString()}
                   </p>
                 </div>
               </div>
               <div>
-                <label className="text-sm text-zinc-400">Status</label>
+                <label className="text-sm text-muted-foreground">Status</label>
                 <div className="mt-2">
                   {budget.isActive ? (
                     <Badge
@@ -325,7 +325,7 @@ export default function BudgetDetailPage() {
                 </div>
               </div>
               <div>
-                <label className="text-sm text-zinc-400">Current Health</label>
+                <label className="text-sm text-muted-foreground">Current Health</label>
                 <div className="mt-2">
                   {isOverBudget ? (
                     <Badge
@@ -357,8 +357,8 @@ export default function BudgetDetailPage() {
 
         {/* Threshold Alerts */}
         <div className="space-y-6">
-          <Card className="bg-zinc-900 border-zinc-800 p-6">
-            <h2 className="text-xl font-semibold text-white mb-4">
+          <Card className="bg-card border-border p-6">
+            <h2 className="text-xl font-semibold text-foreground mb-4">
               Alert Thresholds
             </h2>
             <div className="space-y-3">
@@ -378,7 +378,7 @@ export default function BudgetDetailPage() {
                           : threshold.percentage >= 80
                           ? "bg-yellow-500/10 border-yellow-500/30"
                           : "bg-blue-500/10 border-blue-500/30"
-                        : "bg-zinc-800 border-zinc-700"
+                        : "bg-muted border-border"
                     }`}
                   >
                     <div className="flex items-center justify-between mb-1">
@@ -392,7 +392,7 @@ export default function BudgetDetailPage() {
                               : threshold.percentage >= 80
                               ? "text-yellow-500"
                               : "text-blue-500"
-                            : "text-zinc-400"
+                            : "text-muted-foreground"
                         }`}
                       >
                         {threshold.level}
@@ -412,10 +412,10 @@ export default function BudgetDetailPage() {
                       )}
                     </div>
                     <div className="flex items-center justify-between text-xs">
-                      <span className={isActive ? "text-white" : "text-zinc-500"}>
+                      <span className={isActive ? "text-foreground" : "text-muted-foreground"}>
                         {threshold.percentage}% threshold
                       </span>
-                      <span className={isActive ? "text-white" : "text-zinc-500"}>
+                      <span className={isActive ? "text-foreground" : "text-muted-foreground"}>
                         ${Number(threshold.amount).toFixed(2)}
                       </span>
                     </div>
@@ -426,9 +426,9 @@ export default function BudgetDetailPage() {
           </Card>
 
           {budget.notes && (
-            <Card className="bg-zinc-900 border-zinc-800 p-6">
-              <h2 className="text-xl font-semibold text-white mb-4">Notes</h2>
-              <p className="text-zinc-300 text-sm leading-relaxed">
+            <Card className="bg-card border-border p-6">
+              <h2 className="text-xl font-semibold text-foreground mb-4">Notes</h2>
+              <p className="text-muted-foreground text-sm leading-relaxed">
                 {budget.notes}
               </p>
             </Card>
@@ -438,3 +438,4 @@ export default function BudgetDetailPage() {
     </div>
   );
 }
+
