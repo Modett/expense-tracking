@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/select";
 import { ArrowLeft } from "lucide-react";
 import { useEffect } from "react";
+import { withAdminGuard } from "@/hooks/with-admin-guard";
 
 const updateTagSchema = z.object({
   name: z.string().min(1, "Tag name is required"),
@@ -26,7 +27,7 @@ const updateTagSchema = z.object({
 
 type UpdateTagFormData = z.infer<typeof updateTagSchema>;
 
-export default function EditTagPage() {
+function EditTagPage() {
   const router = useRouter();
   const params = useParams();
   const tagId = params.id as string;
@@ -175,4 +176,6 @@ export default function EditTagPage() {
     </div>
   );
 }
+
+export default withAdminGuard(EditTagPage, { title: "Edit Tag" });
 

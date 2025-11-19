@@ -17,6 +17,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ArrowLeft } from "lucide-react";
+import { withAdminGuard } from "@/hooks/with-admin-guard";
 
 const createTagSchema = z.object({
   name: z.string().min(1, "Tag name is required"),
@@ -25,7 +26,7 @@ const createTagSchema = z.object({
 
 type CreateTagFormData = z.infer<typeof createTagSchema>;
 
-export default function CreateTagPage() {
+function CreateTagPage() {
   const router = useRouter();
   const createTagMutation = useCreateTag();
 
@@ -130,4 +131,6 @@ export default function CreateTagPage() {
     </div>
   );
 }
+
+export default withAdminGuard(CreateTagPage, { title: "Add Tag" });
 

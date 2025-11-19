@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ArrowLeft } from "lucide-react";
+import { withAdminGuard } from "@/hooks/with-admin-guard";
 
 const createDepartmentSchema = z.object({
   name: z.string().min(1, "Department name is required"),
@@ -20,7 +21,7 @@ const createDepartmentSchema = z.object({
 
 type CreateDepartmentFormData = z.infer<typeof createDepartmentSchema>;
 
-export default function CreateDepartmentPage() {
+function CreateDepartmentPage() {
   const router = useRouter();
   const createDepartmentMutation = useCreateDepartment();
 
@@ -125,4 +126,6 @@ export default function CreateDepartmentPage() {
     </div>
   );
 }
+
+export default withAdminGuard(CreateDepartmentPage, { title: "Add Department" });
 

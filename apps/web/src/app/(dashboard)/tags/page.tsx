@@ -6,6 +6,7 @@ import { useTags, useActivateTag, useDeactivateTag, useDeleteTag, TagTypeEnum } 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { withAdminGuard } from "@/hooks/with-admin-guard";
 import {
   Dialog,
   DialogContent,
@@ -31,7 +32,7 @@ import {
 } from "@/components/ui/select";
 import { Plus, Edit, Trash2, CheckCircle2, XCircle, Tag as TagIcon } from "lucide-react";
 
-export default function TagsPage() {
+function TagsPage() {
   const [typeFilter, setTypeFilter] = useState<TagTypeEnum | "all">("all");
   const { data: tags, isLoading } = useTags(typeFilter === "all" ? undefined : { type: typeFilter });
   const activateTagMutation = useActivateTag();
@@ -238,4 +239,6 @@ export default function TagsPage() {
     </div>
   );
 }
+
+export default withAdminGuard(TagsPage, { title: "Tags" });
 

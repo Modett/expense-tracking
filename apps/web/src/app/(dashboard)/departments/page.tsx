@@ -6,6 +6,7 @@ import { useDepartments, useActivateDepartment, useDeactivateDepartment, useDele
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { withAdminGuard } from "@/hooks/with-admin-guard";
 import {
   Dialog,
   DialogContent,
@@ -24,7 +25,7 @@ import {
 } from "@/components/ui/table";
 import { Plus, Edit, Trash2, CheckCircle2, XCircle, Building } from "lucide-react";
 
-export default function DepartmentsPage() {
+function DepartmentsPage() {
   const { data: departments, isLoading } = useDepartments();
   const activateDepartmentMutation = useActivateDepartment();
   const deactivateDepartmentMutation = useDeactivateDepartment();
@@ -223,4 +224,4 @@ export default function DepartmentsPage() {
   );
 }
 
-
+export default withAdminGuard(DepartmentsPage, { title: "Departments" });

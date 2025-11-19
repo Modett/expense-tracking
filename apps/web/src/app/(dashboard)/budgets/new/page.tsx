@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ArrowLeft } from "lucide-react";
+import { withAdminGuard } from "@/hooks/with-admin-guard";
 
 const createBudgetSchema = z.object({
   departmentId: z.union([z.string().uuid(), z.literal(""), z.null(), z.undefined()]).transform(val => val || null),
@@ -39,7 +40,7 @@ type CreateBudgetFormData = z.infer<typeof createBudgetSchema>;
 const CATEGORY_ALL_VALUE = "__ALL__";
 const ORG_LEVEL_VALUE = "__ORG_WIDE__";
 
-export default function CreateBudgetPage() {
+function CreateBudgetPage() {
   const router = useRouter();
   const { data: departments } = useDepartments();
   const { data: categories } = useCategories();
@@ -321,4 +322,6 @@ export default function CreateBudgetPage() {
     </div>
   );
 }
+
+export default withAdminGuard(CreateBudgetPage, { title: "Create Budget" });
 
