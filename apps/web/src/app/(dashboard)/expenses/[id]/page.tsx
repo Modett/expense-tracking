@@ -38,6 +38,7 @@ import {
   ExternalLink,
   Calendar,
   DollarSign,
+  UserCircle,
 } from "lucide-react";
 import { format } from "date-fns";
 
@@ -227,6 +228,25 @@ export default function ExpenseDetailPage() {
                   <p className="text-sm text-zinc-400">Total Amount</p>
                   <p className="text-2xl font-bold text-white">
                     ${expense.totalAmount.toFixed(2)}
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-zinc-900 border-zinc-800">
+            <CardContent className="p-6">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="h-10 w-10 rounded-full bg-emerald-500/20 flex items-center justify-center">
+                  <UserCircle className="h-5 w-5 text-emerald-300" />
+                </div>
+                <div>
+                  <p className="text-sm text-zinc-400">Submitted By</p>
+                  <p className="text-lg font-semibold text-white">
+                    {expense.user?.name || "Unknown submitter"}
+                  </p>
+                  <p className="text-xs text-zinc-500">
+                    {expense.user?.email || `User ID: ${expense.userId}`}
                   </p>
                 </div>
               </div>
