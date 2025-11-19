@@ -5,6 +5,8 @@ export const updateBudgetParamsSchema = z.object({
 });
 
 export const updateBudgetBodySchema = z.object({
+  departmentId: z.string().uuid().nullable().optional(),
+  categoryId: z.string().uuid().nullable().optional(),
   budgetAmount: z.number().positive().optional(),
   enforcementType: z.enum(["soft", "hard"]).optional(),
   overrideAllowed: z.boolean().optional(),

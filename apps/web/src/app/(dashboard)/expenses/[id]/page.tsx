@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import {
@@ -9,6 +9,7 @@ import {
   useSubmitExpense,
   useCancelExpense,
 } from "@/features/expenses";
+import { useTags } from "@/features/tags";
 import {
   ExpenseStatusEnum,
   ExpensePriorityEnum,
@@ -49,6 +50,15 @@ export default function ExpenseDetailPage() {
   const { mutate: deleteExpense, isPending: isDeleting } = useDeleteExpense();
   const { mutate: submitExpense, isPending: isSubmitting } = useSubmitExpense();
   const { mutate: cancelExpense, isPending: isCancelling } = useCancelExpense();
+  const { data: tags, isLoading: tagsLoading } = useTags();
+
+  const expenseTags = useMemo(() => {
+    if (!expense?.tagIds?.length || !tags?.length) return [];
+    const byId = new Map(tags.map((tag) => [tag.tagId, tag]));
+    return expense.tagIds
+      .map((tagId) => byId.get(tagId))
+      .filter((tag): tag is NonNullable<typeof tag> => Boolean(tag));
+  }, [expense?.tagIds, tags]);
 
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showSubmitDialog, setShowSubmitDialog] = useState(false);
@@ -288,6 +298,32 @@ export default function ExpenseDetailPage() {
                   <Badge className="bg-purple-500/20 text-purple-400 border-0 mt-1">
                     {expense.department.name}
                   </Badge>
+                ) : (
+                  <p className="text-zinc-500 mt-1">-</p>
+                )}
+              </div>
+
+              <div>
+                <label className="text-sm text-zinc-400">Tags</label>
+                {tagsLoading ? (
+                  <p className="text-zinc-500 mt-1">Loading tags...</p>
+                ) : expense.tagIds && expense.tagIds.length > 0 ? (
+                  expenseTags.length > 0 ? (
+                    <div className="flex flex-wrap gap-2 mt-1">
+                      {expenseTags.map((tag) => (
+                        <Badge
+                          key={tag.tagId}
+                          className="bg-cyan-500/20 text-cyan-300 border-0"
+                        >
+                          {tag.name}
+                        </Badge>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-zinc-500 mt-1">
+                      Tags not available. They might have been removed.
+                    </p>
+                  )
                 ) : (
                   <p className="text-zinc-500 mt-1">-</p>
                 )}

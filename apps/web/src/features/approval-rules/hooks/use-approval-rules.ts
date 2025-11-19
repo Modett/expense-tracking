@@ -87,10 +87,11 @@ export function useUpdateApprovalRule() {
       ruleId: string;
       data: UpdateApprovalRuleRequest;
     }) => approvalRulesApi.update(ruleId, data),
-    onSuccess: (data) => {
+    onSuccess: (data, variables) => {
+      const targetRuleId = data.ruleId || variables.ruleId;
       queryClient.invalidateQueries({ queryKey: queryKeys.approvalRules.all });
       queryClient.invalidateQueries({
-        queryKey: queryKeys.approvalRules.detail(data.ruleId),
+        queryKey: queryKeys.approvalRules.detail(targetRuleId),
       });
       toast({
         title: "Rule updated",

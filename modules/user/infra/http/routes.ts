@@ -77,7 +77,7 @@ export async function registerUserRoutes(
     },
     config: {
       rateLimit: {
-        max: 10,
+        max: 50,
         timeWindow: "15 minutes",
       },
     },
@@ -169,6 +169,36 @@ export async function registerUserRoutes(
     },
     handler: async (request: FastifyRequest, reply: FastifyReply) =>
       authController.changePassword(request as any, reply),
+  });
+
+  app.put("/auth/profile", {
+    schema: {
+      tags: ["Auth"],
+      summary: "Update own profile (name and email)",
+      security: [{ bearerAuth: [] }],
+      body: {
+        type: "object",
+        required: ["name", "email"],
+        properties: {
+          name: { type: "string", minLength: 2, maxLength: 100 },
+          email: { type: "string", format: "email" },
+        },
+      },
+      response: {
+        200: messageSchema,
+        400: errorSchema,
+        401: errorSchema,
+      },
+    },
+    onRequest: [authenticate],
+    config: {
+      rateLimit: {
+        max: 10,
+        timeWindow: "1 minute",
+      },
+    },
+    handler: async (request: FastifyRequest, reply: FastifyReply) =>
+      authController.updateProfile(request as any, reply),
   });
 
   // ==================== USER QUERY ROUTES ====================

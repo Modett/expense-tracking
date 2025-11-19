@@ -5,6 +5,7 @@ export const updateApprovalRuleParamsSchema = z.object({
 });
 
 export const updateApprovalRuleBodySchema = z.object({
+  categoryId: z.string().uuid().optional(),
   minAmount: z.number().nonnegative().optional(),
   approverRole: z.enum(["staff", "manager", "finance", "admin"]).optional(),
   approvalOrder: z.number().int().positive().optional(),

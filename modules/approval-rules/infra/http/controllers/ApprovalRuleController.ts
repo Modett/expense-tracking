@@ -131,6 +131,7 @@ export class ApprovalRuleController {
 
       const command = new UpdateApprovalRuleCommand(
         validatedParams.id,
+        validatedBody.categoryId,
         validatedBody.minAmount,
         validatedBody.approverRole,
         validatedBody.approvalOrder

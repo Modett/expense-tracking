@@ -15,16 +15,23 @@ import {
   Menu,
   X,
   LogOut,
+  Wallet,
+  Store,
+  ShieldCheck,
 } from "lucide-react";
 import { useAuth } from "@/providers/auth-provider";
 import { useLogout } from "@/features/auth";
+import { RoleEnum } from "@/types/common.types";
 
 const navigation = [
   { name: "Home", href: "/", icon: Home },
   { name: "Expenses", href: "/expenses", icon: Receipt },
+  { name: "Budgets", href: "/budgets", icon: Wallet },
+  { name: "Vendors", href: "/vendors", icon: Store },
   { name: "Categories", href: "/categories", icon: Layers3 },
   { name: "Departments", href: "/departments", icon: Building2 },
   { name: "Approvals", href: "/approvals", icon: CheckCircle },
+  { name: "Approval Rules", href: "/approval-rules", icon: ShieldCheck },
   { name: "Settings", href: "/settings", icon: Settings },
 ];
 
@@ -37,6 +44,22 @@ export default function DashboardLayout({
   const { user } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const logoutMutation = useLogout();
+  const normalizedRole =
+    typeof user?.role === "string" ? user.role.toLowerCase() : undefined;
+  const isAdmin = normalizedRole === RoleEnum.ADMIN;
+  const adminOnlyLinks = new Set([
+    "Budgets",
+    "Vendors",
+    "Categories",
+    "Departments",
+    "Approval Rules",
+  ]);
+  const visibleNavigation = navigation.filter((item) => {
+    if (!isAdmin && adminOnlyLinks.has(item.name)) {
+      return false;
+    }
+    return true;
+  });
 
   return (
     <div className="flex h-screen bg-zinc-950">
@@ -86,7 +109,7 @@ export default function DashboardLayout({
 
           {/* Navigation */}
           <nav className="flex-1 space-y-1 px-4 py-6">
-            {navigation.map((item) => {
+            {visibleNavigation.map((item) => {
               const isActive =
                 pathname === item.href || pathname.startsWith(item.href + "/");
               return (

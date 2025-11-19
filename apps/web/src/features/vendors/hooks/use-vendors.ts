@@ -19,7 +19,7 @@ export function useVendor(vendorId: string) {
   });
 }
 
-export function useCreateVendor() {
+export function useCreateVendor(options?: { skipNavigation?: boolean }) {
   const queryClient = useQueryClient();
   const router = useRouter();
 
@@ -31,7 +31,9 @@ export function useCreateVendor() {
         title: "Vendor created",
         description: "Vendor has been created successfully",
       });
-      router.push("/vendors");
+      if (!options?.skipNavigation) {
+        router.push("/vendors");
+      }
     },
     onError: (error: any) => {
       toast({

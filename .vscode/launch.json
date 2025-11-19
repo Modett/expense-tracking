@@ -28,6 +28,46 @@
       "cwd": "${workspaceFolder}",
       "restart": true,
       "sourceMaps": true
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "🌐 Debug Next.js Frontend",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev"],
+      "env": {
+        "NODE_ENV": "development"
+      },
+      "console": "integratedTerminal",
+      "skipFiles": [
+        "<node_internals>/**",
+        "**/node_modules/**",
+        "**/.next/**",
+        "**/out/**"
+      ],
+      "cwd": "${workspaceFolder}/apps/web",
+      "restart": true,
+      "sourceMaps": true
+    },
+    {
+      "type": "chrome",
+      "request": "launch",
+      "name": "🔍 Debug Frontend in Chrome",
+      "url": "http://localhost:3000",
+      "webRoot": "${workspaceFolder}/apps/web/src",
+      "sourceMaps": true,
+      "sourceMapPathOverrides": {
+        "webpack://_N_E/*": "${workspaceFolder}/apps/web/*"
+      },
+      "skipFiles": ["**/node_modules/**", "**/.next/**"]
+    },
+    {
+      "type": "node",
+      "request": "attach",
+      "name": "🔗 Attach to Next.js",
+      "port": 9229,
+      "restart": true,
+      "skipFiles": ["<node_internals>/**", "**/node_modules/**"]
     }
   ]
 }

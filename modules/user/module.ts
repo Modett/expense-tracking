@@ -120,7 +120,8 @@ export async function registerUserModule(
     loginHandler,
     changePasswordHandler,
     refreshTokenHandler,
-    logoutHandler
+    logoutHandler,
+    updateProfileHandler
   );
 
   const userController = new UserController(

@@ -4,7 +4,7 @@ import { ExpenseId } from "../../domain/value-objects/ExpenseId.js";
 import type { IBudgetQueryRepository } from "../../../budget/domain/repositories/IBudgetQueryRepository.js";
 import type { IBudgetCommandRepository } from "../../../budget/domain/repositories/IBudgetCommandRepository.js";
 import { DepartmentId as BudgetDepartmentId } from "../../../budget/domain/value-objects/DepartmentId.js";
-import { FiscalPeriod } from "../../../budget/domain/value-objects/FiscalPeriod.js";
+import { CategoryId as BudgetCategoryId } from "../../../budget/domain/value-objects/CategoryId.js";
 
 export class ExpenseOrchestrationService {
   constructor(
@@ -57,56 +57,71 @@ export class ExpenseOrchestrationService {
     }
 
     try {
-      const budgetDepartmentId = BudgetDepartmentId.fromString(
-        expense.departmentId.getValue()
+      const expenseDate = expense.dateOfExpense.getValue();
+      const expenseAmount = expense.amount.getTotalValue();
+      const expenseCategoryId = BudgetCategoryId.fromString(
+        expense.categoryId.getValue()
       );
 
-      // Get all active budgets for the department
-      const budgets = await this.budgetQueryRepo.findByDepartmentId(
-        budgetDepartmentId
-      );
+      const hasDepartment =
+        typeof expense.hasDepartment === "function"
+          ? expense.hasDepartment()
+          : Boolean(expense.departmentId);
+
+      let budgets: any[] = [];
+
+      if (hasDepartment && expense.departmentId) {
+        const budgetDepartmentId = BudgetDepartmentId.fromString(
+          expense.departmentId.getValue()
+        );
+        budgets = await this.budgetQueryRepo.findByDepartmentId(
+          budgetDepartmentId
+        );
+      } else {
+        budgets = await this.budgetQueryRepo.findByCategoryId(
+          expenseCategoryId
+        );
+        // Only consider organization-wide budgets (no department) for dept-less expenses
+        budgets = budgets.filter((budget) => !budget.departmentId);
+      }
 
       if (!budgets || budgets.length === 0) {
         console.warn(
-          `[ExpenseOrchestration] No budgets found for department ${budgetDepartmentId.getValue()}`
+          "[ExpenseOrchestration] No budgets found for expense context (department/category)"
         );
         return;
       }
 
-      // Find an active budget that contains the expense date
-      const expenseDate = expense.dateOfExpense.getValue();
-      console.log(
-        `[ExpenseOrchestration] Looking for active budget for date: ${expenseDate.toISOString()}`
-      );
-
-      const activeBudget = budgets.find((budget: any) => {
+      const activeBudgets = budgets.filter((budget: any) => {
         const budgetPeriod = budget.period;
         const startDate = budgetPeriod.getStartDate();
         const endDate = budgetPeriod.getEndDate();
 
-        console.log(
-          `[ExpenseOrchestration] Checking budget ${budget.id.getValue()}: isActive=${
-            budget.isActive
-          }, period=${startDate.toISOString()} to ${endDate.toISOString()}`
-        );
+        const inPeriod =
+          budget.isActive &&
+          expenseDate >= startDate &&
+          expenseDate <= endDate;
 
-        return (
-          budget.isActive && expenseDate >= startDate && expenseDate <= endDate
-        );
+        if (!inPeriod) return false;
+
+        if (budget.categoryId) {
+          return budget.belongsToCategory(expenseCategoryId);
+        }
+
+        return true;
       });
 
-      if (!activeBudget) {
+      if (activeBudgets.length === 0) {
         console.warn(
-          `[ExpenseOrchestration] No active budget found for department ${budgetDepartmentId.getValue()} covering date ${expenseDate.toISOString()}`
+          "[ExpenseOrchestration] No active matching budget found for expense"
         );
         return;
       }
 
-      // Add the expense amount to the budget spent
-      const expenseAmount = expense.amount.getTotalValue();
-      console.log(
-        `[ExpenseOrchestration] Adding ${expenseAmount} to budget ${activeBudget.id.getValue()} (Period: ${activeBudget.fiscalPeriod.getValue()})`
+      const categorySpecificBudget = activeBudgets.find(
+        (budget) => budget.categoryId !== null
       );
+      const activeBudget = categorySpecificBudget || activeBudgets[0];
 
       activeBudget.addSpent(expenseAmount);
       await this.budgetCommandRepo.save(activeBudget);

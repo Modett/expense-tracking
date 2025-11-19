@@ -4,7 +4,12 @@ import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useRecentExpenses, useTeamSpending, useExpensesByCategory, type RecentExpenseItem } from "@/features/dashboard";
+import {
+  useRecentExpenses,
+  useTeamSpending,
+  useExpensesByCategory,
+  type RecentExpenseItem,
+} from "@/features/dashboard";
 import { useAuth } from "@/providers/auth-provider";
 import { useApprovalDashboard } from "@/features/approvals";
 import { useExpenseAggregations } from "@/features/expenses";
@@ -22,13 +27,26 @@ import {
   Building2,
 } from "lucide-react";
 import Link from "next/link";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  Legend,
+} from "recharts";
 import { formatCurrency } from "@/lib/utils";
 import { toast } from "@/components/ui/use-toast";
+import { RoleEnum } from "@/types/common.types";
 
 export default function DashboardPage() {
   const [mounted, setMounted] = useState(false);
   const { user } = useAuth();
+  const normalizedRole =
+    typeof user?.role === "string" ? user.role.toLowerCase() : undefined;
+  const isStaff = normalizedRole === RoleEnum.STAFF;
   const [isDownloadingReport, setIsDownloadingReport] = useState(false);
 
   const currentRange = useMemo(() => {
@@ -40,26 +58,40 @@ export default function DashboardPage() {
     };
   }, []);
 
-  const { data: expenseAggregations, isLoading: expenseAggregationsLoading } = useExpenseAggregations(
-    { dateFrom: currentRange.startISO, dateTo: currentRange.endISO, groupBy: ["department"] },
-    { enabled: true }
-  );
+  const { data: expenseAggregations, isLoading: expenseAggregationsLoading } =
+    useExpenseAggregations(
+      {
+        dateFrom: currentRange.startISO,
+        dateTo: currentRange.endISO,
+        groupBy: ["department"],
+      },
+      { enabled: true }
+    );
   const totalExpensesAmount = useMemo(
-    () => expenseAggregations?.reduce((sum, agg) => sum + agg.totalAmount, 0) ?? 0,
+    () =>
+      expenseAggregations?.reduce((sum, agg) => sum + agg.totalAmount, 0) ?? 0,
     [expenseAggregations]
   );
 
-  const { data: approvalsDashboard, isLoading: approvalsDashboardLoading } = useApprovalDashboard();
+  const { data: approvalsDashboard, isLoading: approvalsDashboardLoading } =
+    useApprovalDashboard();
   const pendingApprovalTasks = useMemo(
     () => (approvalsDashboard?.myPendingApprovals ?? []).slice(0, 4),
     [approvalsDashboard]
   );
   const pendingApprovalsCount =
-    approvalsDashboard?.pendingCount ?? approvalsDashboard?.summary?.totalPending ?? 0;
+    approvalsDashboard?.pendingCount ??
+    approvalsDashboard?.summary?.totalPending ??
+    0;
 
-  const { data: recentExpenses, isLoading: expensesLoading } = useRecentExpenses(5, { enabled: true });
-  const { data: teamSpending, isLoading: teamLoading } = useTeamSpending("monthly", { enabled: false });
-  const { data: categoryExpenses, isLoading: categoryLoading } = useExpensesByCategory("monthly", { enabled: false });
+  const { data: recentExpenses, isLoading: expensesLoading } =
+    useRecentExpenses(5, { enabled: true });
+  const { data: teamSpending, isLoading: teamLoading } = useTeamSpending(
+    "monthly",
+    { enabled: false }
+  );
+  const { data: categoryExpenses, isLoading: categoryLoading } =
+    useExpensesByCategory("monthly", { enabled: false });
   const { data: departments, isLoading: departmentsLoading } = useDepartments();
   const activeDepartmentsCount = useMemo(
     () => departments?.filter((dept) => dept.isActive).length ?? 0,
@@ -85,7 +117,7 @@ export default function DashboardPage() {
       const monthName = now.toLocaleString("default", { month: "long" });
       const blob = await expensesApi.downloadMonthlyReport({ month, year });
 
-      const url = window.URL.createObjectURL(new Blob([blob], { type: 'text/csv' }));
+      const url = window.URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
       link.download = `monthly-report-${monthName}-${year}.csv`;
@@ -113,8 +145,12 @@ export default function DashboardPage() {
       }
 
       // Check if it's a permission error
-      if (errorMessage.includes("Forbidden") || errorMessage.includes("Manager access required")) {
-        errorMessage = "You need Manager or Admin role to generate reports. Please contact your administrator.";
+      if (
+        errorMessage.includes("Forbidden") ||
+        errorMessage.includes("Manager access required")
+      ) {
+        errorMessage =
+          "You need Manager or Admin role to generate reports. Please contact your administrator.";
       }
 
       toast({
@@ -187,10 +223,16 @@ export default function DashboardPage() {
                   <div className="p-2 bg-yellow-500/10 rounded-lg">
                     <Clock className="w-5 h-5 text-yellow-500" />
                   </div>
-                  <span className="text-sm text-zinc-400">Pending Approvals</span>
+                  <span className="text-sm text-zinc-400">
+                    Pending Approvals
+                  </span>
                 </div>
-                <p className="text-2xl font-bold text-white">{pendingApprovalsCount}</p>
-                <p className="text-xs text-zinc-500 mt-1">Awaiting your action</p>
+                <p className="text-2xl font-bold text-white">
+                  {pendingApprovalsCount}
+                </p>
+                <p className="text-xs text-zinc-500 mt-1">
+                  Awaiting your action
+                </p>
               </>
             )}
           </CardContent>
@@ -208,7 +250,9 @@ export default function DashboardPage() {
                   </div>
                   <span className="text-sm text-zinc-400">Active Departments</span>
                 </div>
-                <p className="text-2xl font-bold text-white">{activeDepartmentsCount}</p>
+                <p className="text-2xl font-bold text-white">
+                  {activeDepartmentsCount}
+                </p>
                 <p className="text-xs text-zinc-500 mt-1">Currently active</p>
               </>
             )}
@@ -225,26 +269,36 @@ export default function DashboardPage() {
                   <div className="p-2 bg-blue-500/10 rounded-lg">
                     <FileText className="w-5 h-5 text-blue-500" />
                   </div>
-                  <span className="text-sm text-zinc-400">Active Categories</span>
+                  <span className="text-sm text-zinc-400">
+                    Active Categories
+                  </span>
                 </div>
-                <p className="text-2xl font-bold text-white">{activeCategoriesCount}</p>
-                <p className="text-xs text-zinc-500 mt-1">Available for expenses</p>
+                <p className="text-2xl font-bold text-white">
+                  {activeCategoriesCount}
+                </p>
+                <p className="text-xs text-zinc-500 mt-1">
+                  Available for expenses
+                </p>
               </>
             )}
           </CardContent>
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-6">
         {/* Pending Tasks */}
-        <Card className="bg-zinc-900 border-zinc-800 col-span-1 lg:col-span-2">
+        <Card className="bg-zinc-900 border-zinc-800 col-span-1 xl:col-span-2">
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle className="text-white font-semibold text-lg">
                 Pending Tasks
               </CardTitle>
               <Link href="/approvals">
-                <Button variant="ghost" size="sm" className="text-zinc-400 hover:text-white">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-zinc-400 hover:text-white"
+                >
                   View All
                 </Button>
               </Link>
@@ -254,17 +308,32 @@ export default function DashboardPage() {
             {pendingApprovalTasks.length > 0 ? (
               pendingApprovalTasks.map((task) => (
                 <Link key={task.approvalId} href={`/approvals/${task.approvalId}`}>
-                  <div className="flex items-center justify-between p-3 rounded-lg bg-zinc-800/50 hover:bg-zinc-800 transition-colors">
-                    <div>
+                  <div className="flex flex-col gap-3 p-3 rounded-lg bg-zinc-800/50 hover:bg-zinc-800 transition-colors md:flex-row md:items-center md:justify-between">
+                    <div className="flex flex-col gap-1">
                       <p className="text-sm font-medium text-white">
                         {task.expenseDescription || "Expense approval"}
                       </p>
-                      <p className="text-xs text-zinc-500">
-                        {task.priority?.toUpperCase()} � {new Date(task.submittedAt).toLocaleDateString()}
-                      </p>
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:gap-2 text-xs text-zinc-500">
+                        <span className="uppercase tracking-wide">
+                          {task.priority?.toUpperCase() || "STANDARD"}
+                        </span>
+                        <span className="hidden sm:inline">•</span>
+                        <span>{new Date(task.submittedAt).toLocaleDateString()}</span>
+                      </div>
                     </div>
-                    <div className="text-sm font-semibold text-white">
-                      {formatCurrency(task.expenseAmount || 0)}
+                    <div className="flex w-full justify-between items-center gap-4 text-sm md:w-auto">
+                      <div className="text-right">
+                        <p className="text-zinc-500 text-xs uppercase">Amount</p>
+                        <p className="text-white font-semibold">
+                          {formatCurrency(task.expenseAmount || 0)}
+                        </p>
+                      </div>
+                      <div className="text-right text-xs text-zinc-400 md:text-sm">
+                        <p className="uppercase text-[10px] tracking-wide">Status</p>
+                        <p className="text-white">
+                          {task.status?.toLowerCase() ?? "pending"}
+                        </p>
+                      </div>
                     </div>
                   </div>
                 </Link>
@@ -275,68 +344,6 @@ export default function DashboardPage() {
               </div>
             )}
           </CardContent>        </Card>
-
-        {/* Recent Expenses */}
-        <Card className="bg-zinc-900 border-zinc-800">
-          <CardHeader>
-            <CardTitle className="text-white font-semibold text-lg">
-              Recent Expenses
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {expensesLoading ? (
-              <div className="space-y-3">
-                <Skeleton className="h-20 bg-zinc-800" />
-                <Skeleton className="h-20 bg-zinc-800" />
-                <Skeleton className="h-20 bg-zinc-800" />
-              </div>
-            ) : (
-              <div className="space-y-3">
-                <div className="grid grid-cols-4 gap-2 text-xs text-zinc-400 pb-2 border-b border-zinc-800">
-                  <div>Subject</div>
-                  <div>Employee</div>
-                  <div>Team</div>
-                  <div className="text-right">Amount</div>
-                </div>
-                {recentExpenses && recentExpenses.length > 0 ? (
-                  recentExpenses.map((expense: RecentExpenseItem) => (
-                    <div
-                      key={expense.expenseId}
-                      className="grid grid-cols-4 gap-2 text-sm items-center hover:bg-zinc-800/50 p-2 rounded-lg transition-colors"
-                    >
-                      <div className="text-white truncate">
-                        {expense.description}
-                      </div>
-                      <div className="text-zinc-400 truncate">
-                        {expense.user?.name || "N/A"}
-                      </div>
-                      <div>
-                        <span
-                          className={`px-2 py-1 rounded-full text-xs ${
-                            expense.department?.name === "Marketing"
-                              ? "bg-purple-500/20 text-purple-400"
-                              : expense.department?.name === "Operations"
-                                ? "bg-pink-500/20 text-pink-400"
-                                : "bg-cyan-500/20 text-cyan-400"
-                          }`}
-                        >
-                          {expense.department?.name || "N/A"}
-                        </span>
-                      </div>
-                      <div className="text-white text-right font-medium">
-                        ${expense.totalAmount.toFixed(2)}
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <div className="text-center text-sm text-zinc-400 py-6">
-                    No expenses recorded yet.
-                  </div>
-                )}
-              </div>
-            )}
-          </CardContent>
-        </Card>
       </div>
 
       {/* Quick Access */}
@@ -347,7 +354,7 @@ export default function DashboardPage() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid gap-4 grid-cols-2 md:grid-cols-4">
             <Link href="/expenses/new">
               <Button
                 variant="ghost"
@@ -485,9 +492,4 @@ export default function DashboardPage() {
     </div>
   );
 }
-
-
-
-
-
 

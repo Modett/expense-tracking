@@ -190,7 +190,7 @@ model Tag {
 model Expense {
   expenseId          String                    @id @default(dbgenerated("gen_random_uuid()")) @map("expense_id") @db.Uuid
   userId             String                    @map("user_id") @db.Uuid
-  vendorId           String                    @map("vendor_id") @db.Uuid
+  vendorId           String?                   @map("vendor_id") @db.Uuid
   categoryId         String                    @map("category_id") @db.Uuid
   departmentId       String?                   @map("department_id") @db.Uuid
   description        String
@@ -211,7 +211,7 @@ model Expense {
 
   // Relations
   user          User            @relation(fields: [userId], references: [userId])
-  vendor        Vendor          @relation(fields: [vendorId], references: [vendorId])
+  vendor        Vendor?         @relation(fields: [vendorId], references: [vendorId])
   category      Category        @relation(fields: [categoryId], references: [categoryId])
   department    Department?     @relation(fields: [departmentId], references: [departmentId])
   purchaseOrder PurchaseOrder?  @relation(fields: [linkedPoId], references: [poId])

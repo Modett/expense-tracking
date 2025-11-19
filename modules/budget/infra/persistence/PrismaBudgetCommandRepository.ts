@@ -18,6 +18,8 @@ export class PrismaBudgetCommandRepository implements IBudgetCommandRepository {
       warningThreshold2: plainObject.thresholds.warning2,
       criticalThreshold: plainObject.thresholds.critical,
       updatedAt: plainObject.updatedAt,
+      departmentId: plainObject.departmentId,
+      categoryId: plainObject.categoryId,
     };
 
     // Only include budgetAmount if it's defined
@@ -86,6 +88,8 @@ export class PrismaBudgetCommandRepository implements IBudgetCommandRepository {
             warningThreshold2: plainObject.thresholds.warning2,
             criticalThreshold: plainObject.thresholds.critical,
             updatedAt: plainObject.updatedAt,
+            departmentId: plainObject.departmentId,
+            categoryId: plainObject.categoryId,
           },
         });
       })

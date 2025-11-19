@@ -22,8 +22,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { ArrowLeft } from "lucide-react";
 
 const createBudgetSchema = z.object({
-  departmentId: z.string().uuid().optional().nullable(),
-  categoryId: z.string().optional().nullable(),
+  departmentId: z.union([z.string().uuid(), z.literal(""), z.null(), z.undefined()]).transform(val => val || null),
+  categoryId: z.union([z.string().uuid(), z.literal(""), z.null(), z.undefined()]).transform(val => val || null),
   budgetAmount: z.number().min(1, "Budget amount must be greater than 0"),
   fiscalPeriod: z.string().min(1, "Fiscal period is required"),
   startDate: z.string().min(1, "Start date is required"),

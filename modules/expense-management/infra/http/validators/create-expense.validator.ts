@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export const createExpenseBodySchema = z.object({
-  vendorId: z.string().uuid(),
+  vendorId: z.string().uuid().optional().nullable(),
   categoryId: z.string().uuid(),
   departmentId: z.string().uuid().optional().nullable(),
   description: z.string().min(1).max(1000),
@@ -19,6 +19,7 @@ export const createExpenseBodySchema = z.object({
     .optional()
     .default("none"),
   justification: z.string().min(10).max(2000).optional().nullable(),
+  tagIds: z.array(z.string().uuid()).optional().default([]),
 });
 
 export type CreateExpenseBody = z.infer<typeof createExpenseBodySchema>;

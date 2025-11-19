@@ -137,6 +137,8 @@ export class BudgetController {
 
       const command = new UpdateBudgetCommand(
         validatedParams.budgetId,
+        validatedBody.departmentId,
+        validatedBody.categoryId,
         validatedBody.budgetAmount,
         validatedBody.enforcementType,
         validatedBody.overrideAllowed,
