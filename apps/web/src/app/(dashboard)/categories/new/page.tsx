@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ArrowLeft } from "lucide-react";
+import { withAdminGuard } from "@/hooks/with-admin-guard";
 
 const createCategorySchema = z.object({
   name: z.string().min(1, "Category name is required"),
@@ -19,7 +20,7 @@ const createCategorySchema = z.object({
 
 type CreateCategoryFormData = z.infer<typeof createCategorySchema>;
 
-export default function CreateCategoryPage(): JSX.Element {
+function CreateCategoryPage(): JSX.Element {
   const router = useRouter();
   const createCategoryMutation = useCreateCategory();
 
@@ -112,4 +113,6 @@ export default function CreateCategoryPage(): JSX.Element {
     </div>
   );
 }
+
+export default withAdminGuard(CreateCategoryPage, { title: "Add Category" });
 

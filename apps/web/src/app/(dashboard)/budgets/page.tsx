@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { withAdminGuard } from "@/hooks/with-admin-guard";
 import {
   Dialog,
   DialogContent,
@@ -41,7 +42,7 @@ import {
   Wallet,
 } from "lucide-react";
 
-export default function BudgetsPage() {
+function BudgetsPage() {
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
   const [departmentFilter, setDepartmentFilter] = useState<string>("ALL");
   const [categoryFilter, setCategoryFilter] = useState<string>("ALL");
@@ -514,5 +515,5 @@ export default function BudgetsPage() {
   );
 }
 
-
+export default withAdminGuard(BudgetsPage, { title: "Budgets" });
 

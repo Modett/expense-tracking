@@ -17,6 +17,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ArrowLeft } from "lucide-react";
+import { withAdminGuard } from "@/hooks/with-admin-guard";
 
 const updateBudgetSchema = z.object({
   budgetAmount: z.number().min(1, "Budget amount must be greater than 0"),
@@ -37,7 +38,7 @@ const updateBudgetSchema = z.object({
 
 type UpdateBudgetFormData = z.infer<typeof updateBudgetSchema>;
 
-export default function EditBudgetPage() {
+function EditBudgetPage() {
   const router = useRouter();
   const params = useParams();
   const budgetId = params.id as string;
@@ -311,4 +312,6 @@ export default function EditBudgetPage() {
     </div>
   );
 }
+
+export default withAdminGuard(EditBudgetPage, { title: "Edit Budget" });
 

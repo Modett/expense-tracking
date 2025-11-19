@@ -1,9 +1,10 @@
-﻿"use client";
+"use client";
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { withAdminGuard } from "@/hooks/with-admin-guard";
 
-export default function SettingsRulesPage() {
+function SettingsRulesPage() {
   const router = useRouter();
 
   useEffect(() => {
@@ -17,3 +18,4 @@ export default function SettingsRulesPage() {
   );
 }
 
+export default withAdminGuard(SettingsRulesPage, { title: "Approval Rules" });

@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ArrowLeft } from "lucide-react";
 import { useEffect } from "react";
+import { withAdminGuard } from "@/hooks/with-admin-guard";
 
 const updateVendorSchema = z.object({
   name: z.string().min(1, "Vendor name is required"),
@@ -23,7 +24,7 @@ const updateVendorSchema = z.object({
 
 type UpdateVendorFormData = z.infer<typeof updateVendorSchema>;
 
-export default function EditVendorPage() {
+function EditVendorPage() {
   const router = useRouter();
   const params = useParams();
   const vendorId = params.id as string;
@@ -210,4 +211,6 @@ export default function EditVendorPage() {
     </div>
   );
 }
+
+export default withAdminGuard(EditVendorPage, { title: "Edit Vendor" });
 

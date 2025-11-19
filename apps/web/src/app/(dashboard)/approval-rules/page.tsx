@@ -12,6 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { withAdminGuard } from "@/hooks/with-admin-guard";
 import {
   Table,
   TableBody,
@@ -44,7 +45,7 @@ import {
   Shield,
 } from "lucide-react";
 
-export default function ApprovalRulesPage() {
+function ApprovalRulesPage() {
   const [roleFilter, setRoleFilter] = useState<ApproverRoleEnum | "ALL">("ALL");
   const [activeFilter, setActiveFilter] = useState<string | "ALL">("ALL");
   const [togglingRuleId, setTogglingRuleId] = useState<string | null>(null);
@@ -387,4 +388,4 @@ export default function ApprovalRulesPage() {
   );
 }
 
-
+export default withAdminGuard(ApprovalRulesPage, { title: "Approval Rules" });

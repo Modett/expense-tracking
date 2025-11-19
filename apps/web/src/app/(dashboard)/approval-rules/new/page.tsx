@@ -18,6 +18,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ArrowLeft } from "lucide-react";
+import { withAdminGuard } from "@/hooks/with-admin-guard";
 
 const createRuleSchema = z.object({
   categoryId: z.string().min(1, "Category is required"),
@@ -28,7 +29,7 @@ const createRuleSchema = z.object({
 
 type CreateRuleFormData = z.infer<typeof createRuleSchema>;
 
-export default function CreateApprovalRulePage() {
+function CreateApprovalRulePage() {
   const router = useRouter();
   const { data: categories } = useCategories();
   const createRuleMutation = useCreateApprovalRule();
@@ -183,4 +184,6 @@ export default function CreateApprovalRulePage() {
     </div>
   );
 }
+
+export default withAdminGuard(CreateApprovalRulePage, { title: "Create Approval Rule" });
 

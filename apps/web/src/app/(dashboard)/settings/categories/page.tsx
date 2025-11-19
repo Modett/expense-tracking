@@ -6,6 +6,7 @@ import { useCategories, useActivateCategory, useDeactivateCategory, useDeleteCat
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { withAdminGuard } from "@/hooks/with-admin-guard";
 import {
   Dialog,
   DialogContent,
@@ -24,7 +25,7 @@ import {
 } from "@/components/ui/table";
 import { Plus, Edit, Trash2, CheckCircle2, XCircle, FolderOpen, ArrowLeft } from "lucide-react";
 
-export default function SettingsCategoriesPage() {
+function SettingsCategoriesPage() {
   const { data: categories, isLoading } = useCategories();
   const activateCategoryMutation = useActivateCategory();
   const deactivateCategoryMutation = useDeactivateCategory();
@@ -203,4 +204,6 @@ export default function SettingsCategoriesPage() {
     </div>
   );
 }
+
+export default withAdminGuard(SettingsCategoriesPage, { title: "Category Management" });
 

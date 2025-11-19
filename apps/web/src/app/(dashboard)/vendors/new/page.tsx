@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ArrowLeft } from "lucide-react";
+import { withAdminGuard } from "@/hooks/with-admin-guard";
 
 const createVendorSchema = z.object({
   name: z.string().min(1, "Vendor name is required"),
@@ -22,7 +23,7 @@ const createVendorSchema = z.object({
 
 type CreateVendorFormData = z.infer<typeof createVendorSchema>;
 
-export default function CreateVendorPage() {
+function CreateVendorPage() {
   const router = useRouter();
   const createVendorMutation = useCreateVendor();
 
@@ -162,4 +163,6 @@ export default function CreateVendorPage() {
     </div>
   );
 }
+
+export default withAdminGuard(CreateVendorPage, { title: "Add Vendor" });
 

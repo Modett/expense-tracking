@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ArrowLeft } from "lucide-react";
 import { useEffect } from "react";
+import { withAdminGuard } from "@/hooks/with-admin-guard";
 
 const updateDepartmentSchema = z.object({
   name: z.string().min(1, "Department name is required"),
@@ -21,7 +22,7 @@ const updateDepartmentSchema = z.object({
 
 type UpdateDepartmentFormData = z.infer<typeof updateDepartmentSchema>;
 
-export default function EditDepartmentPage() {
+function EditDepartmentPage() {
   const router = useRouter();
   const params = useParams();
   const departmentId = params.id as string;
@@ -171,4 +172,6 @@ export default function EditDepartmentPage() {
     </div>
   );
 }
+
+export default withAdminGuard(EditDepartmentPage, { title: "Edit Department" });
 

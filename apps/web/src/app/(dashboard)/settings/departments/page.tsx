@@ -2,8 +2,9 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { withAdminGuard } from "@/hooks/with-admin-guard";
 
-export default function SettingsDepartmentsPage() {
+function SettingsDepartmentsPage() {
   const router = useRouter();
 
   useEffect(() => {
@@ -16,4 +17,6 @@ export default function SettingsDepartmentsPage() {
     </div>
   );
 }
+
+export default withAdminGuard(SettingsDepartmentsPage, { title: "Departments" });
 

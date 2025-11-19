@@ -6,6 +6,7 @@ import { useVendors, useActivateVendor, useDeactivateVendor, useDeleteVendor } f
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { withAdminGuard } from "@/hooks/with-admin-guard";
 import {
   Dialog,
   DialogContent,
@@ -24,7 +25,7 @@ import {
 } from "@/components/ui/table";
 import { Plus, Edit, Trash2, CheckCircle2, XCircle, Building2 } from "lucide-react";
 
-export default function VendorsPage() {
+function VendorsPage() {
   const { data: vendors, isLoading } = useVendors();
   const activateVendorMutation = useActivateVendor();
   const deactivateVendorMutation = useDeactivateVendor();
@@ -201,4 +202,4 @@ export default function VendorsPage() {
   );
 }
 
-
+export default withAdminGuard(VendorsPage, { title: "Vendors" });

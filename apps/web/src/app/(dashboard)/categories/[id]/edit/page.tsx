@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ArrowLeft } from "lucide-react";
 import { useEffect } from "react";
+import { withAdminGuard } from "@/hooks/with-admin-guard";
 
 const updateCategorySchema = z.object({
   name: z.string().min(1, "Category name is required"),
@@ -20,7 +21,7 @@ const updateCategorySchema = z.object({
 
 type UpdateCategoryFormData = z.infer<typeof updateCategorySchema>;
 
-export default function EditCategoryPage() {
+function EditCategoryPage() {
   const router = useRouter();
   const params = useParams();
   const categoryId = params.id as string;
@@ -153,4 +154,6 @@ export default function EditCategoryPage() {
     </div>
   );
 }
+
+export default withAdminGuard(EditCategoryPage, { title: "Edit Category" });
 
