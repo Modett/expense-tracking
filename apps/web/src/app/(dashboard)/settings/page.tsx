@@ -69,13 +69,12 @@ export default function SettingsPage() {
   const { user } = useAuth();
   const logoutMutation = useLogout();
   const normalizedRole = user?.role?.toLowerCase() as RoleEnum | undefined;
+  const isAdmin = normalizedRole === RoleEnum.ADMIN;
 
   const availableLinks = useMemo(() => {
-    if (!normalizedRole) return [];
-    return managementLinks.filter(
-      (link) => !link.roles || link.roles.includes(normalizedRole)
-    );
-  }, [normalizedRole]);
+    if (!isAdmin) return [];
+    return managementLinks;
+  }, [isAdmin]);
 
   return (
     <div className="min-h-screen bg-zinc-950 p-6">

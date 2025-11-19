@@ -15,6 +15,8 @@ import {
   Menu,
   X,
   LogOut,
+  Wallet,
+  Store,
 } from "lucide-react";
 import { useAuth } from "@/providers/auth-provider";
 import { useLogout } from "@/features/auth";
@@ -23,6 +25,8 @@ import { RoleEnum } from "@/types/common.types";
 const navigation = [
   { name: "Home", href: "/", icon: Home },
   { name: "Expenses", href: "/expenses", icon: Receipt },
+  { name: "Budgets", href: "/budgets", icon: Wallet },
+  { name: "Vendors", href: "/vendors", icon: Store },
   { name: "Categories", href: "/categories", icon: Layers3 },
   { name: "Departments", href: "/departments", icon: Building2 },
   { name: "Approvals", href: "/approvals", icon: CheckCircle },
@@ -40,12 +44,10 @@ export default function DashboardLayout({
   const logoutMutation = useLogout();
   const normalizedRole =
     typeof user?.role === "string" ? user.role.toLowerCase() : undefined;
-  const isStaff = normalizedRole === RoleEnum.STAFF;
+  const isAdmin = normalizedRole === RoleEnum.ADMIN;
+  const adminOnlyLinks = new Set(["Budgets", "Vendors", "Categories", "Departments"]);
   const visibleNavigation = navigation.filter((item) => {
-    if (
-      isStaff &&
-      (item.name === "Categories" || item.name === "Departments")
-    ) {
+    if (!isAdmin && adminOnlyLinks.has(item.name)) {
       return false;
     }
     return true;

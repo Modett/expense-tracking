@@ -10,6 +10,8 @@ import {
   useUpdateBudget,
   BudgetEnforcementType,
 } from "@/features/budgets";
+import { useDepartments } from "@/features/departments";
+import { useCategories } from "@/features/categories";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -23,6 +25,14 @@ const updateBudgetSchema = z.object({
   warningThreshold1: z.number().min(0).max(100),
   warningThreshold2: z.number().min(0).max(100),
   criticalThreshold: z.number().min(0).max(100),
+  departmentId: z
+    .union([z.string().uuid(), z.literal("")])
+    .optional()
+    .default(""),
+  categoryId: z
+    .union([z.string().uuid(), z.literal("")])
+    .optional()
+    .default(""),
 });
 
 type UpdateBudgetFormData = z.infer<typeof updateBudgetSchema>;
@@ -34,6 +44,8 @@ export default function EditBudgetPage() {
 
   const { data: budget, isLoading } = useBudget(budgetId);
   const updateBudgetMutation = useUpdateBudget();
+  const { data: departments } = useDepartments();
+  const { data: categories } = useCategories();
 
   const {
     register,
@@ -52,16 +64,24 @@ export default function EditBudgetPage() {
         overrideAllowed: budget.overrideAllowed,
         warningThreshold1: budget.warningThreshold1,
         warningThreshold2: budget.warningThreshold2,
-        criticalThreshold: budget.criticalThreshold,
+      criticalThreshold: budget.criticalThreshold,
+        departmentId: budget.departmentId || "",
+        categoryId: budget.categoryId || "",
       });
     }
   }, [budget, reset]);
 
   const onSubmit = (data: UpdateBudgetFormData) => {
+    const payload = {
+      ...data,
+      departmentId: data.departmentId ? data.departmentId : null,
+      categoryId: data.categoryId ? data.categoryId : null,
+    };
+
     updateBudgetMutation.mutate(
       {
         budgetId,
-        data,
+        data: payload,
       },
       {
         onSuccess: () => router.push("/budgets"),
@@ -112,16 +132,38 @@ export default function EditBudgetPage() {
         <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label className="text-zinc-300">Department</Label>
-              <p className="mt-2 text-white">
-                {budget.department?.name ?? "Organization-wide"}
-              </p>
+              <Label className="text-zinc-300" htmlFor="departmentId">
+                Department
+              </Label>
+              <select
+                id="departmentId"
+                className="mt-2 w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-md text-white"
+                {...register("departmentId")}
+              >
+                <option value="">Organization-wide</option>
+                {departments?.map((dept) => (
+                  <option key={dept.departmentId} value={dept.departmentId}>
+                    {dept.name}
+                  </option>
+                ))}
+              </select>
             </div>
             <div>
-              <Label className="text-zinc-300">Category</Label>
-              <p className="mt-2 text-white">
-                {budget.category?.name ?? "Not specified"}
-              </p>
+              <Label className="text-zinc-300" htmlFor="categoryId">
+                Category
+              </Label>
+              <select
+                id="categoryId"
+                className="mt-2 w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-md text-white"
+                {...register("categoryId")}
+              >
+                <option value="">Not specified</option>
+                {categories?.map((category) => (
+                  <option key={category.categoryId} value={category.categoryId}>
+                    {category.name}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
 

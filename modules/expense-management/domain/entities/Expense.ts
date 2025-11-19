@@ -19,7 +19,7 @@ import {
 export interface ExpenseProps {
   id: ExpenseId;
   userId: UserId;
-  vendorId: VendorId;
+  vendorId: VendorId | null;
   categoryId: CategoryId;
   departmentId: DepartmentId | null;
   description: ExpenseDescription;
@@ -40,7 +40,7 @@ export interface ExpenseProps {
 
 export interface CreateExpenseProps {
   userId: UserId;
-  vendorId: VendorId;
+  vendorId: VendorId | null;
   categoryId: CategoryId;
   departmentId: DepartmentId | null;
   description: ExpenseDescription;
@@ -108,9 +108,7 @@ export class Expense {
     if (!this.props.userId) {
       throw new Error("User ID is required");
     }
-    if (!this.props.vendorId) {
-      throw new Error("Vendor ID is required");
-    }
+    // Vendor is now optional (null allowed)
     if (!this.props.categoryId) {
       throw new Error("Category ID is required");
     }
@@ -154,7 +152,7 @@ export class Expense {
     return this.props.userId;
   }
 
-  get vendorId(): VendorId {
+  get vendorId(): VendorId | null {
     return this.props.vendorId;
   }
 
@@ -451,6 +449,9 @@ export class Expense {
   }
 
   isFromVendor(vendorId: VendorId): boolean {
+    if (!this.props.vendorId) {
+      return false;
+    }
     return this.props.vendorId.equals(vendorId);
   }
 
@@ -488,7 +489,7 @@ export class Expense {
     const plainObject: any = {
       id: this.props.id.getValue(),
       userId: this.props.userId.getValue(),
-      vendorId: this.props.vendorId.getValue(),
+      vendorId: this.props.vendorId?.getValue() || null,
       categoryId: this.props.categoryId.getValue(),
       departmentId: this.props.departmentId?.getValue() || null,
       description: this.props.description.getValue(),

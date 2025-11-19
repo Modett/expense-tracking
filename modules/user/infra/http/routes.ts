@@ -77,7 +77,7 @@ export async function registerUserRoutes(
     },
     config: {
       rateLimit: {
-        max: 10,
+        max: 50,
         timeWindow: "15 minutes",
       },
     },

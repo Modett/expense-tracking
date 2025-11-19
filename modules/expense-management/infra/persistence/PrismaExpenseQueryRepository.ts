@@ -68,7 +68,9 @@ export class PrismaExpenseQueryRepository implements IExpenseQueryRepository {
     const expense = Expense.reconstitute({
       id: ExpenseId.fromString(prismaExpense.expenseId),
       userId: UserId.fromString(prismaExpense.userId),
-      vendorId: VendorId.fromString(prismaExpense.vendorId),
+      vendorId: prismaExpense.vendorId
+        ? VendorId.fromString(prismaExpense.vendorId)
+        : null,
       categoryId: CategoryId.fromString(prismaExpense.categoryId),
       departmentId: prismaExpense.departmentId
         ? DepartmentId.fromString(prismaExpense.departmentId)
@@ -299,7 +301,7 @@ export class PrismaExpenseQueryRepository implements IExpenseQueryRepository {
           groupId = expense.departmentId?.getValue() || "unassigned";
           break;
         case "vendor":
-          groupId = expense.vendorId.getValue();
+          groupId = expense.vendorId?.getValue() || "unassigned";
           break;
         case "category":
           groupId = expense.categoryId.getValue();

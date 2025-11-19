@@ -27,9 +27,9 @@ import {
 
 const updateExpenseSchema = z
   .object({
-    vendorId: z.string().uuid().optional(),
+    vendorId: z.string().uuid().optional().or(z.literal("")).or(z.null()),
     categoryId: z.string().uuid().optional(),
-    departmentId: z.string().uuid().optional(),
+    departmentId: z.string().uuid().optional().or(z.literal("")).or(z.null()),
     description: z.string().min(1, "Description is required").max(1000, "Description too long").optional(),
     netAmount: z.number().positive("Net amount must be positive").optional(),
     taxAmount: z.number().min(0, "Tax amount cannot be negative").optional(),
@@ -85,7 +85,7 @@ export default function EditExpensePage() {
   useEffect(() => {
     if (expense) {
       form.reset({
-        vendorId: expense.vendorId,
+        vendorId: expense.vendorId || "",
         categoryId: expense.categoryId,
         departmentId: expense.departmentId || "",
         description: expense.description,
@@ -109,6 +109,7 @@ export default function EditExpensePage() {
   const onSubmit = (data: UpdateExpenseFormData) => {
     const payload: UpdateExpenseFormData = {
       ...data,
+      vendorId: data.vendorId || undefined,
       departmentId: data.departmentId || undefined,
       receiptUrl: data.receiptUrl || undefined,
       expenseDate: data.expenseDate ? new Date(data.expenseDate).toISOString() : undefined,
@@ -193,14 +194,16 @@ export default function EditExpensePage() {
                     name="vendorId"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-zinc-300">Vendor *</FormLabel>
+                        <FormLabel className="text-zinc-300">
+                          Vendor <span className="text-xs text-zinc-500">(optional)</span>
+                        </FormLabel>
                         <FormControl>
                           <select
                             {...field}
                             className="w-full px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-md text-white"
                             disabled={vendorsLoading}
                           >
-                            <option value="">Select vendor</option>
+                            <option value="">Select vendor (optional)</option>
                             {vendors?.map((vendor) => (
                               <option key={vendor.vendorId} value={vendor.vendorId}>
                                 {vendor.name}
