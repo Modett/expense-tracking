@@ -12,7 +12,7 @@
     "typeRoots": ["./node_modules/@types", "./types"],
     "types": ["node"],
     // For nodejs:
-    "lib": ["esnext"],
+    // "lib": ["esnext"],
     // "types": ["node"],
     // and npm install -D @types/node
 
@@ -36,9 +36,9 @@
     // Recommended Options
     "strict": true,
     "jsx": "react-jsx",
-    "verbatimModuleSyntax": false,
+    "verbatimModuleSyntax": true,
     "isolatedModules": true,
-    "noUncheckedSideEffectImports": false,
+    "noUncheckedSideEffectImports": true,
     "moduleDetection": "force",
     "skipLibCheck": true
   }

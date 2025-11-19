@@ -27,6 +27,7 @@ import {
   DropdownMenuCheckboxItem,
 } from "@/components/ui/dropdown-menu";
 import type { Category, Vendor, Department, Tag } from "@/types/common.types";
+import { useAuth } from "@/providers/auth-provider";
 
 const createExpenseSchema = z.object({
   vendorId: z.string().optional().or(z.literal("")),
@@ -60,6 +61,8 @@ export default function NewExpensePage() {
   const { data: vendors, isLoading: vendorsLoading } = useVendors();
   const { data: departments, isLoading: departmentsLoading } = useDepartments();
   const { data: tags, isLoading: tagsLoading } = useTags({ isActive: true });
+  const { user } = useAuth();
+  const isAdmin = typeof user?.role === "string" && user.role.toLowerCase() === "admin";
 
   const form = useForm<CreateExpenseFormData>({
     resolver: zodResolver(createExpenseSchema),
@@ -163,14 +166,16 @@ export default function NewExpensePage() {
                               ))}
                             </select>
                           </FormControl>
-                          <Button
-                            type="button"
-                            onClick={() => setIsCreateVendorOpen(true)}
-                            className="px-3 bg-purple-600 hover:bg-purple-700 text-white"
-                            title="Create new vendor"
-                          >
-                            <Plus className="h-4 w-4" />
-                          </Button>
+                          {isAdmin && (
+                            <Button
+                              type="button"
+                              onClick={() => setIsCreateVendorOpen(true)}
+                              className="px-3 bg-purple-600 hover:bg-purple-700 text-white"
+                              title="Create new vendor"
+                            >
+                              <Plus className="h-4 w-4" />
+                            </Button>
+                          )}
                         </div>
                         <FormMessage />
                       </FormItem>
@@ -198,14 +203,16 @@ export default function NewExpensePage() {
                               ))}
                             </select>
                           </FormControl>
-                          <Button
-                            type="button"
-                            onClick={() => setIsCreateCategoryOpen(true)}
-                            className="px-3 bg-purple-600 hover:bg-purple-700 text-white"
-                            title="Create new category"
-                          >
-                            <Plus className="h-4 w-4" />
-                          </Button>
+                          {isAdmin && (
+                            <Button
+                              type="button"
+                              onClick={() => setIsCreateCategoryOpen(true)}
+                              className="px-3 bg-purple-600 hover:bg-purple-700 text-white"
+                              title="Create new category"
+                            >
+                              <Plus className="h-4 w-4" />
+                            </Button>
+                          )}
                         </div>
                         <FormMessage />
                       </FormItem>
@@ -235,14 +242,16 @@ export default function NewExpensePage() {
                               ))}
                             </select>
                           </FormControl>
-                          <Button
-                            type="button"
-                            onClick={() => setIsCreateDepartmentOpen(true)}
-                            className="px-3 bg-purple-600 hover:bg-purple-700 text-white"
-                            title="Create new department"
-                          >
-                            <Plus className="h-4 w-4" />
-                          </Button>
+                          {isAdmin && (
+                            <Button
+                              type="button"
+                              onClick={() => setIsCreateDepartmentOpen(true)}
+                              className="px-3 bg-purple-600 hover:bg-purple-700 text-white"
+                              title="Create new department"
+                            >
+                              <Plus className="h-4 w-4" />
+                            </Button>
+                          )}
                         </div>
                         <FormMessage />
                       </FormItem>
@@ -434,14 +443,16 @@ export default function NewExpensePage() {
                             </DropdownMenuContent>
                           </DropdownMenu>
                         </FormControl>
-                        <Button
-                          type="button"
-                          onClick={() => setIsCreateTagOpen(true)}
-                          className="px-3 bg-purple-600 hover:bg-purple-700 text-white"
-                          title="Create new tag"
-                        >
-                          <Plus className="h-4 w-4" />
-                        </Button>
+                        {isAdmin && (
+                          <Button
+                            type="button"
+                            onClick={() => setIsCreateTagOpen(true)}
+                            className="px-3 bg-purple-600 hover:bg-purple-700 text-white"
+                            title="Create new tag"
+                          >
+                            <Plus className="h-4 w-4" />
+                          </Button>
+                        )}
                       </div>
                       <FormMessage />
                     </FormItem>
