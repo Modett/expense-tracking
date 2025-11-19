@@ -19,7 +19,7 @@ export function useTag(tagId: string) {
   });
 }
 
-export function useCreateTag() {
+export function useCreateTag(options?: { skipNavigation?: boolean }) {
   const queryClient = useQueryClient();
   const router = useRouter();
 
@@ -31,7 +31,9 @@ export function useCreateTag() {
         title: "Tag created",
         description: "Tag has been created successfully",
       });
-      router.push("/tags");
+      if (!options?.skipNavigation) {
+        router.push("/tags");
+      }
     },
     onError: (error: any) => {
       toast({

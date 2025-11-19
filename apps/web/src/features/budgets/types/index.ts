@@ -60,6 +60,8 @@ export interface CreateBudgetRequest {
 }
 
 export interface UpdateBudgetRequest {
+  departmentId?: string | null;
+  categoryId?: string | null;
   budgetAmount?: number;
   enforcementType?: BudgetEnforcementType;
   overrideAllowed?: boolean;

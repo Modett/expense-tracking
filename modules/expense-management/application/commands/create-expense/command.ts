@@ -1,7 +1,7 @@
 export class CreateExpenseCommand {
   constructor(
     public readonly userId: string,
-    public readonly vendorId: string,
+    public readonly vendorId: string | null,
     public readonly categoryId: string,
     public readonly departmentId: string | null,
     public readonly description: string,

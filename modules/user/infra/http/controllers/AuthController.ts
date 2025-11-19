@@ -4,11 +4,13 @@ import { LoginCommandHandler } from "../../../application/commands/auth/login/ha
 import { ChangePasswordCommandHandler } from "../../../application/commands/auth/change-password/handler.js";
 import { RefreshTokenCommandHandler } from "../../../application/commands/auth/refresh-token/handler.js";
 import { LogoutCommandHandler } from "../../../application/commands/auth/logout/handler.js";
+import { UpdateProfileCommandHandler } from "../../../application/commands/user-management/update-profile/handler.js";
 import { RegisterCommand } from "../../../application/commands/auth/register/command.js";
 import { LoginCommand } from "../../../application/commands/auth/login/command.js";
 import { ChangePasswordCommand } from "../../../application/commands/auth/change-password/command.js";
 import { RefreshTokenCommand } from "../../../application/commands/auth/refresh-token/command.js";
 import { LogoutCommand } from "../../../application/commands/auth/logout/command.js";
+import { UpdateProfileCommand } from "../../../application/commands/user-management/update-profile/command.js";
 import {
   registerSchema,
   type RegisterDto,
@@ -25,6 +27,10 @@ import {
   refreshTokenSchema,
   type RefreshTokenDto,
 } from "../validators/auth/refresh-token.validator.js";
+import {
+  updateProfileSchema,
+  type UpdateProfileDto,
+} from "../validators/user-management/update-profile.validator.js";
 
 export class AuthController {
   constructor(
@@ -32,7 +38,8 @@ export class AuthController {
     private readonly loginHandler: LoginCommandHandler,
     private readonly changePasswordHandler: ChangePasswordCommandHandler,
     private readonly refreshTokenHandler: RefreshTokenCommandHandler,
-    private readonly logoutHandler: LogoutCommandHandler
+    private readonly logoutHandler: LogoutCommandHandler,
+    private readonly updateProfileHandler: UpdateProfileCommandHandler
   ) {}
 
   async register(
@@ -160,5 +167,23 @@ export class AuthController {
     });
 
     reply.code(200).send(response);
+  }
+
+  async updateProfile(
+    request: FastifyRequest<{ Body: UpdateProfileDto }>,
+    reply: FastifyReply
+  ): Promise<void> {
+    const validatedData = updateProfileSchema.parse(request.body);
+    const userId = (request.user as any).userId;
+
+    const command = new UpdateProfileCommand(
+      userId,
+      validatedData.name,
+      validatedData.email
+    );
+
+    await this.updateProfileHandler.handle(command);
+
+    reply.code(200).send({ message: "Profile updated successfully" });
   }
 }

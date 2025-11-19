@@ -234,6 +234,16 @@ export async function registerBudgetRoutes(
         body: {
           type: "object",
           properties: {
+            departmentId: {
+              type: ["string", "null"],
+              format: "uuid",
+              description: "Department ID to reassign the budget to (null for organization-wide)",
+            },
+            categoryId: {
+              type: ["string", "null"],
+              format: "uuid",
+              description: "Category ID to reassign the budget to (null for all categories)",
+            },
             budgetAmount: { type: "number", minimum: 0 },
             enforcementType: {
               type: "string",

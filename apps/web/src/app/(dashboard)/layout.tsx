@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/providers/auth-provider";
 import { useLogout } from "@/features/auth";
+import { RoleEnum } from "@/types/common.types";
 
 const navigation = [
   { name: "Home", href: "/", icon: Home },
@@ -37,6 +38,18 @@ export default function DashboardLayout({
   const { user } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const logoutMutation = useLogout();
+  const normalizedRole =
+    typeof user?.role === "string" ? user.role.toLowerCase() : undefined;
+  const isStaff = normalizedRole === RoleEnum.STAFF;
+  const visibleNavigation = navigation.filter((item) => {
+    if (
+      isStaff &&
+      (item.name === "Categories" || item.name === "Departments")
+    ) {
+      return false;
+    }
+    return true;
+  });
 
   return (
     <div className="flex h-screen bg-zinc-950">
@@ -86,7 +99,7 @@ export default function DashboardLayout({
 
           {/* Navigation */}
           <nav className="flex-1 space-y-1 px-4 py-6">
-            {navigation.map((item) => {
+            {visibleNavigation.map((item) => {
               const isActive =
                 pathname === item.href || pathname.startsWith(item.href + "/");
               return (

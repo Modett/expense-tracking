@@ -1,6 +1,8 @@
 export class UpdateBudgetCommand {
   constructor(
     public readonly budgetId: string,
+    public readonly departmentId?: string | null,
+    public readonly categoryId?: string | null,
     public readonly budgetAmount?: number,
     public readonly enforcementType?: "soft" | "hard",
     public readonly overrideAllowed?: boolean,

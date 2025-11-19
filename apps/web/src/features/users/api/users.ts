@@ -22,6 +22,14 @@ export const usersApi = {
     return response.data.data;
   },
 
+  updateProfile: async (data: { name: string; email: string }): Promise<void> => {
+    await apiClient.put("/auth/profile", data);
+  },
+
+  updateRole: async (userId: string, role: string): Promise<void> => {
+    await apiClient.put(`/users/${userId}/role`, { role });
+  },
+
   delete: async (userId: string): Promise<void> => {
     await apiClient.delete(`/users/${userId}`);
   },

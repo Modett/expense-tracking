@@ -26,6 +26,10 @@ export class UpdateBudgetCommandHandler {
       throw new Error(`Budget with ID ${command.budgetId} not found`);
     }
 
+    if (command.departmentId !== undefined || command.categoryId !== undefined) {
+      budget.updateAssignment(command.departmentId, command.categoryId);
+    }
+
     if (command.budgetAmount !== undefined) {
       budget.updateBudgetAmount(command.budgetAmount);
     }

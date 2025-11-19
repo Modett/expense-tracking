@@ -65,7 +65,6 @@ export async function registerExpenseRoutes(
         body: {
           type: "object",
           required: [
-            "vendorId",
             "categoryId",
             "description",
             "netAmount",
@@ -75,9 +74,9 @@ export async function registerExpenseRoutes(
           ],
           properties: {
             vendorId: {
-              type: "string",
+              type: ["string", "null"],
               format: "uuid",
-              description: "Vendor UUID",
+              description: "Vendor UUID (optional)",
             },
             categoryId: {
               type: "string",
@@ -333,7 +332,7 @@ export async function registerExpenseRoutes(
     {
       schema: {
         tags: ["Expenses"],
-        summary: "Get all expenses with filters (Manager & Admin)",
+        summary: "Get all expenses with filters (Authenticated)",
         security: [{ bearerAuth: [] }],
         querystring: {
           type: "object",
@@ -344,7 +343,13 @@ export async function registerExpenseRoutes(
             departmentId: { type: "string", format: "uuid" },
             status: {
               type: "string",
-              enum: ["DRAFT", "SUBMITTED", "APPROVED", "REJECTED", "CANCELLED"],
+              enum: [
+                "DRAFT",
+                "SUBMITTED",
+                "APPROVED",
+                "REJECTED",
+                "CANCELLED",
+              ],
             },
             page: { type: "integer", minimum: 1, default: 1 },
             limit: { type: "integer", minimum: 1, maximum: 100, default: 20 },
@@ -356,7 +361,7 @@ export async function registerExpenseRoutes(
           403: errorSchema,
         },
       },
-      onRequest: [authenticate, authorizeManager],
+      onRequest: [authenticate],
     },
     async (request, reply) => expenseController.getAll(request as any, reply)
   );

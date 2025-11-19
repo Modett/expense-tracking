@@ -19,7 +19,7 @@ export function useCategory(categoryId: string) {
   });
 }
 
-export function useCreateCategory() {
+export function useCreateCategory(options?: { skipNavigation?: boolean }) {
   const queryClient = useQueryClient();
   const router = useRouter();
 
@@ -31,7 +31,9 @@ export function useCreateCategory() {
         title: "Category created",
         description: "Category has been created successfully",
       });
-      router.push("/categories");
+      if (!options?.skipNavigation) {
+        router.push("/categories");
+      }
     },
     onError: (error: any) => {
       toast({

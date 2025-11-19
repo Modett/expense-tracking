@@ -147,7 +147,7 @@ export class ExpenseMonthlyReportService {
     const records = expenses.map((expense) => ({
       expenseId: expense.id.getValue(),
       userId: expense.userId.getValue(),
-      vendorId: expense.vendorId.getValue(),
+      vendorId: expense.vendorId?.getValue() || "",
       categoryId: expense.categoryId.getValue(),
       departmentId: expense.departmentId?.getValue() || "General",
       description: expense.description.getValue(),

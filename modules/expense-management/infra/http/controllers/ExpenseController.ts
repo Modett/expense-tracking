@@ -92,19 +92,11 @@ export class ExpenseController {
   ): Promise<void> {
     try {
       const validatedBody = createExpenseBodySchema.parse(request.body);
-
-      // Get the authenticated user ID from the JWT token (set by authenticate middleware)
-      const authenticatedUser = request.user as any;
-      if (!authenticatedUser || !authenticatedUser.userId) {
-        reply
-          .code(401)
-          .send({ error: "Unable to identify authenticated user" });
-        return;
-      }
+      const authenticatedUser = this.getAuthenticatedUser(request);
 
       const command = new CreateExpenseCommand(
-        authenticatedUser.userId, // Use authenticated user's ID instead of request body
-        validatedBody.vendorId,
+        authenticatedUser.userId,
+        validatedBody.vendorId ?? null, // Convert undefined to null
         validatedBody.categoryId,
         validatedBody.departmentId ?? null, // Convert undefined to null
         validatedBody.description,
@@ -131,10 +123,12 @@ export class ExpenseController {
     reply: FastifyReply
   ): Promise<void> {
     try {
+      const authUser = this.getAuthenticatedUser(request);
       const validatedParams = expenseIdParamSchema.parse(request.params);
 
       const query = new GetExpenseByIdQuery(validatedParams.expenseId);
       const result = await this.getExpenseByIdHandler.handle(query);
+      this.ensureExpenseAccess(result.userId, authUser);
 
       reply.code(200).send({
         success: true,
@@ -150,10 +144,12 @@ export class ExpenseController {
     reply: FastifyReply
   ): Promise<void> {
     try {
+      const authUser = this.getAuthenticatedUser(request);
+      const isAdmin = this.isAdmin(authUser);
       const validatedQuery = getAllExpensesQuerySchema.parse(request.query);
 
       const query = new GetAllExpensesQueryClass(
-        validatedQuery.userId,
+        isAdmin ? validatedQuery.userId : authUser.userId,
         validatedQuery.status,
         validatedQuery.priority,
         validatedQuery.categoryId,
@@ -183,8 +179,14 @@ export class ExpenseController {
     reply: FastifyReply
   ): Promise<void> {
     try {
+      const authUser = this.getAuthenticatedUser(request);
       const validatedParams = updateExpenseParamsSchema.parse(request.params);
       const validatedBody = updateExpenseBodySchema.parse(request.body);
+
+      const existingExpense = await this.getExpenseByIdHandler.handle(
+        new GetExpenseByIdQuery(validatedParams.expenseId)
+      );
+      this.ensureExpenseAccess(existingExpense.userId, authUser);
 
       const command = new UpdateExpenseCommand(
         validatedParams.expenseId,
@@ -216,7 +218,13 @@ export class ExpenseController {
     reply: FastifyReply
   ): Promise<void> {
     try {
+      const authUser = this.getAuthenticatedUser(request);
       const validatedParams = expenseIdParamSchema.parse(request.params);
+
+      const existingExpense = await this.getExpenseByIdHandler.handle(
+        new GetExpenseByIdQuery(validatedParams.expenseId)
+      );
+      this.ensureExpenseAccess(existingExpense.userId, authUser);
 
       const command = new DeleteExpenseCommand(validatedParams.expenseId);
       await this.deleteExpenseHandler.handle(command);
@@ -235,8 +243,14 @@ export class ExpenseController {
     reply: FastifyReply
   ): Promise<void> {
     try {
+      const authUser = this.getAuthenticatedUser(request);
       const validatedParams = expenseIdParamSchema.parse(request.params);
       const validatedBody = submitExpenseBodySchema.parse(request.body || {});
+
+      const existingExpense = await this.getExpenseByIdHandler.handle(
+        new GetExpenseByIdQuery(validatedParams.expenseId)
+      );
+      this.ensureExpenseAccess(existingExpense.userId, authUser);
 
       const command = new SubmitExpenseCommand(
         validatedParams.expenseId,
@@ -259,7 +273,13 @@ export class ExpenseController {
     reply: FastifyReply
   ): Promise<void> {
     try {
+      const authUser = this.getAuthenticatedUser(request);
       const validatedParams = expenseIdParamSchema.parse(request.params);
+
+      const existingExpense = await this.getExpenseByIdHandler.handle(
+        new GetExpenseByIdQuery(validatedParams.expenseId)
+      );
+      this.ensureExpenseAccess(existingExpense.userId, authUser);
 
       const command = new CancelExpenseCommand(validatedParams.expenseId);
       const result = await this.cancelExpenseHandler.handle(command);
@@ -270,6 +290,28 @@ export class ExpenseController {
       });
     } catch (error) {
       this.handleError(error, reply);
+    }
+  }
+
+  private getAuthenticatedUser(request: FastifyRequest) {
+    const authUser = (request as any).user;
+    if (!authUser || !authUser.userId) {
+      throw new Error("unauthorized: authentication required");
+    }
+    const normalizedRole =
+      typeof authUser.role === "string"
+        ? authUser.role.toLowerCase()
+        : authUser.role;
+    return { ...authUser, role: normalizedRole };
+  }
+
+  private isAdmin(user: any): boolean {
+    return user?.role === "admin";
+  }
+
+  private ensureExpenseAccess(ownerId: string, user: any): void {
+    if (!this.isAdmin(user) && ownerId !== user.userId) {
+      throw new Error("unauthorized: insufficient permissions");
     }
   }
 

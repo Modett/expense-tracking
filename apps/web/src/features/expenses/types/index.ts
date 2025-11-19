@@ -31,7 +31,7 @@ export interface ExpenseAmount {
 export interface Expense {
   expenseId: string;
   userId: string;
-  vendorId: string;
+  vendorId?: string | null;
   categoryId: string;
   departmentId?: string | null;
   description: string;
@@ -57,7 +57,7 @@ export interface Expense {
 }
 
 export interface CreateExpenseRequest {
-  vendorId: string;
+  vendorId?: string | null;
   categoryId: string;
   departmentId?: string | null;
   description: string;

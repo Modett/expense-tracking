@@ -3,6 +3,7 @@ import { usersApi, CreateUserRequest, UpdateUserRequest, GetAllUsersParams } fro
 import { queryKeys } from "@/lib/query/keys";
 import { toast } from "@/components/ui/use-toast";
 import { useRouter } from "next/navigation";
+import { getStoredUser, setStoredUser } from "@/lib/auth/token";
 
 export function useUsers(params?: GetAllUsersParams) {
   return useQuery({
@@ -60,6 +61,54 @@ export function useUpdateUser() {
     onError: (error: any) => {
       toast({
         title: "Failed to update user",
+        description: error.response?.data?.message || "Please try again",
+        variant: "destructive",
+      });
+    },
+  });
+}
+
+export function useUpdateProfile() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: { name: string; email: string }) =>
+      usersApi.updateProfile(data),
+    onSuccess: (_data, variables) => {
+      // Update stored user - always updating current user's profile
+      const currentUser = getStoredUser();
+      if (currentUser) {
+        const updatedUser = {
+          ...currentUser,
+          name: variables.name,
+          email: variables.email,
+        };
+        setStoredUser(updatedUser);
+        queryClient.setQueryData(queryKeys.auth.me, updatedUser);
+        queryClient.invalidateQueries({ queryKey: queryKeys.users.detail(currentUser.userId) });
+      }
+      queryClient.invalidateQueries({ queryKey: queryKeys.auth.me });
+      queryClient.invalidateQueries({ queryKey: queryKeys.users.all });
+    },
+  });
+}
+
+export function useUpdateRole() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ userId, role }: { userId: string; role: string }) =>
+      usersApi.updateRole(userId, role),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.users.all });
+      toast({
+        title: "Role updated",
+        description: "User role has been updated successfully",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Failed to update role",
         description: error.response?.data?.message || "Please try again",
         variant: "destructive",
       });

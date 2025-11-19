@@ -30,8 +30,12 @@ export class CreateExpenseCommandHandler {
 
   async handle(command: CreateExpenseCommand): Promise<CreateExpenseResponse> {
     const userId = UserId.fromString(command.userId);
-    const vendorId = VendorId.fromString(command.vendorId);
     const categoryId = CategoryId.fromString(command.categoryId);
+
+    // Handle optional vendor
+    const vendorId = command.vendorId
+      ? VendorId.fromString(command.vendorId)
+      : null;
 
     // Handle optional department - if null, will be assigned to "General" at persistence layer
     const departmentId = command.departmentId

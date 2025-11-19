@@ -137,11 +137,17 @@ export class Budget {
 
   // Business logic methods
 
-  updateBudgetAmount(newAmount: number): void {
-    if (!this.isActive) {
-      throw new Error("Cannot update inactive budget");
+  updateAssignment(departmentId?: string | null, categoryId?: string | null): void {
+    if (departmentId !== undefined) {
+      this.props.departmentId = departmentId ? DepartmentId.fromString(departmentId) : null;
     }
+    if (categoryId !== undefined) {
+      this.props.categoryId = categoryId ? CategoryId.fromString(categoryId) : null;
+    }
+    this.props.updatedAt = new Date();
+  }
 
+  updateBudgetAmount(newAmount: number): void {
     this.props.amount = this.props.amount.updateBudgetAmount(newAmount);
     this.props.updatedAt = new Date();
   }

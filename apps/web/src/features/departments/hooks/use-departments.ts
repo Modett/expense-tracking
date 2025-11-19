@@ -19,7 +19,7 @@ export function useDepartment(departmentId: string) {
   });
 }
 
-export function useCreateDepartment() {
+export function useCreateDepartment(options?: { skipNavigation?: boolean }) {
   const queryClient = useQueryClient();
   const router = useRouter();
 
@@ -31,7 +31,9 @@ export function useCreateDepartment() {
         title: "Department created",
         description: "Department has been created successfully",
       });
-      router.push("/departments");
+      if (!options?.skipNavigation) {
+        router.push("/departments");
+      }
     },
     onError: (error: any) => {
       toast({

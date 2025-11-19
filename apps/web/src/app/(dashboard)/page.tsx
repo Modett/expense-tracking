@@ -39,10 +39,14 @@ import {
 } from "recharts";
 import { formatCurrency } from "@/lib/utils";
 import { toast } from "@/components/ui/use-toast";
+import { RoleEnum } from "@/types/common.types";
 
 export default function DashboardPage() {
   const [mounted, setMounted] = useState(false);
   const { user } = useAuth();
+  const normalizedRole =
+    typeof user?.role === "string" ? user.role.toLowerCase() : undefined;
+  const isStaff = normalizedRole === RoleEnum.STAFF;
   const [isDownloadingReport, setIsDownloadingReport] = useState(false);
 
   const currentRange = useMemo(() => {
@@ -234,53 +238,59 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card className="bg-zinc-900 border-zinc-800">
-          <CardContent className="p-6">
-            {statsLoading ? (
-              <Skeleton className="h-24 bg-zinc-800" />
-            ) : (
-              <>
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="p-2 bg-green-500/10 rounded-lg">
-                    <Building2 className="w-5 h-5 text-green-500" />
+        {!isStaff && (
+          <Card className="bg-zinc-900 border-zinc-800">
+            <CardContent className="p-6">
+              {statsLoading ? (
+                <Skeleton className="h-24 bg-zinc-800" />
+              ) : (
+                <>
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="p-2 bg-green-500/10 rounded-lg">
+                      <Building2 className="w-5 h-5 text-green-500" />
+                    </div>
+                    <span className="text-sm text-zinc-400">
+                      Active Departments
+                    </span>
                   </div>
-                  <span className="text-sm text-zinc-400">
-                    Active Departments
-                  </span>
-                </div>
-                <p className="text-2xl font-bold text-white">
-                  {activeDepartmentsCount}
-                </p>
-                <p className="text-xs text-zinc-500 mt-1">Currently active</p>
-              </>
-            )}
-          </CardContent>
-        </Card>
+                  <p className="text-2xl font-bold text-white">
+                    {activeDepartmentsCount}
+                  </p>
+                  <p className="text-xs text-zinc-500 mt-1">
+                    Currently active
+                  </p>
+                </>
+              )}
+            </CardContent>
+          </Card>
+        )}
 
-        <Card className="bg-zinc-900 border-zinc-800">
-          <CardContent className="p-6">
-            {statsLoading ? (
-              <Skeleton className="h-24 bg-zinc-800" />
-            ) : (
-              <>
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="p-2 bg-blue-500/10 rounded-lg">
-                    <FileText className="w-5 h-5 text-blue-500" />
+        {!isStaff && (
+          <Card className="bg-zinc-900 border-zinc-800">
+            <CardContent className="p-6">
+              {statsLoading ? (
+                <Skeleton className="h-24 bg-zinc-800" />
+              ) : (
+                <>
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="p-2 bg-blue-500/10 rounded-lg">
+                      <FileText className="w-5 h-5 text-blue-500" />
+                    </div>
+                    <span className="text-sm text-zinc-400">
+                      Active Categories
+                    </span>
                   </div>
-                  <span className="text-sm text-zinc-400">
-                    Active Categories
-                  </span>
-                </div>
-                <p className="text-2xl font-bold text-white">
-                  {activeCategoriesCount}
-                </p>
-                <p className="text-xs text-zinc-500 mt-1">
-                  Available for expenses
-                </p>
-              </>
-            )}
-          </CardContent>
-        </Card>
+                  <p className="text-2xl font-bold text-white">
+                    {activeCategoriesCount}
+                  </p>
+                  <p className="text-xs text-zinc-500 mt-1">
+                    Available for expenses
+                  </p>
+                </>
+              )}
+            </CardContent>
+          </Card>
+        )}
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-6">
@@ -352,7 +362,7 @@ export default function DashboardPage() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className={`grid gap-4 ${isStaff ? "grid-cols-2 md:grid-cols-3" : "grid-cols-2 md:grid-cols-4"}`}>
             <Link href="/expenses/new">
               <Button
                 variant="ghost"
@@ -377,19 +387,21 @@ export default function DashboardPage() {
               </Button>
             </Link>
 
-            <Button
-              variant="ghost"
-              className="w-full h-20 bg-zinc-800/50 hover:bg-zinc-800 border-zinc-700 flex flex-col items-center gap-2"
-              onClick={handleGenerateReport}
-              disabled={isDownloadingReport}
-            >
-              <div className="h-10 w-10 rounded-full bg-gradient-to-br from-cyan-500 to-cyan-600 flex items-center justify-center">
-                <FileBarChart className="h-5 w-5 text-white" />
-              </div>
-              <span className="text-white text-sm">
-                {isDownloadingReport ? "Preparing..." : "Create report"}
-              </span>
-            </Button>
+            {!isStaff && (
+              <Button
+                variant="ghost"
+                className="w-full h-20 bg-zinc-800/50 hover:bg-zinc-800 border-zinc-700 flex flex-col items-center gap-2"
+                onClick={handleGenerateReport}
+                disabled={isDownloadingReport}
+              >
+                <div className="h-10 w-10 rounded-full bg-gradient-to-br from-cyan-500 to-cyan-600 flex items-center justify-center">
+                  <FileBarChart className="h-5 w-5 text-white" />
+                </div>
+                <span className="text-white text-sm">
+                  {isDownloadingReport ? "Preparing..." : "Create report"}
+                </span>
+              </Button>
+            )}
 
             <Link href="/approvals">
               <Button
