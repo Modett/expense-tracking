@@ -1,11 +1,12 @@
 ﻿"use client";
 
 import { useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useParams, useRouter } from "next/navigation";
 import { useApprovalRule, useUpdateApprovalRule, ApproverRoleEnum } from "@/features/approval-rules";
+import { useCategories } from "@/features/categories";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -20,6 +21,7 @@ import {
 import { ArrowLeft } from "lucide-react";
 
 const updateRuleSchema = z.object({
+  categoryId: z.string().uuid("Category is required"),
   minAmount: z.number().min(0, "Minimum amount must be 0 or greater"),
   approverRole: z.nativeEnum(ApproverRoleEnum),
   approvalOrder: z.number().min(1, "Approval order must be at least 1"),
@@ -34,14 +36,14 @@ export default function EditApprovalRulePage() {
 
   const { data: rule, isLoading } = useApprovalRule(ruleId);
   const updateRuleMutation = useUpdateApprovalRule();
+  const { data: categories, isLoading: categoriesLoading } = useCategories();
 
   const {
     register,
     handleSubmit,
     formState: { errors },
-    setValue,
-    watch,
     reset,
+    control,
   } = useForm<UpdateRuleFormData>({
     resolver: zodResolver(updateRuleSchema),
   });
@@ -49,6 +51,7 @@ export default function EditApprovalRulePage() {
   useEffect(() => {
     if (rule) {
       reset({
+        categoryId: rule.categoryId,
         minAmount: Number(rule.minAmount),
         approverRole: rule.approverRole as ApproverRoleEnum,
         approvalOrder: rule.approvalOrder,
@@ -94,15 +97,44 @@ export default function EditApprovalRulePage() {
 
       <Card className="bg-zinc-900 border-zinc-800 max-w-2xl">
         <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-6">
-          <div>
-            <Label className="text-zinc-300">Category</Label>
-            <div className="mt-2 p-3 bg-zinc-800 border border-zinc-700 rounded-lg text-white">
-              {rule.category?.name || "Unknown"}
-            </div>
-            <p className="text-sm text-zinc-500 mt-1">
-              Category cannot be changed after creation
-            </p>
-          </div>
+          <Controller
+            control={control}
+            name="categoryId"
+            render={({ field }) => (
+              <div>
+                <Label className="text-zinc-300">
+                  Category <span className="text-red-500">*</span>
+                </Label>
+                <Select
+                  value={field.value}
+                  onValueChange={field.onChange}
+                  disabled={categoriesLoading}
+                >
+                  <SelectTrigger className="mt-2 bg-zinc-800 border-zinc-700 text-white">
+                    <SelectValue placeholder={rule.category?.name || "Select category"} />
+                  </SelectTrigger>
+                  <SelectContent className="bg-zinc-900 border-zinc-800">
+                    {categories?.map((category) => (
+                      <SelectItem
+                        key={category.categoryId}
+                        value={category.categoryId}
+                      >
+                        {category.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-sm text-zinc-500 mt-1">
+                  Choose which category this approval rule should apply to.
+                </p>
+                {errors.categoryId && (
+                  <p className="text-sm text-red-500 mt-1">
+                    {errors.categoryId.message}
+                  </p>
+                )}
+              </div>
+            )}
+          />
 
           <div>
             <Label htmlFor="minAmount" className="text-zinc-300">
@@ -123,28 +155,44 @@ export default function EditApprovalRulePage() {
             )}
           </div>
 
-          <div>
-            <Label htmlFor="approverRole" className="text-zinc-300">
-              Approver Role <span className="text-red-500">*</span>
-            </Label>
-            <Select
-              value={watch("approverRole")}
-              onValueChange={(value) => setValue("approverRole", value as ApproverRoleEnum)}
-            >
-              <SelectTrigger className="mt-2 bg-zinc-800 border-zinc-700 text-white">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent className="bg-zinc-900 border-zinc-800">
-                <SelectItem value={ApproverRoleEnum.STAFF}>Staff</SelectItem>
-                <SelectItem value={ApproverRoleEnum.MANAGER}>Manager</SelectItem>
-                <SelectItem value={ApproverRoleEnum.FINANCE}>Finance</SelectItem>
-                <SelectItem value={ApproverRoleEnum.ADMIN}>Admin</SelectItem>
-              </SelectContent>
-            </Select>
-            {errors.approverRole && (
-              <p className="text-sm text-red-500 mt-1">{errors.approverRole.message}</p>
+          <Controller
+            control={control}
+            name="approverRole"
+            render={({ field }) => (
+              <div>
+                <Label htmlFor="approverRole" className="text-zinc-300">
+                  Approver Role <span className="text-red-500">*</span>
+                </Label>
+                <Select
+                  value={field.value}
+                  onValueChange={(value) =>
+                    field.onChange(value as ApproverRoleEnum)
+                  }
+                >
+                  <SelectTrigger className="mt-2 bg-zinc-800 border-zinc-700 text-white">
+                    <SelectValue placeholder="Select role" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-zinc-900 border-zinc-800">
+                    <SelectItem value={ApproverRoleEnum.STAFF}>
+                      Staff
+                    </SelectItem>
+                    <SelectItem value={ApproverRoleEnum.MANAGER}>
+                      Manager
+                    </SelectItem>
+                    <SelectItem value={ApproverRoleEnum.FINANCE}>
+                      Finance
+                    </SelectItem>
+                    <SelectItem value={ApproverRoleEnum.ADMIN}>Admin</SelectItem>
+                  </SelectContent>
+                </Select>
+                {errors.approverRole && (
+                  <p className="text-sm text-red-500 mt-1">
+                    {errors.approverRole.message}
+                  </p>
+                )}
+              </div>
             )}
-          </div>
+          />
 
           <div>
             <Label htmlFor="approvalOrder" className="text-zinc-300">

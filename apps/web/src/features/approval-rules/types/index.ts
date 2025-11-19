@@ -29,6 +29,7 @@ export interface CreateApprovalRuleRequest {
 }
 
 export interface UpdateApprovalRuleRequest {
+  categoryId?: string;
   minAmount?: number;
   approverRole?: ApproverRoleEnum;
   approvalOrder?: number;

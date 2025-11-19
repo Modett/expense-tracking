@@ -118,6 +118,15 @@ export class ApprovalRule {
     this.props.updatedAt = new Date();
   }
 
+  updateCategory(categoryId: CategoryId): void {
+    if (!this.isActive) {
+      throw new Error("Cannot update inactive approval rule");
+    }
+
+    this.props.categoryId = categoryId;
+    this.props.updatedAt = new Date();
+  }
+
   updateApprovalOrder(approvalOrder: ApprovalOrder): void {
     if (!this.isActive) {
       throw new Error("Cannot update inactive approval rule");

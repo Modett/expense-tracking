@@ -50,8 +50,7 @@ export async function registerApprovalRulesModule(
   );
   const updateApprovalRuleHandler = new UpdateApprovalRuleCommandHandler(
     approvalRuleQueryRepo,
-    approvalRuleCommandRepo,
-    approvalRuleDomainService
+    approvalRuleCommandRepo
   );
   const deleteApprovalRuleHandler = new DeleteApprovalRuleCommandHandler(
     approvalRuleQueryRepo,

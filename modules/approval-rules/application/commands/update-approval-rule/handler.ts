@@ -1,8 +1,8 @@
 import type { IApprovalRuleCommandRepository } from "../../../domain/repositories/IApprovalRuleCommandRepository.js";
 import type { IApprovalRuleQueryRepository } from "../../../domain/repositories/IApprovalRuleQueryRepository.js";
-import type { ApprovalRuleDomainService } from "../../services/ApprovalRuleDomainService.js";
 import {
   ApprovalRuleId,
+  CategoryId,
   MinAmount,
   ApproverRole,
   ApprovalOrder,
@@ -17,8 +17,7 @@ export interface UpdateApprovalRuleResponse {
 export class UpdateApprovalRuleCommandHandler {
   constructor(
     private readonly approvalRuleQueryRepo: IApprovalRuleQueryRepository,
-    private readonly approvalRuleCommandRepo: IApprovalRuleCommandRepository,
-    private readonly domainService: ApprovalRuleDomainService
+    private readonly approvalRuleCommandRepo: IApprovalRuleCommandRepository
   ) {}
 
   async handle(
@@ -35,37 +34,48 @@ export class UpdateApprovalRuleCommandHandler {
       );
     }
 
-    // Update minimum amount if provided
+    const targetCategoryId = command.categoryId
+      ? CategoryId.fromString(command.categoryId)
+      : approvalRule.categoryId;
+
+    const desiredApprovalOrder =
+      command.approvalOrder ?? approvalRule.approvalOrder.getValue();
+
+    const existingRules = await this.approvalRuleQueryRepo.findByCategory(
+      targetCategoryId
+    );
+    const duplicateOrder = existingRules.find(
+      (rule) =>
+        rule.approvalOrder.getValue() === desiredApprovalOrder &&
+        !rule.id.equals(approvalRuleId)
+    );
+
+    if (duplicateOrder) {
+      throw new Error(
+        `An approval rule with order ${desiredApprovalOrder} already exists for this category`
+      );
+    }
+
+    if (command.categoryId) {
+      approvalRule.updateCategory(targetCategoryId);
+    }
+
     if (command.minAmount !== undefined) {
       const minAmount = MinAmount.create(command.minAmount);
       approvalRule.updateMinAmount(minAmount);
     }
 
-    // Update approver role if provided
     if (command.approverRole !== undefined) {
       const approverRole = ApproverRole.fromString(command.approverRole);
       approvalRule.updateApproverRole(approverRole);
     }
 
-    // Update approval order if provided
     if (command.approvalOrder !== undefined) {
-      // Ensure no duplicate order for this category (excluding current rule)
-      const existingRules = await this.approvalRuleQueryRepo.findByCategory(
-        approvalRule.categoryId
-      );
-      const duplicateOrder = existingRules.find(
-        (rule) =>
-          rule.approvalOrder.getValue() === command.approvalOrder &&
-          !rule.id.equals(approvalRuleId)
-      );
-
-      if (duplicateOrder) {
-        throw new Error(
-          `An approval rule with order ${command.approvalOrder} already exists for this category`
-        );
-      }
-
       const approvalOrder = ApprovalOrder.create(command.approvalOrder);
+      approvalRule.updateApprovalOrder(approvalOrder);
+    } else if (command.categoryId) {
+      // ensure approval order remains valid within new category
+      const approvalOrder = ApprovalOrder.create(desiredApprovalOrder);
       approvalRule.updateApprovalOrder(approvalOrder);
     }
 

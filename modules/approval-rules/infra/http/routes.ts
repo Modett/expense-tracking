@@ -207,6 +207,7 @@ export async function registerApprovalRulesRoutes(
         body: {
           type: "object",
           properties: {
+            categoryId: { type: "string", format: "uuid" },
             minAmount: { type: "number", minimum: 0 },
             approverRole: { type: "string", enum: ["staff", "manager", "finance", "admin"] },
             approvalOrder: { type: "number", minimum: 1 },
