@@ -59,10 +59,7 @@
       "sourceMapPathOverrides": {
         "webpack://_N_E/*": "${workspaceFolder}/apps/web/*"
       },
-      "skipFiles": [
-        "**/node_modules/**",
-        "**/.next/**"
-      ]
+      "skipFiles": ["**/node_modules/**", "**/.next/**"]
     },
     {
       "type": "node",
@@ -70,10 +67,7 @@
       "name": "🔗 Attach to Next.js",
       "port": 9229,
       "restart": true,
-      "skipFiles": [
-        "<node_internals>/**",
-        "**/node_modules/**"
-      ]
+      "skipFiles": ["<node_internals>/**", "**/node_modules/**"]
     }
   ]
 }

@@ -2,14 +2,17 @@ import type { IApprovalCommandRepository } from "../../domain/repositories/IAppr
 import type { IApprovalRuleQueryRepository } from "../../../approval-rules/domain/repositories/IApprovalRuleQueryRepository.js";
 import type { IUserQueryRepository } from "../../../user/domain/repositories/IUserQueryRepository.js";
 import type { Expense } from "../../../expense-management/domain/entities/Expense.js";
+import type { User } from "../../../user/domain/entities/User.js";
 import { Approval } from "../../domain/entities/Approval.js";
 import {
   ApprovalOrder,
   ApprovalChainService,
+  ApprovalStatus,
   ExpenseId,
   UserId,
 } from "../../domain/index.js";
 import { Role } from "../../../user/domain/value-objects/Role.js";
+import { UserId as DomainUserId } from "../../../user/domain/value-objects/UserId.js";
 import { CategoryId as ApprovalRuleCategoryId } from "../../../approval-rules/domain/value-objects/CategoryId.js";
 
 export interface ApprovalCreationResult {
@@ -59,47 +62,72 @@ export class ApprovalOrchestrationService {
       );
 
       const approvals: Approval[] = [];
+      const expenseOwner = await this.userQueryRepo.findById(
+        DomainUserId.fromString(expense.userId.getValue())
+      );
 
       for (const rule of sortedRules) {
         try {
           const roleValue = rule.approverRole.getValue();
           const role = Role.fromString(roleValue);
-          const usersWithRole = await this.userQueryRepo.findByRole(role, 1);
 
-          if (usersWithRole.length === 0) {
-            result.errors.push(
-              `No active user found with role ${roleValue} for approval order ${rule.approvalOrder.getValue()}`
-            );
-            continue;
+          const candidateApprovers: User[] = [];
+
+          if (
+            expenseOwner &&
+            expenseOwner.isActive() &&
+            expenseOwner.role.equals(role)
+          ) {
+            candidateApprovers.push(expenseOwner);
           }
 
-          const approver = usersWithRole[0];
-          if (!approver) {
+          const usersWithRole = await this.userQueryRepo.findByRole(role);
+          for (const user of usersWithRole) {
+            if (!user.isActive()) {
+              continue;
+            }
+
+            const alreadyIncluded = candidateApprovers.some((candidate) =>
+              candidate.id.equals(user.id)
+            );
+
+            if (!alreadyIncluded) {
+              candidateApprovers.push(user);
+            }
+          }
+
+          if (candidateApprovers.length === 0) {
             result.errors.push(
               `No approver found with role ${roleValue} for approval order ${rule.approvalOrder.getValue()}`
             );
             continue;
           }
 
-          const status = ApprovalChainService.getInitialStatus(
-            rule.approvalOrder.getValue()
-          );
+          for (const approver of candidateApprovers) {
+            const defaultStatus = ApprovalChainService.getInitialStatus(
+              rule.approvalOrder.getValue()
+            );
+            const status =
+              approvals.length === 0
+                ? ApprovalStatus.pending()
+                : defaultStatus;
 
-          const expenseIdForApproval = ExpenseId.fromString(
-            expense.id.getValue()
-          );
-          const approverIdForApproval = UserId.fromString(
-            approver.id.getValue()
-          );
+            const expenseIdForApproval = ExpenseId.fromString(
+              expense.id.getValue()
+            );
+            const approverIdForApproval = UserId.fromString(
+              approver.id.getValue()
+            );
 
-          const approval = Approval.create({
-            expenseId: expenseIdForApproval,
-            approverId: approverIdForApproval,
-            approvalOrder: ApprovalOrder.create(rule.approvalOrder.getValue()),
-            status,
-          });
+            const approval = Approval.create({
+              expenseId: expenseIdForApproval,
+              approverId: approverIdForApproval,
+              approvalOrder: ApprovalOrder.create(rule.approvalOrder.getValue()),
+              status,
+            });
 
-          approvals.push(approval);
+            approvals.push(approval);
+          }
         } catch (error) {
           const errorMessage =
             error instanceof Error ? error.message : "Unknown error";
@@ -107,9 +135,7 @@ export class ApprovalOrchestrationService {
             `Failed to create approval for rule ${rule.id.getValue()}: ${errorMessage}`
           );
         }
-      }
-
-      if (approvals.length > 0) {
+      }      if (approvals.length > 0) {
         const savedApprovals = await this.approvalCommandRepo.saveMany(
           approvals
         );
@@ -155,3 +181,4 @@ export class ApprovalOrchestrationService {
     return applicableRules.length;
   }
 }
+
