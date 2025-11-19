@@ -17,6 +17,7 @@ import {
   LogOut,
   Wallet,
   Store,
+  ShieldCheck,
 } from "lucide-react";
 import { useAuth } from "@/providers/auth-provider";
 import { useLogout } from "@/features/auth";
@@ -30,6 +31,7 @@ const navigation = [
   { name: "Categories", href: "/categories", icon: Layers3 },
   { name: "Departments", href: "/departments", icon: Building2 },
   { name: "Approvals", href: "/approvals", icon: CheckCircle },
+  { name: "Approval Rules", href: "/approval-rules", icon: ShieldCheck },
   { name: "Settings", href: "/settings", icon: Settings },
 ];
 
@@ -45,7 +47,13 @@ export default function DashboardLayout({
   const normalizedRole =
     typeof user?.role === "string" ? user.role.toLowerCase() : undefined;
   const isAdmin = normalizedRole === RoleEnum.ADMIN;
-  const adminOnlyLinks = new Set(["Budgets", "Vendors", "Categories", "Departments"]);
+  const adminOnlyLinks = new Set([
+    "Budgets",
+    "Vendors",
+    "Categories",
+    "Departments",
+    "Approval Rules",
+  ]);
   const visibleNavigation = navigation.filter((item) => {
     if (!isAdmin && adminOnlyLinks.has(item.name)) {
       return false;
