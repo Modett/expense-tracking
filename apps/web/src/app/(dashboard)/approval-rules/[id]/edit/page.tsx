@@ -7,6 +7,7 @@ import { z } from "zod";
 import { useParams, useRouter } from "next/navigation";
 import { useApprovalRule, useUpdateApprovalRule, ApproverRoleEnum } from "@/features/approval-rules";
 import { useCategories } from "@/features/categories";
+import { useDepartments } from "@/features/departments";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -22,11 +23,18 @@ import { ArrowLeft } from "lucide-react";
 import { withAdminGuard } from "@/hooks/with-admin-guard";
 
 const updateRuleSchema = z.object({
-  categoryId: z.string().uuid("Category is required"),
+  categoryId: z.string().optional().nullable(),
+  departmentId: z.string().optional().nullable(),
   minAmount: z.number().min(0, "Minimum amount must be 0 or greater"),
   approverRole: z.nativeEnum(ApproverRoleEnum),
   approvalOrder: z.number().min(1, "Approval order must be at least 1"),
-});
+}).refine(
+  (data) => data.categoryId || data.departmentId,
+  {
+    message: "Either category or department must be selected",
+    path: ["categoryId"],
+  }
+);
 
 type UpdateRuleFormData = z.infer<typeof updateRuleSchema>;
 
@@ -38,6 +46,7 @@ function EditApprovalRulePage() {
   const { data: rule, isLoading } = useApprovalRule(ruleId);
   const updateRuleMutation = useUpdateApprovalRule();
   const { data: categories, isLoading: categoriesLoading } = useCategories();
+  const { data: departments, isLoading: departmentsLoading } = useDepartments();
 
   const {
     register,
@@ -52,7 +61,8 @@ function EditApprovalRulePage() {
   useEffect(() => {
     if (rule) {
       reset({
-        categoryId: rule.categoryId,
+        categoryId: rule.categoryId || null,
+        departmentId: rule.departmentId || null,
         minAmount: Number(rule.minAmount),
         approverRole: rule.approverRole as ApproverRoleEnum,
         approvalOrder: rule.approvalOrder,
@@ -92,50 +102,87 @@ function EditApprovalRulePage() {
         </Button>
         <h1 className="text-3xl font-bold text-foreground">Edit Approval Rule</h1>
         <p className="text-muted-foreground mt-2">
-          Update approval rule for {rule.category?.name}
+          Update approval rule for {rule.category?.name || rule.department?.name || 'approval workflow'}
         </p>
       </div>
 
       <Card className="bg-card border-border max-w-2xl">
         <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-6">
-          <Controller
-            control={control}
-            name="categoryId"
-            render={({ field }) => (
-              <div>
-                <Label className="text-muted-foreground">
-                  Category <span className="text-red-500">*</span>
-                </Label>
-                <Select
-                  value={field.value}
-                  onValueChange={field.onChange}
-                  disabled={categoriesLoading}
-                >
-                  <SelectTrigger className="mt-2 bg-muted border-border text-foreground">
-                    <SelectValue placeholder={rule.category?.name || "Select category"} />
-                  </SelectTrigger>
-                  <SelectContent className="bg-card border-border">
-                    {categories?.map((category) => (
-                      <SelectItem
-                        key={category.categoryId}
-                        value={category.categoryId}
-                      >
-                        {category.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Choose which category this approval rule should apply to.
-                </p>
-                {errors.categoryId && (
-                  <p className="text-sm text-red-500 mt-1">
-                    {errors.categoryId.message}
-                  </p>
+          <div className="p-4 bg-muted/50 rounded-lg border border-border">
+            <p className="text-sm text-muted-foreground mb-4">
+              Select either a category or department (or both) for this approval rule <span className="text-red-500">*</span>
+            </p>
+
+            <div className="space-y-4">
+              <Controller
+                control={control}
+                name="categoryId"
+                render={({ field }) => (
+                  <div>
+                    <Label className="text-muted-foreground">
+                      Category (Optional)
+                    </Label>
+                    <Select
+                      value={field.value || "__none__"}
+                      onValueChange={(value) => field.onChange(value === "__none__" ? null : value)}
+                      disabled={categoriesLoading}
+                    >
+                      <SelectTrigger className="mt-2 bg-muted border-border text-foreground">
+                        <SelectValue placeholder={rule.category?.name || "Select category"} />
+                      </SelectTrigger>
+                      <SelectContent className="bg-card border-border">
+                        <SelectItem value="__none__">None</SelectItem>
+                        {categories?.map((category) => (
+                          <SelectItem
+                            key={category.categoryId}
+                            value={category.categoryId}
+                          >
+                            {category.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                 )}
-              </div>
+              />
+
+              <Controller
+                control={control}
+                name="departmentId"
+                render={({ field }) => (
+                  <div>
+                    <Label className="text-muted-foreground">
+                      Department (Optional)
+                    </Label>
+                    <Select
+                      value={field.value || "__none__"}
+                      onValueChange={(value) => field.onChange(value === "__none__" ? null : value)}
+                      disabled={departmentsLoading}
+                    >
+                      <SelectTrigger className="mt-2 bg-muted border-border text-foreground">
+                        <SelectValue placeholder={rule.department?.name || "Select department"} />
+                      </SelectTrigger>
+                      <SelectContent className="bg-card border-border">
+                        <SelectItem value="__none__">None</SelectItem>
+                        {departments?.map((department) => (
+                          <SelectItem
+                            key={department.departmentId}
+                            value={department.departmentId}
+                          >
+                            {department.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+              />
+            </div>
+
+            {errors.categoryId && (
+              <p className="text-sm text-red-500 mt-2">{errors.categoryId.message}</p>
             )}
-          />
+          </div>
 
           <div>
             <Label htmlFor="minAmount" className="text-muted-foreground">

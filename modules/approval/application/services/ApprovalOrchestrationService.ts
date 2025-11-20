@@ -14,6 +14,7 @@ import {
 import { Role } from "../../../user/domain/value-objects/Role.js";
 import { UserId as DomainUserId } from "../../../user/domain/value-objects/UserId.js";
 import { CategoryId as ApprovalRuleCategoryId } from "../../../approval-rules/domain/value-objects/CategoryId.js";
+import { DepartmentId as ApprovalRuleDepartmentId } from "../../../master-data/domain/value-objects/DepartmentId.js";
 
 export interface ApprovalCreationResult {
   created: number;
@@ -44,9 +45,14 @@ export class ApprovalOrchestrationService {
         expense.categoryId.getValue()
       );
 
+      const departmentIdForRules = expense.departmentId
+        ? ApprovalRuleDepartmentId.fromString(expense.departmentId.getValue())
+        : null;
+
       const applicableRules =
         await this.approvalRuleQueryRepo.findApplicableRules(
           categoryIdForRules,
+          departmentIdForRules,
           expense.amount.getTotalValue()
         );
 
@@ -158,9 +164,14 @@ export class ApprovalOrchestrationService {
       expense.categoryId.getValue()
     );
 
+    const departmentIdForRules = expense.departmentId
+      ? ApprovalRuleDepartmentId.fromString(expense.departmentId.getValue())
+      : null;
+
     const applicableRules =
       await this.approvalRuleQueryRepo.findApplicableRules(
         categoryIdForRules,
+        departmentIdForRules,
         expense.amount.getTotalValue()
       );
 
@@ -172,9 +183,14 @@ export class ApprovalOrchestrationService {
       expense.categoryId.getValue()
     );
 
+    const departmentIdForRules = expense.departmentId
+      ? ApprovalRuleDepartmentId.fromString(expense.departmentId.getValue())
+      : null;
+
     const applicableRules =
       await this.approvalRuleQueryRepo.findApplicableRules(
         categoryIdForRules,
+        departmentIdForRules,
         expense.amount.getTotalValue()
       );
 

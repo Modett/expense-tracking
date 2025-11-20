@@ -14,6 +14,7 @@ import {
   ApprovalOrder,
   CategoryId,
 } from "../../domain/value-objects/index.js";
+import { DepartmentId } from "../../../master-data/domain/value-objects/index.js";
 
 export class PrismaApprovalRuleQueryRepository
   implements IApprovalRuleQueryRepository
@@ -23,7 +24,8 @@ export class PrismaApprovalRuleQueryRepository
   private toDomain(prismaApprovalRule: PrismaApprovalRule): ApprovalRule {
     return ApprovalRule.reconstitute({
       id: ApprovalRuleId.fromString(prismaApprovalRule.ruleId),
-      categoryId: CategoryId.fromString(prismaApprovalRule.categoryId),
+      categoryId: prismaApprovalRule.categoryId ? CategoryId.fromString(prismaApprovalRule.categoryId) : null,
+      departmentId: prismaApprovalRule.departmentId ? DepartmentId.fromString(prismaApprovalRule.departmentId) : null,
       minAmount: MinAmount.create(Number(prismaApprovalRule.minAmount)),
       approverRole: ApproverRole.fromString(prismaApprovalRule.approverRole),
       approvalOrder: ApprovalOrder.create(prismaApprovalRule.approvalOrder),
@@ -50,6 +52,7 @@ export class PrismaApprovalRuleQueryRepository
       where: { categoryId: categoryId.getValue() },
       include: {
         category: true,
+        department: true,
       },
       orderBy: { approvalOrder: "asc" },
     });
@@ -57,6 +60,25 @@ export class PrismaApprovalRuleQueryRepository
     return approvalRules.map((rule: any) => {
       const domain = this.toDomain(rule);
       (domain as any).category = rule.category;
+      (domain as any).department = rule.department;
+      return domain;
+    });
+  }
+
+  async findByDepartment(departmentId: DepartmentId): Promise<ApprovalRule[]> {
+    const approvalRules = await this.prisma.approvalRule.findMany({
+      where: { departmentId: departmentId.getValue() },
+      include: {
+        category: true,
+        department: true,
+      },
+      orderBy: { approvalOrder: "asc" },
+    });
+
+    return approvalRules.map((rule: any) => {
+      const domain = this.toDomain(rule);
+      (domain as any).category = rule.category;
+      (domain as any).department = rule.department;
       return domain;
     });
   }
@@ -96,28 +118,74 @@ export class PrismaApprovalRuleQueryRepository
   }
 
   async findApplicableRules(
-    categoryId: CategoryId,
+    categoryId: CategoryId | null,
+    departmentId: DepartmentId | null,
     amount: number
   ): Promise<ApprovalRule[]> {
+    const baseWhere: any = {
+      isActive: true,
+      minAmount: {
+        lte: amount,
+      },
+    };
+
+    const scopeConditions: any[] = [];
+
+    if (categoryId) {
+      scopeConditions.push({ categoryId: categoryId.getValue() });
+    }
+
+    if (departmentId) {
+      scopeConditions.push({ departmentId: departmentId.getValue() });
+    }
+
+    // Always include global rules (no category/department) in consideration
+    scopeConditions.push({ categoryId: null, departmentId: null });
+
     const approvalRules = await this.prisma.approvalRule.findMany({
       where: {
-        categoryId: categoryId.getValue(),
-        isActive: true,
-        minAmount: {
-          lte: amount,
-        },
+        ...baseWhere,
+        ...(scopeConditions.length > 0 ? { OR: scopeConditions } : {}),
       },
       include: {
         category: true,
+        department: true,
       },
       orderBy: { approvalOrder: "asc" },
     });
 
-    return approvalRules.map((rule: any) => {
+    const mappedRules = approvalRules.map((rule: any) => {
       const domain = this.toDomain(rule);
       (domain as any).category = rule.category;
+      (domain as any).department = rule.department;
       return domain;
     });
+
+    const applicableRules = mappedRules.filter((rule) =>
+      rule.appliesTo(categoryId, departmentId, amount)
+    );
+
+    if (applicableRules.length <= 1) {
+      return applicableRules;
+    }
+
+    const getSpecificityScore = (rule: ApprovalRule): number => {
+      const hasCategoryScope = rule.categoryId !== null;
+      const hasDepartmentScope = rule.departmentId !== null;
+
+      if (hasCategoryScope && hasDepartmentScope) return 3;
+      if (hasCategoryScope) return 2;
+      if (hasDepartmentScope) return 1;
+      return 0;
+    };
+
+    const highestSpecificity = Math.max(
+      ...applicableRules.map(getSpecificityScore)
+    );
+
+    return applicableRules.filter(
+      (rule) => getSpecificityScore(rule) === highestSpecificity
+    );
   }
 
   async findAll(filters?: ApprovalRuleFilters): Promise<ApprovalRule[]> {
@@ -126,6 +194,10 @@ export class PrismaApprovalRuleQueryRepository
 
     if (filters?.categoryId) {
       where.categoryId = filters.categoryId.getValue();
+    }
+
+    if (filters?.departmentId) {
+      where.departmentId = filters.departmentId.getValue();
     }
 
     if (filters?.approverRole) {
@@ -155,15 +227,17 @@ export class PrismaApprovalRuleQueryRepository
       where,
       include: {
         category: true,
+        department: true,
       },
-      orderBy: [{ categoryId: "asc" }, { approvalOrder: "asc" }],
+      orderBy: [{ categoryId: "asc" }, { departmentId: "asc" }, { approvalOrder: "asc" }],
     });
 
     console.log("Prisma returned:", approvalRules.length, "rules");
     const mapped = approvalRules.map((rule: any) => {
       const domain = this.toDomain(rule);
-      // Attach category for handler to access
+      // Attach category and department for handler to access
       (domain as any).category = rule.category;
+      (domain as any).department = rule.department;
       return domain;
     });
     console.log("Mapped to domain:", mapped.length, "rules");
@@ -175,6 +249,10 @@ export class PrismaApprovalRuleQueryRepository
 
     if (filters?.categoryId) {
       where.categoryId = filters.categoryId.getValue();
+    }
+
+    if (filters?.departmentId) {
+      where.departmentId = filters.departmentId.getValue();
     }
 
     if (filters?.approverRole) {
@@ -209,6 +287,20 @@ export class PrismaApprovalRuleQueryRepository
     const count = await this.prisma.approvalRule.count({
       where: {
         categoryId: categoryId.getValue(),
+        approvalOrder: approvalOrder,
+      },
+    });
+
+    return count > 0;
+  }
+
+  async existsByDepartmentAndOrder(
+    departmentId: DepartmentId,
+    approvalOrder: number
+  ): Promise<boolean> {
+    const count = await this.prisma.approvalRule.count({
+      where: {
+        departmentId: departmentId.getValue(),
         approvalOrder: approvalOrder,
       },
     });

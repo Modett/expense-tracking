@@ -45,7 +45,11 @@ export class ApprovalRuleDomainService {
     amount: number
   ): Promise<ApprovalRule[]> {
     const applicableRules =
-      await this.approvalRuleQueryRepo.findApplicableRules(categoryId, amount);
+      await this.approvalRuleQueryRepo.findApplicableRules(
+        categoryId,
+        null,
+        amount
+      );
 
     // Sort by approval order (ascending) to ensure proper sequence
     return applicableRules.sort((a, b) => {
@@ -134,35 +138,11 @@ export class ApprovalRuleDomainService {
   }
 
   async canDeleteRule(
-    approvalRuleId: ApprovalRuleId,
-    categoryId: CategoryId
+    _approvalRuleId: ApprovalRuleId,
+    _categoryId: CategoryId | null
   ): Promise<{ canDelete: boolean; reason?: string }> {
-    const rules = await this.approvalRuleQueryRepo.findByCategory(categoryId);
-
-    if (rules.length === 1) {
-      return {
-        canDelete: false,
-        reason: "Cannot delete the last approval rule for a category",
-      };
-    }
-
-    const rule = rules.find((r) => r.id.equals(approvalRuleId));
-    if (!rule) {
-      return {
-        canDelete: false,
-        reason: "Approval rule not found",
-      };
-    }
-
-    // Check if deleting this rule would create a gap in the sequence
-    if (!rule.isFirstInChain() && !this.isLastInChain(rule, rules)) {
-      return {
-        canDelete: false,
-        reason:
-          "Cannot delete a middle rule. Delete from the end or reorganize the chain first.",
-      };
-    }
-
+    // Admin-only controller already enforces permissions.
+    // Allow deleting any rule (including last/middle) to give admins full control.
     return { canDelete: true };
   }
 

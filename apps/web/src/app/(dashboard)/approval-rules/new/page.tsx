@@ -6,6 +6,7 @@ import { z } from "zod";
 import { useRouter } from "next/navigation";
 import { useCreateApprovalRule, ApproverRoleEnum } from "@/features/approval-rules";
 import { useCategories } from "@/features/categories";
+import { useDepartments } from "@/features/departments";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -21,17 +22,25 @@ import { ArrowLeft } from "lucide-react";
 import { withAdminGuard } from "@/hooks/with-admin-guard";
 
 const createRuleSchema = z.object({
-  categoryId: z.string().min(1, "Category is required"),
+  categoryId: z.string().optional().nullable(),
+  departmentId: z.string().optional().nullable(),
   minAmount: z.number().min(0, "Minimum amount must be 0 or greater"),
   approverRole: z.nativeEnum(ApproverRoleEnum),
   approvalOrder: z.number().min(1, "Approval order must be at least 1"),
-});
+}).refine(
+  (data) => data.categoryId || data.departmentId,
+  {
+    message: "Either category or department must be selected",
+    path: ["categoryId"],
+  }
+);
 
 type CreateRuleFormData = z.infer<typeof createRuleSchema>;
 
 function CreateApprovalRulePage() {
   const router = useRouter();
   const { data: categories } = useCategories();
+  const { data: departments } = useDepartments();
   const createRuleMutation = useCreateApprovalRule();
 
   const {
@@ -43,6 +52,8 @@ function CreateApprovalRulePage() {
   } = useForm<CreateRuleFormData>({
     resolver: zodResolver(createRuleSchema),
     defaultValues: {
+      categoryId: null,
+      departmentId: null,
       approverRole: ApproverRoleEnum.MANAGER,
       approvalOrder: 1,
       minAmount: 0,
@@ -72,27 +83,59 @@ function CreateApprovalRulePage() {
 
       <Card className="bg-card border-border max-w-2xl">
         <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-6">
-          <div>
-            <Label htmlFor="categoryId" className="text-muted-foreground">
-              Category <span className="text-red-500">*</span>
-            </Label>
-            <Select
-              value={watch("categoryId")}
-              onValueChange={(value) => setValue("categoryId", value)}
-            >
-              <SelectTrigger className="mt-2 bg-muted border-border text-foreground">
-                <SelectValue placeholder="Select a category" />
-              </SelectTrigger>
-              <SelectContent className="bg-card border-border">
-                {categories?.map((category) => (
-                  <SelectItem key={category.categoryId} value={category.categoryId}>
-                    {category.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          <div className="p-4 bg-muted/50 rounded-lg border border-border">
+            <p className="text-sm text-muted-foreground mb-4">
+              Select either a category or department (or both) for this approval rule <span className="text-red-500">*</span>
+            </p>
+
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="categoryId" className="text-muted-foreground">
+                  Category (Optional)
+                </Label>
+                <Select
+                  value={watch("categoryId") || "__none__"}
+                  onValueChange={(value) => setValue("categoryId", value === "__none__" ? null : value)}
+                >
+                  <SelectTrigger className="mt-2 bg-muted border-border text-foreground">
+                    <SelectValue placeholder="Select a category" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-card border-border">
+                    <SelectItem value="__none__">None</SelectItem>
+                    {categories?.map((category) => (
+                      <SelectItem key={category.categoryId} value={category.categoryId}>
+                        {category.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label htmlFor="departmentId" className="text-muted-foreground">
+                  Department (Optional)
+                </Label>
+                <Select
+                  value={watch("departmentId") || "__none__"}
+                  onValueChange={(value) => setValue("departmentId", value === "__none__" ? null : value)}
+                >
+                  <SelectTrigger className="mt-2 bg-muted border-border text-foreground">
+                    <SelectValue placeholder="Select a department" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-card border-border">
+                    <SelectItem value="__none__">None</SelectItem>
+                    {departments?.map((department) => (
+                      <SelectItem key={department.departmentId} value={department.departmentId}>
+                        {department.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
             {errors.categoryId && (
-              <p className="text-sm text-red-500 mt-1">{errors.categoryId.message}</p>
+              <p className="text-sm text-red-500 mt-2">{errors.categoryId.message}</p>
             )}
           </div>
 

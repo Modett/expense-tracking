@@ -26,7 +26,8 @@ const createApprovalRuleResponseSchema = {
   properties: {
     success: { type: "boolean" },
     approvalRuleId: { type: "string", format: "uuid" },
-    categoryId: { type: "string", format: "uuid" },
+    categoryId: { type: ["string", "null"], format: "uuid" },
+    departmentId: { type: ["string", "null"], format: "uuid" },
     minAmount: { type: "number" },
     approverRole: { type: "string" },
     approvalOrder: { type: "number" },
@@ -34,7 +35,6 @@ const createApprovalRuleResponseSchema = {
   required: [
     "success",
     "approvalRuleId",
-    "categoryId",
     "minAmount",
     "approverRole",
     "approvalOrder",
@@ -57,13 +57,13 @@ export async function registerApprovalRulesRoutes(
         body: {
           type: "object",
           required: [
-            "categoryId",
             "minAmount",
             "approverRole",
             "approvalOrder",
           ],
           properties: {
-            categoryId: { type: "string", format: "uuid" },
+            categoryId: { type: ["string", "null"], format: "uuid" },
+            departmentId: { type: ["string", "null"], format: "uuid" },
             minAmount: { type: "number", minimum: 0 },
             approverRole: { type: "string", enum: ["staff", "manager", "finance", "admin"] },
             approvalOrder: { type: "number", minimum: 1 },
@@ -93,6 +93,7 @@ export async function registerApprovalRulesRoutes(
           type: "object",
           properties: {
             categoryId: { type: "string", format: "uuid" },
+            departmentId: { type: "string", format: "uuid" },
             approverRole: { type: "string", enum: ["staff", "manager", "finance", "admin"] },
             isActive: { type: "string", enum: ["true", "false"] },
             minAmountGreaterThan: { type: "string" },
@@ -161,6 +162,32 @@ export async function registerApprovalRulesRoutes(
       approvalRuleController.getByCategory(request as any, reply)
   );
 
+  // Get approval rules by department
+  fastify.get(
+    "/approval-rules/department/:departmentId",
+    {
+      schema: {
+        tags: ["Approval Rules"],
+        summary: "Get approval rules by department ID (Authenticated)",
+        security: [{ bearerAuth: [] }],
+        params: {
+          type: "object",
+          required: ["departmentId"],
+          properties: {
+            departmentId: { type: "string", format: "uuid" },
+          },
+        },
+        response: {
+          200: successSchema,
+          401: errorSchema,
+        },
+      },
+      onRequest: [authenticate],
+    },
+    async (request, reply) =>
+      approvalRuleController.getByDepartment(request as any, reply)
+  );
+
   // Get applicable rules
   fastify.get(
     "/approval-rules/applicable",
@@ -207,7 +234,8 @@ export async function registerApprovalRulesRoutes(
         body: {
           type: "object",
           properties: {
-            categoryId: { type: "string", format: "uuid" },
+            categoryId: { type: ["string", "null"], format: "uuid" },
+            departmentId: { type: ["string", "null"], format: "uuid" },
             minAmount: { type: "number", minimum: 0 },
             approverRole: { type: "string", enum: ["staff", "manager", "finance", "admin"] },
             approvalOrder: { type: "number", minimum: 1 },

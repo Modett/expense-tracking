@@ -14,6 +14,7 @@ export class PrismaApprovalRuleCommandRepository implements IApprovalRuleCommand
       create: {
         ruleId: plainObject.ruleId,
         categoryId: plainObject.categoryId,
+        departmentId: plainObject.departmentId,
         minAmount: plainObject.minAmount,
         approverRole: plainObject.approverRole,
         approvalOrder: plainObject.approvalOrder,
@@ -22,6 +23,8 @@ export class PrismaApprovalRuleCommandRepository implements IApprovalRuleCommand
         updatedAt: plainObject.updatedAt,
       },
       update: {
+        categoryId: plainObject.categoryId,
+        departmentId: plainObject.departmentId,
         minAmount: plainObject.minAmount,
         approverRole: plainObject.approverRole,
         approvalOrder: plainObject.approvalOrder,
@@ -43,6 +46,7 @@ export class PrismaApprovalRuleCommandRepository implements IApprovalRuleCommand
           create: {
             ruleId: plainObject.ruleId,
             categoryId: plainObject.categoryId,
+            departmentId: plainObject.departmentId,
             minAmount: plainObject.minAmount,
             approverRole: plainObject.approverRole,
             approvalOrder: plainObject.approvalOrder,
@@ -51,6 +55,8 @@ export class PrismaApprovalRuleCommandRepository implements IApprovalRuleCommand
             updatedAt: plainObject.updatedAt,
           },
           update: {
+            categoryId: plainObject.categoryId,
+            departmentId: plainObject.departmentId,
             minAmount: plainObject.minAmount,
             approverRole: plainObject.approverRole,
             approvalOrder: plainObject.approvalOrder,

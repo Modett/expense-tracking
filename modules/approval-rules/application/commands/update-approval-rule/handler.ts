@@ -7,6 +7,7 @@ import {
   ApproverRole,
   ApprovalOrder,
 } from "../../../domain/index.js";
+import { DepartmentId } from "../../../../master-data/domain/value-objects/index.js";
 import type { UpdateApprovalRuleCommand } from "./command.js";
 
 export interface UpdateApprovalRuleResponse {
@@ -34,30 +35,20 @@ export class UpdateApprovalRuleCommandHandler {
       );
     }
 
-    const targetCategoryId = command.categoryId
-      ? CategoryId.fromString(command.categoryId)
-      : approvalRule.categoryId;
-
-    const desiredApprovalOrder =
-      command.approvalOrder ?? approvalRule.approvalOrder.getValue();
-
-    const existingRules = await this.approvalRuleQueryRepo.findByCategory(
-      targetCategoryId
-    );
-    const duplicateOrder = existingRules.find(
-      (rule) =>
-        rule.approvalOrder.getValue() === desiredApprovalOrder &&
-        !rule.id.equals(approvalRuleId)
-    );
-
-    if (duplicateOrder) {
-      throw new Error(
-        `An approval rule with order ${desiredApprovalOrder} already exists for this category`
-      );
+    // Handle category update
+    if (command.categoryId !== undefined) {
+      const targetCategoryId = command.categoryId
+        ? CategoryId.fromString(command.categoryId)
+        : null;
+      approvalRule.updateCategory(targetCategoryId);
     }
 
-    if (command.categoryId) {
-      approvalRule.updateCategory(targetCategoryId);
+    // Handle department update
+    if (command.departmentId !== undefined) {
+      const targetDepartmentId = command.departmentId
+        ? DepartmentId.fromString(command.departmentId)
+        : null;
+      approvalRule.updateDepartment(targetDepartmentId);
     }
 
     if (command.minAmount !== undefined) {
@@ -72,10 +63,6 @@ export class UpdateApprovalRuleCommandHandler {
 
     if (command.approvalOrder !== undefined) {
       const approvalOrder = ApprovalOrder.create(command.approvalOrder);
-      approvalRule.updateApprovalOrder(approvalOrder);
-    } else if (command.categoryId) {
-      // ensure approval order remains valid within new category
-      const approvalOrder = ApprovalOrder.create(desiredApprovalOrder);
       approvalRule.updateApprovalOrder(approvalOrder);
     }
 

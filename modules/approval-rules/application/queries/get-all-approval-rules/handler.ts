@@ -3,11 +3,13 @@ import type {
   ApprovalRuleFilters,
 } from "../../../domain/repositories/IApprovalRuleQueryRepository.js";
 import { CategoryId, ApproverRole } from "../../../domain/index.js";
+import { DepartmentId } from "../../../../master-data/domain/value-objects/DepartmentId.js";
 import type { GetAllApprovalRulesQuery } from "./query.js";
 
 export interface ApprovalRuleDTO {
   ruleId: string;
-  categoryId: string;
+  categoryId: string | null;
+  departmentId: string | null;
   minAmount: number;
   approverRole: string;
   approvalOrder: number;
@@ -15,6 +17,7 @@ export interface ApprovalRuleDTO {
   createdAt: Date;
   updatedAt: Date;
   category?: any;
+  department?: any;
 }
 
 export class GetAllApprovalRulesQueryHandler {
@@ -27,6 +30,10 @@ export class GetAllApprovalRulesQueryHandler {
 
     if (query.categoryId) {
       filters.categoryId = CategoryId.fromString(query.categoryId);
+    }
+
+    if (query.departmentId) {
+      filters.departmentId = DepartmentId.fromString(query.departmentId);
     }
 
     if (query.approverRole) {
@@ -52,6 +59,7 @@ export class GetAllApprovalRulesQueryHandler {
       return {
         ...plainObject,
         category: (rule as any).category,
+        department: (rule as any).department,
       };
     });
   }

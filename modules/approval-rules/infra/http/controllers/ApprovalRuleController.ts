@@ -20,6 +20,8 @@ import { GetAllApprovalRulesQueryHandler } from "../../../application/queries/ge
 import { GetAllApprovalRulesQuery as GetAllApprovalRulesQueryClass } from "../../../application/queries/get-all-approval-rules/query.js";
 import { GetApprovalRulesByCategoryQueryHandler } from "../../../application/queries/get-approval-rules-by-category/handler.js";
 import { GetApprovalRulesByCategoryQuery } from "../../../application/queries/get-approval-rules-by-category/query.js";
+import { GetApprovalRulesByDepartmentQueryHandler } from "../../../application/queries/get-approval-rules-by-department/handler.js";
+import { GetApprovalRulesByDepartmentQuery } from "../../../application/queries/get-approval-rules-by-department/query.js";
 import { GetApplicableRulesQueryHandler } from "../../../application/queries/get-applicable-rules/handler.js";
 import { GetApplicableRulesQuery as GetApplicableRulesQueryClass } from "../../../application/queries/get-applicable-rules/query.js";
 
@@ -59,6 +61,10 @@ import {
   type GetApprovalRulesByCategoryParams,
 } from "../validators/get-approval-rules-by-category.validator.js";
 import {
+  getApprovalRulesByDepartmentParamsSchema,
+  type GetApprovalRulesByDepartmentParams,
+} from "../validators/get-approval-rules-by-department.validator.js";
+import {
   getApplicableRulesQuerySchema,
   type GetApplicableRulesQuery,
 } from "../validators/get-applicable-rules.validator.js";
@@ -73,6 +79,7 @@ export class ApprovalRuleController {
     private readonly getApprovalRuleByIdHandler: GetApprovalRuleByIdQueryHandler,
     private readonly getAllApprovalRulesHandler: GetAllApprovalRulesQueryHandler,
     private readonly getApprovalRulesByCategoryHandler: GetApprovalRulesByCategoryQueryHandler,
+    private readonly getApprovalRulesByDepartmentHandler: GetApprovalRulesByDepartmentQueryHandler,
     private readonly getApplicableRulesHandler: GetApplicableRulesQueryHandler
   ) {}
 
@@ -85,6 +92,8 @@ export class ApprovalRuleController {
     } else if (error instanceof Error) {
       if (error.message.includes("not found")) {
         reply.code(404).send({ error: error.message });
+      } else if (error.message.includes("unauthorized")) {
+        reply.code(403).send({ error: error.message });
       } else if (error.message.includes("already exists")) {
         reply.code(409).send({ error: error.message });
       } else {
@@ -104,6 +113,7 @@ export class ApprovalRuleController {
 
       const command = new CreateApprovalRuleCommand(
         validatedBody.categoryId,
+        validatedBody.departmentId,
         validatedBody.minAmount,
         validatedBody.approverRole,
         validatedBody.approvalOrder
@@ -132,6 +142,7 @@ export class ApprovalRuleController {
       const command = new UpdateApprovalRuleCommand(
         validatedParams.id,
         validatedBody.categoryId,
+        validatedBody.departmentId,
         validatedBody.minAmount,
         validatedBody.approverRole,
         validatedBody.approvalOrder
@@ -149,6 +160,7 @@ export class ApprovalRuleController {
     reply: FastifyReply
   ): Promise<void> {
     try {
+      this.ensureAdminAccess(request);
       const validatedParams = deleteApprovalRuleParamsSchema.parse(
         request.params
       );
@@ -232,6 +244,7 @@ export class ApprovalRuleController {
 
       const query = new GetAllApprovalRulesQueryClass(
         validatedQuery.categoryId,
+        validatedQuery.departmentId,
         validatedQuery.approverRole,
         validatedQuery.isActive,
         validatedQuery.minAmountGreaterThan,
@@ -268,6 +281,26 @@ export class ApprovalRuleController {
     }
   }
 
+  async getByDepartment(
+    request: FastifyRequest<{ Params: GetApprovalRulesByDepartmentParams }>,
+    reply: FastifyReply
+  ): Promise<void> {
+    try {
+      const validatedParams = getApprovalRulesByDepartmentParamsSchema.parse(
+        request.params
+      );
+
+      const query = new GetApprovalRulesByDepartmentQuery(
+        validatedParams.departmentId
+      );
+      const result = await this.getApprovalRulesByDepartmentHandler.handle(query);
+
+      reply.code(200).send({ success: true, data: result });
+    } catch (error) {
+      this.handleError(error, reply);
+    }
+  }
+
   async getApplicableRules(
     request: FastifyRequest<{ Querystring: GetApplicableRulesQuery }>,
     reply: FastifyReply
@@ -284,6 +317,27 @@ export class ApprovalRuleController {
       reply.code(200).send({ success: true, data: result });
     } catch (error) {
       this.handleError(error, reply);
+    }
+  }
+
+  private getAuthenticatedUser(request: FastifyRequest) {
+    const authUser = (request as any).user;
+    if (!authUser || !authUser.userId) {
+      throw new Error("unauthorized: authentication required");
+    }
+
+    const normalizedRole =
+      typeof authUser.role === "string"
+        ? authUser.role.toLowerCase()
+        : authUser.role;
+
+    return { ...authUser, role: normalizedRole };
+  }
+
+  private ensureAdminAccess(request: FastifyRequest): void {
+    const user = this.getAuthenticatedUser(request);
+    if (user.role !== "admin") {
+      throw new Error("unauthorized: admin access required");
     }
   }
 }

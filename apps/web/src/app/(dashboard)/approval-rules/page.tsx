@@ -1,6 +1,6 @@
-﻿"use client";
+"use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import {
   useApprovalRules,
@@ -9,6 +9,8 @@ import {
   useDeactivateApprovalRule,
   ApproverRoleEnum,
 } from "@/features/approval-rules";
+import { useCategories } from "@/features/categories";
+import { useDepartments } from "@/features/departments";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -51,9 +53,27 @@ function ApprovalRulesPage() {
   const [togglingRuleId, setTogglingRuleId] = useState<string | null>(null);
 
   const { data: allRules, isLoading, error, isError } = useApprovalRules();
+  const { data: categories } = useCategories();
+  const { data: departments } = useDepartments();
   const deleteRuleMutation = useDeleteApprovalRule();
   const activateRuleMutation = useActivateApprovalRule();
   const deactivateRuleMutation = useDeactivateApprovalRule();
+
+  const categoryLookup = useMemo(() => {
+    if (!categories) return {} as Record<string, string>;
+    return categories.reduce<Record<string, string>>((acc, category) => {
+      acc[category.categoryId] = category.name;
+      return acc;
+    }, {} as Record<string, string>);
+  }, [categories]);
+
+  const departmentLookup = useMemo(() => {
+    if (!departments) return {} as Record<string, string>;
+    return departments.reduce<Record<string, string>>((acc, department) => {
+      acc[department.departmentId] = department.name;
+      return acc;
+    }, {} as Record<string, string>);
+  }, [departments]);
 
   // Debug logging
   console.log("Approval Rules Data:", { allRules, isLoading, isError, error });
@@ -147,14 +167,39 @@ function ApprovalRulesPage() {
       return true;
     }) || [];
 
-  const rulesByCategory = filteredRules.reduce(
+  const rulesByGroup = filteredRules.reduce(
     (acc, rule) => {
-      const categoryName = rule.category?.name || "Unknown";
-      if (!acc[categoryName]) acc[categoryName] = [];
-      acc[categoryName].push(rule);
+      // Create a unique group key based on category and/or department
+      let groupKey: string;
+      let groupLabel: string;
+
+      if (rule.category && rule.department) {
+        groupKey = `category-${rule.categoryId}-dept-${rule.departmentId}`;
+        groupLabel = `${rule.category.name} + ${rule.department.name}`;
+      } else if (rule.category) {
+        groupKey = `category-${rule.categoryId}`;
+        groupLabel = rule.category.name;
+      } else if (rule.department) {
+        groupKey = `dept-${rule.departmentId}`;
+        groupLabel = rule.department.name;
+      } else if (!rule.categoryId && !rule.departmentId) {
+        groupKey = "org-wide";
+        groupLabel = "Organization-wide";
+      } else {
+        groupKey = "ungrouped";
+        groupLabel = "Unknown";
+      }
+
+      if (!acc[groupKey]) {
+        acc[groupKey] = {
+          label: groupLabel,
+          rules: [],
+        };
+      }
+      acc[groupKey].rules.push(rule);
       return acc;
     },
-    {} as Record<string, typeof filteredRules>
+    {} as Record<string, { label: string; rules: typeof filteredRules }>
   );
 
   return (
@@ -164,7 +209,7 @@ function ApprovalRulesPage() {
           <div>
             <h1 className="text-3xl font-bold text-foreground">Approval Rules</h1>
             <p className="text-muted-foreground mt-2">
-              Configure approval workflows by category and amount
+              Configure approval workflows by category, department, and amount
             </p>
           </div>
           <Button
@@ -210,7 +255,7 @@ function ApprovalRulesPage() {
         </Select>
       </div>
 
-      {Object.entries(rulesByCategory).length === 0 ? (
+      {Object.entries(rulesByGroup).length === 0 ? (
         <Card className="bg-card border-border p-12 text-center">
           <Shield className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
           <h3 className="text-xl font-semibold text-foreground mb-2">
@@ -231,19 +276,22 @@ function ApprovalRulesPage() {
         </Card>
       ) : (
         <div className="space-y-6">
-          {Object.entries(rulesByCategory).map(([categoryName, rules]) => (
-            <Card key={categoryName} className="bg-card border-border">
+          {Object.entries(rulesByGroup).map(([groupKey, group]) => (
+            <Card key={groupKey} className="bg-card border-border">
               <div className="p-6 border-b border-border">
                 <h2 className="text-xl font-semibold text-foreground">
-                  {categoryName}
+                  {group.label}
                 </h2>
                 <p className="text-sm text-muted-foreground mt-1">
-                  {rules.length} rule{rules.length !== 1 ? "s" : ""} configured
+                  {group.rules.length} rule{group.rules.length !== 1 ? "s" : ""} configured
                 </p>
               </div>
               <Table>
                 <TableHeader>
                   <TableRow className="border-border hover:bg-card">
+                    <TableHead className="text-muted-foreground">
+                      Scope
+                    </TableHead>
                     <TableHead className="text-muted-foreground">
                       Minimum Amount
                     </TableHead>
@@ -260,13 +308,55 @@ function ApprovalRulesPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {rules
+                  {group.rules
                     .sort((a, b) => a.approvalOrder - b.approvalOrder)
-                    .map((rule) => (
-                      <TableRow
-                        key={rule.ruleId}
-                        className="border-border hover:bg-muted/60"
+                    .map((rule) => {
+                      const categoryName =
+                        rule.category?.name ||
+                        (rule.categoryId ? categoryLookup[rule.categoryId] : undefined);
+                      const departmentName =
+                        rule.department?.name ||
+                        (rule.departmentId
+                          ? departmentLookup[rule.departmentId]
+                          : undefined);
+                      const hasCategoryScope = !!categoryName;
+                      const hasDepartmentScope = !!departmentName;
+                      const isOrgScope = !rule.categoryId && !rule.departmentId;
+
+                      return (
+                        <TableRow
+                          key={rule.ruleId}
+                          className="border-border hover:bg-muted/60"
                       >
+                        <TableCell>
+                          <div className="flex gap-1 flex-wrap">
+                            {hasCategoryScope && (
+                              <Badge
+                                variant="outline"
+                                className="bg-indigo-500/10 text-indigo-400 border-indigo-500/20"
+                              >
+                                {categoryName ?? "Category"}
+                              </Badge>
+                            )}
+                            {hasDepartmentScope && (
+                              <Badge
+                                variant="outline"
+                                className="bg-teal-500/10 text-teal-400 border-teal-500/20"
+                              >
+                                {departmentName ?? "Department"}
+                              </Badge>
+                            )}
+                            {isOrgScope && (
+                              <Badge
+                                variant="outline"
+                                className="bg-slate-500/10 text-slate-300 border-slate-500/20"
+                              >
+                                Organization-wide
+                              </Badge>
+                            )}
+
+                          </div>
+                        </TableCell>
                         <TableCell className="text-foreground font-mono">
                           ${Number(rule.minAmount).toFixed(2)}+
                         </TableCell>
@@ -346,7 +436,8 @@ function ApprovalRulesPage() {
                           </div>
                         </TableCell>
                       </TableRow>
-                    ))}
+                    );
+                    })}
                 </TableBody>
               </Table>
             </Card>
@@ -389,3 +480,16 @@ function ApprovalRulesPage() {
 }
 
 export default withAdminGuard(ApprovalRulesPage, { title: "Approval Rules" });
+
+
+
+
+
+
+
+
+
+
+
+
+

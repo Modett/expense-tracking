@@ -157,9 +157,10 @@ model Department {
   updatedAt    DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   // Relations
-  expenses    Expense[]
-  budgets     Budget[]
-  predictions Prediction[]
+  expenses      Expense[]
+  budgets       Budget[]
+  predictions   Prediction[]
+  approvalRules ApprovalRule[]
 
   @@map("departments")
 }
@@ -243,7 +244,8 @@ model ExpenseTag {
 
 model ApprovalRule {
   ruleId        String   @id @default(dbgenerated("gen_random_uuid()")) @map("rule_id") @db.Uuid
-  categoryId    String   @map("category_id") @db.Uuid
+  categoryId    String?  @map("category_id") @db.Uuid
+  departmentId  String?  @map("department_id") @db.Uuid
   minAmount     Decimal  @map("min_amount") @db.Decimal(12, 2)
   approverRole  String   @map("approver_role")
   approvalOrder Int      @map("approval_order")
@@ -252,7 +254,8 @@ model ApprovalRule {
   updatedAt     DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   // Relations
-  category Category @relation(fields: [categoryId], references: [categoryId])
+  category   Category?   @relation(fields: [categoryId], references: [categoryId])
+  department Department? @relation(fields: [departmentId], references: [departmentId])
 
   @@map("approval_rules")
 }

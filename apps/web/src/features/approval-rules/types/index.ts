@@ -7,7 +7,8 @@ export enum ApproverRoleEnum {
 
 export interface ApprovalRule {
   ruleId: string;
-  categoryId: string;
+  categoryId: string | null;
+  departmentId: string | null;
   minAmount: number;
   approverRole: ApproverRoleEnum | `${ApproverRoleEnum}`;
   approvalOrder: number;
@@ -19,17 +20,25 @@ export interface ApprovalRule {
     name: string;
     description?: string;
   };
+  department?: {
+    departmentId: string;
+    name: string;
+    code?: string;
+    description?: string;
+  };
 }
 
 export interface CreateApprovalRuleRequest {
-  categoryId: string;
+  categoryId?: string | null;
+  departmentId?: string | null;
   minAmount: number;
   approverRole: ApproverRoleEnum | `${ApproverRoleEnum}`;
   approvalOrder: number;
 }
 
 export interface UpdateApprovalRuleRequest {
-  categoryId?: string;
+  categoryId?: string | null;
+  departmentId?: string | null;
   minAmount?: number;
   approverRole?: ApproverRoleEnum;
   approvalOrder?: number;
@@ -37,6 +46,7 @@ export interface UpdateApprovalRuleRequest {
 
 export interface GetAllApprovalRulesParams {
   categoryId?: string;
+  departmentId?: string;
   approverRole?: ApproverRoleEnum;
   isActive?: boolean;
   minAmountGreaterThan?: number;
@@ -46,7 +56,8 @@ export interface GetAllApprovalRulesParams {
 export interface CreateApprovalRuleResponse {
   success: boolean;
   approvalRuleId: string;
-  categoryId: string;
+  categoryId: string | null;
+  departmentId: string | null;
   minAmount: number;
   approverRole: string;
   approvalOrder: number;

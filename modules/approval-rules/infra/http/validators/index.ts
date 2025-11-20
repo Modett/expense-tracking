@@ -6,4 +6,5 @@ export * from './deactivate-approval-rule.validator.js';
 export * from './get-approval-rule-by-id.validator.js';
 export * from './get-all-approval-rules.validator.js';
 export * from './get-approval-rules-by-category.validator.js';
+export * from './get-approval-rules-by-department.validator.js';
 export * from './get-applicable-rules.validator.js';
