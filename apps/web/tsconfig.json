@@ -35,5 +35,11 @@
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  "exclude": ["node_modules", "../../node_modules", "../../modules", "../../src", "../../packages"]
+  "exclude": [
+    "node_modules",
+    "../../node_modules",
+    "../../modules",
+    "../../src",
+    "../../packages"
+  ]
 }
